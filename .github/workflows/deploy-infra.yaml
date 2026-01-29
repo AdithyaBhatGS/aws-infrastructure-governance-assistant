@@ -1,12 +1,12 @@
 name: Infra Pipeline Static Web Hosting
 
 on:
-  pull_request:
+  push:
     paths:
       - 'infra/**'
     branches:
       - dev
-      - prod
+      - main
 
 jobs:
   deploy-infra:

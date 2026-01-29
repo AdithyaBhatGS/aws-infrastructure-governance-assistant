@@ -1,0 +1,41 @@
+name: Validation pipeline for infra on pull request
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+    branches:
+      - dev
+      - main
+
+jobs:
+  validate-infra:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack order
+        id: stacks
+        run: echo "STACKS=storage security network application" >> $GITHUB_ENV
+
+      - name: Validate and deploy stacks
+        run: |
+          for STACK in $STACKS; do
+            echo "==== Processing stack: $STACK-stack ===="
+
+            TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+            PARAMS_FILE="infra/$STACK/${{ github.ref == 'refs/heads/dev' && 'dev.json' || 'prod.json' }}"
+
+            echo "-> Running yamllint..."
+            yamllint $TEMPLATE_FILE
+
+            echo "-> Running cfn-lint..."
+            cfn-lint $TEMPLATE_FILE
+
+            echo "-> Validating CloudFormation template..."
+            aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
