@@ -1,0 +1,10 @@
+[
+    {
+        "ParameterKey":"Environment",
+        "ParameterValue":"dev"
+    },
+    {
+        "ParameterKey":"BktName",
+        "ParameterValue":"dev-web-assets"
+    }
+]

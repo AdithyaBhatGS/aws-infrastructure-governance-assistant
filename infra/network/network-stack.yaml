@@ -1,0 +1,501 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  A Network Stack that provides basic network setup. Setup
+  includes VPC, Public & Private Subnets, Route Tables, Gateway
+  Endpoint.
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Choose either dev or prod
+  ProjectName:
+    Type: String
+    Description: Represents the project name
+    Default: static-web-hosting
+  Owner:
+    Type: String
+    Description: Represents the owner of the project
+    Default: devOps
+  CreatedByName:
+    Type: String
+    Description: Represents the IAC used
+    Default: CloudFormation
+  VPCCidr:
+    Type: String
+    Description: Represents the CIDR block of the VPC
+    AllowedPattern: ^([0-9]{1,3}\.){2}0\.0/16$
+    ConstraintDescription: Provide a valid IPV4 CIDR ending with /16
+  PubSubCidrA:
+    Type: String
+    Description: Represents the CIDR block of the public subnet in AZ-A
+    AllowedPattern: ^([0-9]{1,3}\.){2}[0-9]{1,3}\.0/24$
+    ConstraintDescription: |
+      Provide a valid IPV4 CIDR ending with /24. Should not overlap
+      with private subnet CIDR
+  PubSubCidrB:
+    Type: String
+    Description: Represents the CIDR block of the public subnet in AZ-B
+    AllowedPattern: ^([0-9]{1,3}\.){2}[0-9]{1,3}\.0/24$
+    ConstraintDescription: |
+      Provide a valid IPV4 CIDR ending with /24. Should not
+      overlap with private subnet CIDR
+  PrivSubCidrA:
+    Type: String
+    Description: Represents the CIDR block of the private subnet in AZ-A
+    AllowedPattern: ^([0-9]{1,3}\.){2}[0-9]{1,3}\.0/24$
+    ConstraintDescription: |
+      Provide a valid IPV4 CIDR ending with /24. Should not overlap
+      with private subnet CIDR
+  PrivSubCidrB:
+    Type: String
+    Description: Represents the CIDR block of the private subnet in AZ-B
+    AllowedPattern: ^([0-9]{1,3}\.){2}[0-9]{1,3}\.0/24$
+    ConstraintDescription: |
+      Provide a valid IPV4 CIDR ending with /24. Should not overlap with
+      private subnet CIDR
+  PubDestCIDR:
+    Type: String
+    Description: Represents the Destination CIDR block
+    AllowedPattern: ^0\.0\.0\.0/0$
+    Default: 0.0.0.0/0
+  ALBFirewall:
+    Type: String
+    Description: Represents the name of the ALB security group
+    MinLength: 4
+    MaxLength: 50
+  AppFirewall:
+    Type: String
+    Description: Represents the name of the App security group
+    MinLength: 4
+    MaxLength: 50
+  AvailabilityZoneA:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: Choose an availablity zone A in the specified region
+  AvailabilityZoneB:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: Choose an availablity zone B in the specified region
+Resources:
+  NetworkVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !Ref VPCCidr
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-vpc
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPubSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      CidrBlock: !Ref PubSubCidrA
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Ref AvailabilityZoneA
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Public-${AvailabilityZoneA}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPubSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      CidrBlock: !Ref PubSubCidrB
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Ref AvailabilityZoneB
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Public-${AvailabilityZoneB}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPriSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      CidrBlock: !Ref PrivSubCidrA
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Ref AvailabilityZoneA
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Private-${AvailabilityZoneA}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPriSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      CidrBlock: !Ref PrivSubCidrB
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Ref AvailabilityZoneB
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Private-${AvailabilityZoneB}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-igw
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkVPCInternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      InternetGatewayId: !GetAtt NetworkInternetGateway.InternetGatewayId
+  NetworkEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-EIP-${AWS::Region}a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkNATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NetworkEIP.AllocationId
+      SubnetId: !GetAtt NetworkPubSubnet1.SubnetId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-NAT-gw
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPubRT1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Public- ${AvailabilityZoneA}-rt
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPubRT2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Public-${AvailabilityZoneB}-rt
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPrivRT1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Private-${AvailabilityZoneA}-rt
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPrivRT2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !GetAtt NetworkVPC.VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-Private-${AvailabilityZoneB}-rt
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkPubRTPubSub1Attachment:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !GetAtt NetworkPubRT1.RouteTableId
+      SubnetId: !GetAtt NetworkPubSubnet1.SubnetId
+  NetworkPubRTPubSub2Attachment:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !GetAtt NetworkPubRT2.RouteTableId
+      SubnetId: !GetAtt NetworkPubSubnet2.SubnetId
+  NetworkPrivRTPrivSub1Attachment:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !GetAtt NetworkPrivRT1.RouteTableId
+      SubnetId: !GetAtt NetworkPriSubnet1.SubnetId
+  NetworkPrivRTPrivSub2Attachment:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !GetAtt NetworkPrivRT2.RouteTableId
+      SubnetId: !GetAtt NetworkPriSubnet2.SubnetId
+  NetworkPubRT1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !GetAtt NetworkPubRT1.RouteTableId
+      DestinationCidrBlock: !Ref PubDestCIDR
+      GatewayId: !GetAtt NetworkInternetGateway.InternetGatewayId
+  NetworkPubRT2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !GetAtt NetworkPubRT2.RouteTableId
+      DestinationCidrBlock: !Ref PubDestCIDR
+      GatewayId: !GetAtt NetworkInternetGateway.InternetGatewayId
+  NetworkPrivRT1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !GetAtt NetworkPrivRT1.RouteTableId
+      DestinationCidrBlock: !Ref PubDestCIDR
+      NatGatewayId: !GetAtt NetworkNATGateway.NatGatewayId
+  NetworkALBSecurityGrp:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ALB
+      GroupName: !Ref ALBFirewall
+      VpcId: !GetAtt NetworkVPC.VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-ALBSecurityGrp
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkAppSecurityGrp:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for App
+      GroupName: !Ref AppFirewall
+      VpcId: !GetAtt NetworkVPC.VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-APPSecurityGrp
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub ${AWS::StackName}
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  NetworkALBSecurityGrpIngressIPV4:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: 0.0.0.0/0
+      Description: Inbound on port 80 from Users on IPV4 CIDR
+      GroupId: !GetAtt NetworkALBSecurityGrp.Id
+  NetworkALBSecurityGrpIngressIPV6:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIpv6: '::/0'
+      Description: Inbound on port 80 from Users on IPV6 CIDR
+      GroupId: !GetAtt NetworkALBSecurityGrp.Id
+  NetworkALBSecurityGrpEgressEC2:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      IpProtocol: tcp
+      GroupId: !GetAtt NetworkALBSecurityGrp.Id
+      FromPort: 80
+      ToPort: 80
+      Description: Outbound on port 80 to EC2 SG
+      DestinationSecurityGroupId: !GetAtt NetworkAppSecurityGrp.Id
+  NetworkAPPSecurityGrpIngressALB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt NetworkALBSecurityGrp.Id
+      Description: Inbound access from the ALB SG to the APP SG
+      GroupId: !GetAtt NetworkAppSecurityGrp.Id
+  NetworkAPPSecurityGrpEgressHTTPS:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
+      Description: Outbound https access for the APP SG
+      GroupId: !GetAtt NetworkAppSecurityGrp.Id
+  NetworkAPPSecurityGrpEgressHTTP:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: 0.0.0.0/0
+      Description: Outbound http access for the APP SG
+      GroupId: !GetAtt NetworkAppSecurityGrp.Id
+Outputs:
+  VPCID:
+    Value: !GetAtt NetworkVPC.VpcId
+    Description: Represents the ID of the VPC
+    Export:
+      Name: !Sub ${AWS::StackName}-vpc-id
+  PublicSubnet1ID:
+    Value: !GetAtt NetworkPubSubnet1.SubnetId
+    Description: Represents the ID of the Public Subnet
+    Export:
+      Name: !Sub ${AWS::StackName}-pub-subnet-id1
+  PublicSubnet2ID:
+    Value: !GetAtt NetworkPubSubnet2.SubnetId
+    Description: Represents the ID of the Public Subnet
+    Export:
+      Name: !Sub ${AWS::StackName}-pub-subnet-id2
+  PrivateSubnet1ID:
+    Value: !GetAtt NetworkPriSubnet1.SubnetId
+    Description: Represents the ID of the Private Subnet
+    Export:
+      Name: !Sub ${AWS::StackName}-priv-subnet-id1
+  PrivateSubnet2ID:
+    Value: !GetAtt NetworkPriSubnet2.SubnetId
+    Description: Represents the ID of the Private Subnet
+    Export:
+      Name: !Sub ${AWS::StackName}-priv-subnet-id2
+  InternetGatewayID:
+    Value: !GetAtt NetworkInternetGateway.InternetGatewayId
+    Description: Represents the ID of the Internet Gateway
+    Export:
+      Name: !Sub ${AWS::StackName}-igw-id
+  PubRT1ID:
+    Value: !GetAtt NetworkPubRT1.RouteTableId
+    Description: Represents the ID of the Public Route Table
+    Export:
+      Name: !Sub ${AWS::StackName}-pub-rt-id1
+  PubRT2ID:
+    Value: !GetAtt NetworkPubRT2.RouteTableId
+    Description: Represents the ID of the Public Route Table
+    Export:
+      Name: !Sub ${AWS::StackName}-pub-rt-id2
+  PrivRTID1:
+    Value: !GetAtt NetworkPrivRT1.RouteTableId
+    Description: Represents the ID of the Private Route Table
+    Export:
+      Name: !Sub ${AWS::StackName}-priv-rt-id1
+  PrivRTID2:
+    Value: !GetAtt NetworkPrivRT2.RouteTableId
+    Description: Represents the ID of the Private Route Table
+    Export:
+      Name: !Sub ${AWS::StackName}-priv-rt-id2
+  AppSGID:
+    Value: !GetAtt NetworkAppSecurityGrp.Id
+    Description: Represents the ID of the Application Security Group
+    Export:
+      Name: !Sub ${AWS::StackName}-app-sg-id
+  ALBSGID:
+    Value: !GetAtt NetworkALBSecurityGrp.Id
+    Description: |
+      Represents the ID of the Application Load Balancer
+      Security Group
+    Export:
+      Name: !Sub ${AWS::StackName}-alb-sg-id
+  NATGwID:
+    Value: !GetAtt NetworkNATGateway.NatGatewayId
+    Description: Represents the ID of the NAT gateway resource
+    Export:
+      Name: !Sub ${AWS::StackName}-nat-gw-id

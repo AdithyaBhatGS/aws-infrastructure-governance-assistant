@@ -1,0 +1,73 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: |
+  Contains a bucket holding the static assets required
+  for hosting the website
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Choose either dev or prod
+  ProjectName:
+    Type: String
+    Description: Represents the project name
+    Default: static-web-hosting
+  Owner:
+    Type: String
+    Description: Represents the owner of the project
+    Default: devOps
+  CreatedByName:
+    Type: String
+    Description: Represents the IAC used
+    Default: CloudFormation
+  BktName:
+    Type: String
+    Description: Name of the Bucket which holds the static assets
+    AllowedPattern: ^(?![0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$)(?!.*\.\.)(?!.*\.-)(?!.*-\.)(?!.*--)[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$
+Resources:
+  WebAssetBkt:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub '${BktName}-${AWS::StackName}-bkt'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-bkt"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+Outputs:
+  OutputBktName:
+    Value: !Ref WebAssetBkt
+    Description: Represents bucket name
+    Export:
+      Name: !Sub "${AWS::StackName}-asset-bkt"
+  OutputBucketARN:
+    Value: !GetAtt WebAssetBkt.Arn
+    Description: Represents the ARN of the bucket
+    Export:
+      Name: !Sub "${AWS::StackName}-asset-bkt-arn"

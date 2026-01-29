@@ -1,0 +1,228 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: An application stack for deploying the static website using EC2
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Choose either dev or prod
+  ProjectName:
+    Type: String
+    Description: Represents the project name
+    Default: static-web-hosting
+  Owner:
+    Type: String
+    Description: Represents the owner of the project
+    Default: devOps
+  CreatedByName:
+    Type: String
+    Description: Represents the IAC used
+    Default: CloudFormation
+  AMIID:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Description: Represents the AMI ID
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+  LoadBalancerName:
+    Type: String
+    AllowedPattern: ^(?!internal-)[A-Za-z0-9](?:[A-Za-z0-9-]{0,30}[A-Za-z0-9])?$
+    Description: Represents the name of the Application Load Balancer
+    MaxLength: 32
+  ALBTargetGrpName:
+    Type: String
+    Description: Represents the name of the Target Group
+    AllowedPattern: ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,30}[A-Za-z0-9])?$
+    MaxLength: 32
+Mappings:
+  EnvironmentToInstanceType:
+    dev:
+      InstanceType: t3.micro
+    prod:
+      InstanceType: t3.small
+Resources:
+  AppServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !GetAtt AppTemplate.LaunchTemplateId
+        Version: !GetAtt AppTemplate.LatestVersionNumber
+      SubnetId: !ImportValue "network-stack-priv-subnet-id1"
+      AvailabilityZone: !Sub "${AWS::Region}a"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-server"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  AppTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Name: !ImportValue "security-stack-ec2-instance-profile"
+        ImageId: !Ref AMIID
+        InstanceType: !FindInMap
+          - EnvironmentToInstanceType
+          - !Ref Environment
+          - InstanceType
+        SecurityGroupIds:
+          - !ImportValue "network-stack-app-sg-id"
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              Encrypted: true
+              KmsKeyId: !ImportValue "security-stack-kms-key-arn"
+              DeleteOnTermination: true
+              VolumeSize: 8
+        UserData:
+          Fn::Base64:
+            !Sub
+            - |
+              #!/bin/bash -xe
+
+              # Installing the cloudwatch agent
+              yum install -y amazon-cloudwatch-agent
+
+              cat << 'EOF' > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+              {
+                "logs": {
+                  "logs_collected": {
+                    "files": {
+                      "collect_list": [
+                        {
+                          "file_path": "/var/log/cloud-init.log",
+                          "log_group_name": "/infra/ec2/cloud-init",
+                          "log_stream_name": "{instance_id}"
+                        },
+                        {
+                          "file_path": "/var/log/cloud-init-output.log",
+                          "log_group_name": "/infra/ec2/cloud-init",
+                          "log_stream_name": "{instance_id}-output"
+                        },
+                        {
+                          "file_path": "/var/log/messages",
+                          "log_group_name": "/infra/ec2/system",
+                          "log_stream_name": "{instance_id}"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+              EOF
+
+              # AWS utility to start, stop {the agents} and fetch config
+
+              # Here we are trying to fetch config from file and start the agent
+
+              /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+              -a fetch-config \
+              -m ec2 \
+              -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+              -s
+              # Update the OS
+              # -----------------------------
+              yum update -y
+
+              # Install Apache Web Server
+              # -----------------------------
+              yum install -y httpd
+
+              # Enable and start Apache
+              systemctl enable httpd
+              systemctl start httpd
+  ALBFrontFacing:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref LoadBalancerName
+      Scheme: internet-facing
+      SecurityGroups:
+        - !ImportValue "network-stack-alb-sg-id"
+      Type: application
+      Subnets:
+        - !ImportValue "network-stack-pub-subnet-id1"
+        - !ImportValue "network-stack-pub-subnet-id2"
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-load-balancer"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  ALBTargetGrp:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckPath: /index.html
+      HealthCheckIntervalSeconds: 30
+      TargetType: instance
+      IpAddressType: ipv4
+      Protocol: HTTP
+      HealthCheckProtocol: HTTP
+      Targets:
+        - Id: !GetAtt AppServer.InstanceId
+          Port: 80
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Name: !Ref ALBTargetGrpName
+      VpcId: !ImportValue network-stack-vpc-id
+      Port: 80
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-target-grp"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !GetAtt ALBFrontFacing.LoadBalancerArn
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !GetAtt ALBTargetGrp.TargetGroupArn
+Outputs:
+  InstanceID:
+    Value: !GetAtt AppServer.InstanceId
+    Description: Represents the ID of the app instance
+  LaunchTempID:
+    Value: !GetAtt AppTemplate.LaunchTemplateId
+    Description: Represents the ID of the launch template
+  AMI:
+    Value: !Ref AMIID
+    Description: Represents the AMI ID of the app instance
+  ALBARN:
+    Value: !GetAtt ALBFrontFacing.LoadBalancerArn
+    Description: Represents the ARN of the load balancer
+  ALBTargetGrpARN:
+    Value: !GetAtt ALBTargetGrp.TargetGroupArn
+    Description: |
+      Represents the ARN of the target group associated with
+      the load balancer
+  ALBPublicDNS:
+    Value: !GetAtt ALBFrontFacing.DNSName
+    Description: Represents the DNS of the load Balancer

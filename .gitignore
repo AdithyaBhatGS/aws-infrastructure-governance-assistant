@@ -1,0 +1,8 @@
+.aws/
+*.zip
+*.log
+packaged-*.yaml
+node_modules/
+__pycache__/
+.env
+notes.txt

@@ -1,0 +1,268 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: |
+  A security stack containing IAM Role, policies, kms key,
+  security groups etc
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Choose either dev or prod
+  ProjectName:
+    Type: String
+    Description: Represents the project name
+    Default: static-web-hosting
+  Owner:
+    Type: String
+    Description: Represents the owner of the project
+    Default: devOps
+  CreatedByName:
+    Type: String
+    Description: Represents the IAC used
+    Default: CloudFormation
+  APPEC2Role:
+    Type: String
+    Description: |
+      Represents the name associated to an IAM Role attached to the
+      EC2 instance
+    AllowedPattern: ^[\w+=,.@-]+$
+    Default: static-web-server-role
+  KeyAlias:
+    Type: String
+    Description: Represents the alias for the KMS key
+    AllowedPattern: ^(alias/)[a-zA-Z0-9:/_-]+$
+    Default: alias/static-web-server-disk-key
+  EC2CloudWatchPolicyName:
+    Type: String
+    Description: Represents the name of the policy document of cloudwatch policy
+    AllowedPattern: ^[\w+=,.@-]+$
+    Default: ec2-cloudwatch-static-web-policy
+  EC2BktAccessPolicyName:
+    Type: String
+    Description: Represents the name of the policy document of bkt access policy
+    AllowedPattern: ^[\w+=,.@-]+$
+    Default: ec2-bkt-static-web-policy
+  PurposeOfCloudInitLogGrp:
+    Type: String
+    Description: |
+      Represents the purpose of the log group for cloud init level logs
+    AllowedPattern: ^[A-Za-z0-9]+$
+    Default: infra
+  ComponentOfCloudInitLogGrp:
+    Type: String
+    Description: Represents the component of the log group for system level logs
+    AllowedPattern: ^[-A-Za-z0-9]+$
+    Default: ec2
+  NameOfCloudInitLogGrp:
+    Type: String
+    Description: Represents the name of the log group for system level logs
+    AllowedPattern: ^[-A-Za-z0-9]+$
+    Default: cloud-init
+  PurposeOfSystemLogGrp:
+    Type: String
+    Description: Represents the purpose of the log group for system level logs
+    AllowedPattern: ^[A-Za-z0-9]+$
+    Default: infra
+  ComponentOfSystemLogGrp:
+    Type: String
+    Description: Represents the component of the log group for system level logs
+    AllowedPattern: ^[-A-Za-z0-9]+$
+    Default: ec2
+  NameOfSystemLogGrp:
+    Type: String
+    Description: Represents the name of the log group for system level logs
+    AllowedPattern: ^[-A-Za-z0-9]+$
+    Default: system
+Resources:
+  EC2IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: |
+        Provides access to read the S3 bucket, SSM access forinstance
+        access, write logs to cloudwatch
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      RoleName: !Sub '${APPEC2Role}-${AWS::StackName}'
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-role-for-ec2"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  EC2CloudWatchPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: !Ref EC2CloudWatchPolicyName
+      RoleName: !Ref EC2IAMRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogStreams
+            Resource:
+              - !Sub
+                - '${CloudInitARN}:*'
+                - {CloudInitARN: !GetAtt CloudInitLogGrp.Arn}
+              - !Sub
+                - '${SystemLogGrpARN}:*'
+                - {SystemLogGrpARN: !GetAtt SystemLogGrp.Arn}
+  EC2BktAccessPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: !Ref EC2BktAccessPolicyName
+      RoleName: !Ref EC2IAMRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource:
+              - !ImportValue storage-stack-asset-bkt-arn
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - !Join
+                - ""
+                - - !ImportValue storage-stack-asset-bkt-arn
+                  - "/*"
+  CloudInitLogGrp:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      LogGroupName: !Sub "/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-cloud-init-log-grp"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  SystemLogGrp:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      LogGroupName: !Sub "/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-system-log-grp"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  AppInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2IAMRole
+      InstanceProfileName: !Sub '${APPEC2Role}-${AWS::StackName}'
+  EBSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting the EBS volumes
+      Enabled: true
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-policy-for-ebs-encryption
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Access for services
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt EC2IAMRole.Arn
+            Action:
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+              - 'kms:DescribeKey'
+            Resource: '*'
+      KeyUsage: ENCRYPT_DECRYPT
+      EnableKeyRotation: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-server-ebs-key"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+  EBSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Ref KeyAlias
+      TargetKeyId: !Ref EBSKey
+Outputs:
+  EC2Role:
+    Value: !Ref EC2IAMRole
+    Description: Represents the IAM Role name
+    Export:
+      Name: !Sub "${AWS::StackName}-ec2-role"
+  EC2RoleARN:
+    Value: !GetAtt EC2IAMRole.Arn
+    Description: Represents the IAM Role ARN
+    Export:
+      Name: !Sub "${AWS::StackName}-ec2-role-arn"
+  IProfileName:
+    Value: !Ref AppInstanceProfile
+    Description: Represents the IAM Instance profile name
+    Export:
+      Name: !Sub "${AWS::StackName}-ec2-instance-profile"
+  KMSKeyARN:
+    Value: !GetAtt EBSKey.Arn
+    Description: Represents the ARN of the KMS key
+    Export:
+      Name: !Sub "${AWS::StackName}-kms-key-arn"
+  KMSKeyAlias:
+    Value: !Ref EBSKeyAlias
+    Description: Represents the alias of the KMS key
+    Export:
+      Name: !Sub "${AWS::StackName}-kms-key-alias"

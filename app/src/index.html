@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional Portfolio - Showcasing my projects, skills, and experience">
+    <title>My Portfolio</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">Portfolio</div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#skills" class="nav-link">Skills</a></li>
+                <li><a href="#experience" class="nav-link">Experience</a></li>
+                <li><a href="#projects" class="nav-link">Projects</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Hello, I'm <span class="highlight">Adithya Bhat G S</span></h1>
+                <p class="hero-subtitle">Aspiring DevOps Professional</p>
+                <p class="hero-description">
+                    Have a good understanding of AWS Services, IAC,  CI/CD, Linux, Python.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#projects" class="btn btn-primary">View My Work</a>
+                    <a href="#about" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>
+                        I'm Adithya Bhat G S, a Software Engineer with 2 yrs of experience. I'm enthusiastic about using my varied experiences to solve complex problems. My expertise lies in Cloud (AWS), Infrastructure as Code, CI/CD (Jenkins), Linux Administration, Python Automation, Version Control (Git and GitHub).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="skills">
+        <div class="container">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h3 class="category-title">Primary Skills</h3>
+                    <div class="skill-items">
+                        <span class="skill-tag">AWS</span>
+                        <span class="skill-tag">Terraform</span>
+                        <span class="skill-tag">Docker</span>
+                        <span class="skill-tag">Jenkins</span>
+                        <span class="skill-tag">Version Control</span>
+                        <span class="skill-tag">Linux</span>
+                        <span class="skill-tag">Python</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">Secondary skills</h3>
+                    <div class="skill-items">
+                        <span class="skill-tag">HTML, CSS and Bootstrap</span>
+                        <span class="skill-tag">Computer Networking</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">Tools & Others</h3>
+                    <div class="skill-items">
+                        <span class="skill-tag">AWS</span>
+                        <span class="skill-tag">VS Code</span>
+                        <span class="skill-tag">Jupyter Notebook</span>
+                        <span class="skill-tag">PyCharm CE</span>
+                        <span class="skill-tag">Git, GitHub</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="experience">
+        <div class="container">
+            <h2 class="section-title">Experience</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3 class="job-title">Software Engineer</h3>
+                        <p class="company">Trianz Digital Consulting</p>
+                        <p class="duration">Oct 2023 - Present</p>
+                        <ul class="achievements">
+                            <li>Worked on Migrating the application workloads using Conceirto</li>
+                            <li>Developed automation solutions using python, pandas,numpy and openpyxl to reduce the manual work</li>
+                            <li>Created documentation for key AWS concepts including Transit gateway, versioning of buckets, pre-signed URLs, VPC peering and EC2 monitoring using CloudWatch</li>
+                        </ul>
+                    </div>
+                </div>
+                
+        </div>
+    </section>
+
+    <section id="projects" class="projects">
+        <div class="container">
+            <h2 class="section-title">Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="placeholder-image">AWS VPC Setup</div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">AWS Networking Setup using CI/CD</h3>
+                        <p class="project-description">
+                            A basic CI/CD pipeline using Jenkins for provisioning and destroying AWS infrastructure(Networking setup) using Terraform.</p>
+                        <div class="project-tags">
+                            <span class="tag">AWS</span>
+                            <span class="tag">Terraform</span>
+                            <span class="tag">CI/CD(Jenkins)</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://github.com/AdithyaBhatGS/natGateway" class="project-link">Networking Setup </a>
+                            <a href="https://github.com/AdithyaBhatGS/jenkins-setup" class="project-link">Jenkins Setup for NAT</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image">
+                        <div class="placeholder-image">Blue Green Deployment</div>
+                    </div>
+                    <div class="project-content">
+                        <h3 class="project-title">Blue Green Deployment</h3>
+                        <p class="project-description">
+                            Developed and executed a production-quality CI/CD pipeline to deploy a Python + SQLite web application utilizing a blue-green deployment strategy on AWS. Automated infrastructure setup using Terraform. Set up Jenkins to build, test, and deploy the application to alternating environments (Blue/Green), facilitating zero-downtime releases. The application shows instance metadata (name and environment) for visual confirmation. Incorporated rollback mechanisms and health checks to guarantee deployment reliability.     
+                        </p>
+                        <div class="project-tags">
+                            <span class="tag">AWS</span>
+                            <span class="tag">Terraform</span>
+                            <span class="tag">CI/CD(Jenkins)</span>
+                            <span class="tag">Python</span>
+                            <span class="tag">Sqlite</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">View Demo</a>
+                            <a href="#" class="project-link">Source Code</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Adithya Bhat G S. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://github.com/AdithyaBhatGS" class="social-link">GitHub</a>
+                    <a href="#" class="social-link">LinkedIn</a>
+                    <a href="#" class="social-link">Twitter</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./js/script.js"></script>
+</body>
+</html>

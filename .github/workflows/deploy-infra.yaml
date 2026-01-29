@@ -1,0 +1,78 @@
+name: Infra Pipeline Static Web Hosting
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+    branches:
+      - dev
+      - prod
+
+jobs:
+  deploy-infra:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack order
+        id: stacks
+        run: echo "STACKS=storage security network application" >> $GITHUB_ENV
+
+      - name: Validate and deploy stacks
+        run: |
+          for STACK in $STACKS; do
+            echo "==== Processing stack: $STACK-stack ===="
+
+            TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+            PARAMS_FILE="infra/$STACK/${{ github.ref == 'refs/heads/dev' && 'dev.json' || 'prod.json' }}"
+
+            echo "-> Running yamllint..."
+            yamllint $TEMPLATE_FILE
+
+            echo "-> Running cfn-lint..."
+            cfn-lint $TEMPLATE_FILE
+
+            echo "-> Validating CloudFormation template..."
+            aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
+
+            echo "-> Deploying stack..."
+            aws cloudformation deploy \
+              --template-file $TEMPLATE_FILE \
+              --stack-name $STACK-stack \
+              --parameter-overrides file://$PARAMS_FILE \
+              --capabilities CAPABILITY_NAMED_IAM \
+              --region ${{ env.AWS_REGION }}
+
+            echo "==== Deployment of $STACK-stack complete ===="
+          done
+
+      - name: Verify stack statuses
+        run: |
+          for STACK in $STACKS; do
+            STATUS=$(aws cloudformation describe-stacks \
+              --stack-name $STACK-stack \
+              --region ${{ env.AWS_REGION }} \
+              --query "Stacks[0].StackStatus" \
+              --output text)
+            echo "$STACK-stack status: $STATUS"
+            if [[ "$STATUS" != "CREATE_COMPLETE" && "$STATUS" != "UPDATE_COMPLETE" ]]; then
+              echo "Error: $STACK-stack stack deployment failed"
+              exit 1
+            fi
+          done

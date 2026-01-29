@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey":"Environment",
+        "ParameterValue":"dev"
+    },
+    {
+        "ParameterKey":"LoadBalancerName",
+        "ParameterValue":"dev-static-hosting-alb"
+    },
+    {
+        "ParameterKey":"ALBTargetGrpName",
+        "ParameterValue":"dev-static-hosting-target-grp"
+    }
+]

@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey":"Environment",
+        "ParameterValue":"prod"
+    },
+    {
+        "ParameterKey":"LoadBalancerName",
+        "ParameterValue":"prod-static-hosting-alb"
+    },
+    {
+        "ParameterKey":"ALBTargetGrpName",
+        "ParameterValue":"prod-static-hosting-target-grp"
+    }
+]
