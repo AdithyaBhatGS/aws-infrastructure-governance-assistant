@@ -84,62 +84,60 @@ Resources:
               DeleteOnTermination: true
               VolumeSize: 8
         UserData:
-          Fn::Base64:
-            !Sub
-            - |
-              #!/bin/bash -xe
+          Fn::Base64: |
+            #!/bin/bash -xe
 
-              # Installing the cloudwatch agent
-              yum install -y amazon-cloudwatch-agent
+            # Installing the cloudwatch agent
+            yum install -y amazon-cloudwatch-agent
 
-              cat << 'EOF' > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-              {
-                "logs": {
-                  "logs_collected": {
-                    "files": {
-                      "collect_list": [
-                        {
-                          "file_path": "/var/log/cloud-init.log",
-                          "log_group_name": "/infra/ec2/cloud-init",
-                          "log_stream_name": "{instance_id}"
-                        },
-                        {
-                          "file_path": "/var/log/cloud-init-output.log",
-                          "log_group_name": "/infra/ec2/cloud-init",
-                          "log_stream_name": "{instance_id}-output"
-                        },
-                        {
-                          "file_path": "/var/log/messages",
-                          "log_group_name": "/infra/ec2/system",
-                          "log_stream_name": "{instance_id}"
-                        }
-                      ]
-                    }
+            cat << 'EOF' > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            {
+              "logs": {
+                "logs_collected": {
+                  "files": {
+                    "collect_list": [
+                      {
+                        "file_path": "/var/log/cloud-init.log",
+                        "log_group_name": "/infra/ec2/cloud-init",
+                        "log_stream_name": "{instance_id}"
+                      },
+                      {
+                        "file_path": "/var/log/cloud-init-output.log",
+                        "log_group_name": "/infra/ec2/cloud-init",
+                        "log_stream_name": "{instance_id}-output"
+                      },
+                      {
+                        "file_path": "/var/log/messages",
+                        "log_group_name": "/infra/ec2/system",
+                        "log_stream_name": "{instance_id}"
+                      }
+                    ]
                   }
                 }
               }
-              EOF
+            }
+            EOF
 
-              # AWS utility to start, stop {the agents} and fetch config
+            # AWS utility to start, stop {the agents} and fetch config
 
-              # Here we are trying to fetch config from file and start the agent
+            # Here we are trying to fetch config from file and start the agent
 
-              /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-              -a fetch-config \
-              -m ec2 \
-              -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
-              -s
-              # Update the OS
-              # -----------------------------
-              yum update -y
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+            -a fetch-config \
+            -m ec2 \
+            -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+            -s
+            # Update the OS
+            # -----------------------------
+            yum update -y
 
-              # Install Apache Web Server
-              # -----------------------------
-              yum install -y httpd
+            # Install Apache Web Server
+            # -----------------------------
+            yum install -y httpd
 
-              # Enable and start Apache
-              systemctl enable httpd
-              systemctl start httpd
+            # Enable and start Apache
+            systemctl enable httpd
+            systemctl start httpd
   ALBFrontFacing:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -226,3 +224,6 @@ Outputs:
   ALBPublicDNS:
     Value: !GetAtt ALBFrontFacing.DNSName
     Description: Represents the DNS of the load Balancer
+  ALBC:
+    Value: !GetAtt ALBFrontFacing.LoadBalancerFullName
+    Description: Represents the full name of the load balancer
