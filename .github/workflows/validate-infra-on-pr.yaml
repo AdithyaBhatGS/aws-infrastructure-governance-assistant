@@ -39,3 +39,4 @@ jobs:
 
             echo "-> Validating CloudFormation template..."
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
+          done
