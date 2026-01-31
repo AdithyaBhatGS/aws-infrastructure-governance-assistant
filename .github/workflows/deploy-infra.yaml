@@ -51,19 +51,45 @@ jobs:
             echo "-> Validating CloudFormation template..."
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
 
-            echo "-> Deploying stack..."
-            aws cloudformation deploy \
-              --template-file $TEMPLATE_FILE \
-              --stack-name $STACK-stack \
-              --parameter-overrides file://$PARAMS_FILE \
-              --capabilities CAPABILITY_NAMED_IAM \
-              --region $AWS_REGION
+            STACK_NAME="${STACK}-stack"
 
-            echo "==== Deployment of $STACK-stack complete ===="
+            STACK_EXISTS=$(aws cloudformation describe-stacks \
+              --stack-name "$STACK_NAME" \
+              --region $AWS_REGION \
+              --query "Stacks[0].StackStatus" \
+              --output text 2>/dev/null || echo "NOT_EXIST")
+
+            if [[ "$STACK_EXISTS" == "NOT_EXIST" ]]; then
+              echo "Stack $STACK_NAME does not exist → creating"
+              aws cloudformation deploy \
+                --stack-name "$STACK_NAME" \
+                --template-file "$TEMPLATE_FILE" \
+                --parameter-overrides file://"$PARAMS_FILE" \
+                --capabilities CAPABILITY_NAMED_IAM \
+                --region "$AWS_REGION"
+
+              aws cloudformation wait stack-create-complete \
+                --stack-name "$STACK_NAME" \
+                --region "$AWS_REGION"
+              echo "$STACK_NAME created!!!"
+            else
+              echo "Stack $STACK_NAME exists → updating"
+              aws cloudformation deploy \
+                --stack-name "$STACK_NAME" \
+                --template-file "$TEMPLATE_FILE" \
+                --parameter-overrides file://"$PARAMS_FILE" \
+                --capabilities CAPABILITY_NAMED_IAM \
+                --region "$AWS_REGION"
+
+              aws cloudformation wait stack-update-complete \
+                --stack-name "$STACK_NAME" \
+                --region "$AWS_REGION"
+              echo "$STACK_NAME updated!!!"
+            fi
 
             if [[ "$STACK" == *"storage"* ]]; then
               BUCKET_NAME=$(aws cloudformation describe-stacks \
-                --stack-name $STACK-stack \
+                --stack-name $STACK_NAME \
                 --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
                 --output text \
                 --region $AWS_REGION)
@@ -74,7 +100,7 @@ jobs:
                 --type String \
                 --overwrite \
                 --region $AWS_REGION
-                echo "Stored $BUCKET_NAME in SSM"
+              echo "Stored $BUCKET_NAME in SSM"
 
             elif [[ "$STACK" == *"application"* ]]; then
               ALB_DNS=$(aws cloudformation describe-stacks \
