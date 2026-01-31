@@ -10,3 +10,5 @@
 - **cloud-init**
 
 - Understand the user-data
+
+- Check about describe-stack, query

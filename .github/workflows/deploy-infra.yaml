@@ -57,9 +57,44 @@ jobs:
               --stack-name $STACK-stack \
               --parameter-overrides file://$PARAMS_FILE \
               --capabilities CAPABILITY_NAMED_IAM \
-              --region ${{ env.AWS_REGION }}
+              --region $AWS_REGION
 
             echo "==== Deployment of $STACK-stack complete ===="
+
+            if [[ "$STACK" == *"storage"* ]]; then
+              BUCKET_NAME=$(aws cloudformation describe-stacks \
+                --stack-name $STACK \
+                --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
+                --output text \
+                --region $AWS_REGION)
+
+              aws ssm put-parameter \
+                --name "/app/bucket_name" \
+                --value "$BUCKET_NAME" \
+                --type String \
+                --overwrite \
+                --region $AWS_REGION
+                echo "Stored $BUCKET_NAME in SSM"
+
+            elif [[ "$STACK" == *"application"* ]]; then
+              ALB_DNS=$(aws cloudformation describe-stacks \
+                --stack-name $STACK \
+                --query "Stacks[0].Outputs[?OutputKey=='ALBPublicDNS'].OutputValue" \
+                --output text \
+                --region $AWS_REGION)
+
+              # Store ALB DNS in SSM
+              aws ssm put-parameter \
+                --name "/app/alb_dns" \
+                --value "$ALB_DNS" \
+                --type String \
+                --overwrite \
+                --region $AWS_REGION
+              echo "Stored $ALB_DNS in SSM"
+
+            else
+              echo "No SSM parameters for $STACK-stack!!!"
+            fi
           done
 
       - name: Verify stack statuses
