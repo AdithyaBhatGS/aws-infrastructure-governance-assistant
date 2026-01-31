@@ -63,7 +63,7 @@ jobs:
 
             if [[ "$STACK" == *"storage"* ]]; then
               BUCKET_NAME=$(aws cloudformation describe-stacks \
-                --stack-name $STACK \
+                --stack-name $STACK-stack \
                 --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
                 --output text \
                 --region $AWS_REGION)
@@ -78,7 +78,7 @@ jobs:
 
             elif [[ "$STACK" == *"application"* ]]; then
               ALB_DNS=$(aws cloudformation describe-stacks \
-                --stack-name $STACK \
+                --stack-name $STACK-stack \
                 --query "Stacks[0].Outputs[?OutputKey=='ALBPublicDNS'].OutputValue" \
                 --output text \
                 --region $AWS_REGION)
