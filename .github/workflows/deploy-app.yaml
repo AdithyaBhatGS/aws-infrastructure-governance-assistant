@@ -99,7 +99,7 @@ jobs:
             --instance-ids $INSTANCE_IDS \
             --parameters '{
               "commands": [
-                "aws s3 sync s3://'${BUCKET_NAME}' /var/www/html --delete",
+                "aws s3 sync s3://'${BUCKET_NAME}'/src /var/www/html --delete",
                 "systemctl reload httpd"
               ]
             }' \
@@ -130,7 +130,7 @@ jobs:
       - name: ALB health check
         run: |
           for i in {1..10}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$ALB_DNS/health)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$ALB_DNS/index.html)
             if [ "$STATUS" == "200" ]; then
               echo "*****Application healthy*****"
               exit 0

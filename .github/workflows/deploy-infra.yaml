@@ -103,7 +103,7 @@ jobs:
                 --region $AWS_REGION)
 
               aws ssm put-parameter \
-                --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
+                --name "${{ vars.SSM_BUCKET_PARAM }}" \
                 --value "$BUCKET_NAME" \
                 --type String \
                 --overwrite \
@@ -119,7 +119,7 @@ jobs:
 
               # Store ALB DNS in SSM
               aws ssm put-parameter \
-                --name "${{ vars.SSM_BUCKET_PARAM }}" \
+                --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
                 --value "$ALB_DNS" \
                 --type String \
                 --overwrite \
