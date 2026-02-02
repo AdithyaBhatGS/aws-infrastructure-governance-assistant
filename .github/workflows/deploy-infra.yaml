@@ -30,6 +30,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Resetting infra deployment status
+        run: |
+          aws ssm put-parameter \
+            --name "/static-web/infra-ready" \
+            --value "false" \
+            --type String \
+            --overwrite
+
       - name: Set stack order
         id: stacks
         run: echo "STACKS=storage security network application" >> $GITHUB_ENV
@@ -137,3 +145,11 @@ jobs:
               exit 1
             fi
           done
+
+      - name: Setting infra deployment status
+        run: |
+          aws ssm put-parameter \
+            --name "/static-web/infra-ready" \
+            --value "true" \
+            --type String \
+            --overwrite

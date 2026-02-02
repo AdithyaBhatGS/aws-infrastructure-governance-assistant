@@ -26,6 +26,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Wait for infra readiness
+        run: |
+          for i in {1..30}; do
+            READY=$(aws ssm get-parameter \
+              --name "/static-web/infra-ready" \
+              --query "Parameter.Value" \
+              --output text 2>/dev/null || echo "false")
+
+            if [[ "$READY" == "true" ]]; then
+              echo "*****Infra ready*****"
+              exit 0
+            fi
+
+            echo "Waiting for infra..."
+            sleep 10
+          done
+
+          echo "Infra not ready after timeout"
+          exit 1
+
       - name: Fetch infra params from SSM
         run: |
           ALB_DNS=$(aws ssm get-parameter \
