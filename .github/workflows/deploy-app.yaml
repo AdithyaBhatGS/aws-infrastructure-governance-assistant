@@ -1,0 +1,132 @@
+name: App Deployment
+
+on:
+  push:
+    branches:
+      - dev
+      - prod
+    paths:
+      - "app/**"
+
+jobs:
+  deploy-app:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Fetch infra params from SSM
+        run: |
+          ALB_DNS=$(aws ssm get-parameter \
+          --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
+          --query "Parameter.Value" \
+          --output text)
+
+          BUCKET_NAME=$(aws ssm get-parameter \
+          --name "${{ vars.SSM_BUCKET_PARAM }}" \
+          --query "Parameter.Value" \
+          --output text)
+
+          echo "ALB_DNS=$ALB_DNS" >> $GITHUB_ENV
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+
+      - name: Sync app to S3
+        run: |
+          aws s3 sync app/ s3://$BUCKET_NAME/ --delete
+
+      - name: Set ENV based on branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+          else
+            echo "ENV=unknown" >> $GITHUB_ENV
+          fi
+
+      - name: Get target instance IDs
+        run: |
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --filters \
+              "Name=tag:Name,Values=static-web-hosting-server" \
+              "Name=tag:Environment,Values=${ENV}" \
+              "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].InstanceId" \
+            --output text)
+
+          if [ -z "$INSTANCE_IDS" ]; then
+            echo "No running instances found"
+            exit 1
+          fi
+
+          echo "INSTANCE_IDS=$INSTANCE_IDS" >> $GITHUB_ENV
+
+      - name: Deploy app via SSM
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids $INSTANCE_IDS \
+            --parameters '{
+              "commands": [
+                "aws s3 sync s3://'${BUCKET_NAME}' /var/www/html --delete",
+                "systemctl reload httpd"
+              ]
+            }' \
+            --query "Command.CommandId" \
+            --output text)
+
+            echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
+
+      - name: Wait for SSM command to finish
+        run: |
+          for INSTANCE_ID in $INSTANCE_IDS; do
+            echo "Waiting for command on $INSTANCE_ID"
+            aws ssm wait command-executed \
+              --command-id $COMMAND_ID \
+              --instance-id $INSTANCE_ID
+          done
+
+      - name: Fetch SSM command output on failure
+        if: failure()
+        run: |
+          for INSTANCE_ID in $INSTANCE_IDS; do
+            aws ssm get-command-invocation \
+              --command-id $COMMAND_ID \
+              --instance-id $INSTANCE_ID
+          done
+
+
+      - name: ALB health check
+        run: |
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$ALB_DNS/health)
+            if [ "$STATUS" == "200" ]; then
+              echo "✅ Application healthy"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Health check failed"
+          exit 1
+
+
+
+
+
+
+
+
+
+

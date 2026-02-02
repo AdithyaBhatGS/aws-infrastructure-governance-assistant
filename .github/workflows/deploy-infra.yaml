@@ -1,4 +1,4 @@
-name: Infra Pipeline Static Web Hosting
+name: Infra Deployment
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
       - 'infra/**'
     branches:
       - dev
-      - main
+      - prod
 
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/main' && 'us-east-1' }}
+      AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
 
 
     steps:
@@ -95,7 +95,7 @@ jobs:
                 --region $AWS_REGION)
 
               aws ssm put-parameter \
-                --name "/app/bucket_name" \
+                --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
                 --value "$BUCKET_NAME" \
                 --type String \
                 --overwrite \
@@ -111,7 +111,7 @@ jobs:
 
               # Store ALB DNS in SSM
               aws ssm put-parameter \
-                --name "/app/alb_dns" \
+                --name "${{ vars.SSM_BUCKET_PARAM }}" \
                 --value "$ALB_DNS" \
                 --type String \
                 --overwrite \
