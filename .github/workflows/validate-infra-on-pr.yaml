@@ -1,4 +1,4 @@
-name: Validation pipeline for infra on pull request
+name: Infra Validation
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - 'infra/**'
     branches:
       - dev
-      - main
+      - prod
 
 jobs:
   validate-infra:
