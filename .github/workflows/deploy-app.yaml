@@ -7,6 +7,10 @@ on:
       - prod
     paths:
       - "app/**"
+  workflow_run:
+    workflows: ["Infra Deployment"]
+    types:
+      - completed
 
 jobs:
   deploy-app:
@@ -16,6 +20,19 @@ jobs:
       AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
 
     steps:
+      - name: Check infra readiness
+        run: |
+          READY=$(aws ssm get-parameter \
+            --name "/static-web/infra-ready" \
+            --query "Parameter.Value" \
+            --output text \
+            --region $AWS_REGION || echo "false")
+
+          if [[ "$READY" != "true" ]]; then
+            echo "❌ Infra not ready. Exiting app pipeline."
+            exit 0
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -25,26 +42,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Wait for infra readiness
-        run: |
-          for i in {1..30}; do
-            READY=$(aws ssm get-parameter \
-              --name "/static-web/infra-ready" \
-              --query "Parameter.Value" \
-              --output text 2>/dev/null || echo "false")
-
-            if [[ "$READY" == "true" ]]; then
-              echo "*****Infra ready*****"
-              exit 0
-            fi
-
-            echo "...Waiting for infra..."
-            sleep 10
-          done
-
-          echo "Infra not ready after timeout"
-          exit 1
 
       - name: Fetch infra params from SSM
         run: |
