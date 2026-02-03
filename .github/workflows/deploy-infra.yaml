@@ -67,6 +67,7 @@ jobs:
               --parameter-overrides file://"$PARAMS_FILE" \
               --capabilities CAPABILITY_NAMED_IAM \
               --region "$AWS_REGION"
+          done
 
       - name: Update storage ssm parameter
         run: |
