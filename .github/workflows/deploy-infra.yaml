@@ -71,12 +71,12 @@ jobs:
 
       - name: Update storage ssm parameter
         run: |
-          STACK = "storage-stack"
+          STACK="storage-stack"
           BUCKET_NAME=$(aws cloudformation describe-stacks \
             --stack-name "$STACK" \
             --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
             --output text \
-            --region $AWS_REGION)
+            --region "$AWS_REGION")
 
           if [ -z "$BUCKET_NAME" ]; then
             echo "BucketName output missing"
@@ -88,17 +88,17 @@ jobs:
             --value "$BUCKET_NAME" \
             --type String \
             --overwrite \
-            --region $AWS_REGION
+            --region "$AWS_REGION"
           echo "Stored $BUCKET_NAME in SSM"
 
       - name: Update app ssm parameter
         run: |
-          STACK = "application-stack"
+          STACK="application-stack"
           ALB_DNS=$(aws cloudformation describe-stacks \
             --stack-name "$STACK" \
             --query "Stacks[0].Outputs[?OutputKey=='ALBPublicDNS'].OutputValue" \
             --output text \
-            --region $AWS_REGION)
+            --region "$AWS_REGION")
 
           if [ -z "$ALB_DNS" ]; then
             echo "ALB DNS output missing"
@@ -110,7 +110,7 @@ jobs:
             --value "$ALB_DNS" \
             --type String \
             --overwrite \
-            --region $AWS_REGION
+            --region "$AWS_REGION"
           echo "Stored $ALB_DNS in SSM"
 
       - name: Verify stack statuses
