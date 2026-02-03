@@ -134,4 +134,5 @@ jobs:
             --name "/static-web/infra-ready" \
             --value "true" \
             --type String \
-            --overwrite
+            --overwrite \
+            --region $AWS_REGION
