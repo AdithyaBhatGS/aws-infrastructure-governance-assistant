@@ -106,7 +106,7 @@ jobs:
             --query "Command.CommandId" \
             --output text)
 
-            echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
+          echo "COMMAND_ID=$COMMAND_ID" >> $GITHUB_ENV
 
       - name: Wait for SSM command to finish
         run: |
