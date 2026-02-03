@@ -71,7 +71,7 @@ jobs:
 
       - name: Update storage ssm parameter
         run: |
-          STACK = storage-stack
+          STACK = "storage-stack"
           BUCKET_NAME=$(aws cloudformation describe-stacks \
             --stack-name "$STACK" \
             --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
@@ -93,7 +93,7 @@ jobs:
 
       - name: Update app ssm parameter
         run: |
-          STACK = application-stack
+          STACK = "application-stack"
           ALB_DNS=$(aws cloudformation describe-stacks \
             --stack-name "$STACK" \
             --query "Stacks[0].Outputs[?OutputKey=='ALBPublicDNS'].OutputValue" \
