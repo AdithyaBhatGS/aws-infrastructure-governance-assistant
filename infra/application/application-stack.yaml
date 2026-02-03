@@ -222,5 +222,5 @@ Outputs:
       Represents the ARN of the target group associated with
       the load balancer
   ALBPublicDNS:
-    Value: !GetAtt AppServer.PublicDnsName
+    Value: !GetAtt ALBFrontFacing.DNSName
     Description: Represents the Public DNS of the ALB
