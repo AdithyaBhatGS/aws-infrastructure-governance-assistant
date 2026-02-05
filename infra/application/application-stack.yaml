@@ -235,4 +235,4 @@ Outputs:
       the load balancer
   ALBPublicDNS:
     Value: !GetAtt ALBFrontFacing.DNSName
-    Description: Represents the Public DNS of the Application Load Balancer
+    Description: Represents the Public DNS of the ALB
