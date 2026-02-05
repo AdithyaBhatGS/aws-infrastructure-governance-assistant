@@ -31,10 +31,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Set ENV based on branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+          else
+            echo "ENV=unknown" >> $GITHUB_ENV
+          fi
+
       - name: Check infra readiness
         run: |
           READY=$(aws ssm get-parameter \
-            --name "/static-web/infra-ready" \
+            --name "/${ENV}/static-web-infra-ready" \
             --query "Parameter.Value" \
             --output text \
             --region $AWS_REGION || echo "false")
@@ -47,13 +57,13 @@ jobs:
       - name: Fetch infra params from SSM
         run: |
           ALB_DNS=$(aws ssm get-parameter \
-          --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
+          --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
           --query "Parameter.Value" \
           --output text \
           --region $AWS_REGION)
 
           BUCKET_NAME=$(aws ssm get-parameter \
-          --name "${{ vars.SSM_BUCKET_PARAM }}" \
+          --name "${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
           --query "Parameter.Value" \
           --output text \
           --region $AWS_REGION)
@@ -64,16 +74,6 @@ jobs:
       - name: Sync app to S3
         run: |
           aws s3 sync app/ s3://$BUCKET_NAME/ --delete
-
-      - name: Set ENV based on branch
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
-            echo "ENV=dev" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
-            echo "ENV=prod" >> $GITHUB_ENV
-          else
-            echo "ENV=unknown" >> $GITHUB_ENV
-          fi
 
       - name: Get target instance IDs
         run: |
@@ -147,7 +147,7 @@ jobs:
         if: success()
         run: |
           ALB_DNS=$(aws ssm get-parameter \
-            --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
+            --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
             --query "Parameter.Value" \
             --output text \
             --region $AWS_REGION)

@@ -28,22 +28,18 @@ Parameters:
       Represents the name associated to an IAM Role attached to the
       EC2 instance
     AllowedPattern: ^[\w+=,.@-]+$
-    Default: static-web-server-role
   KeyAlias:
     Type: String
     Description: Represents the alias for the KMS key
     AllowedPattern: ^(alias/)[a-zA-Z0-9:/_-]+$
-    Default: alias/static-web-server-disk-key
   EC2CloudWatchPolicyName:
     Type: String
     Description: Represents the name of the policy document of cloudwatch policy
     AllowedPattern: ^[\w+=,.@-]+$
-    Default: ec2-cloudwatch-static-web-policy
   EC2BktAccessPolicyName:
     Type: String
     Description: Represents the name of the policy document of bkt access policy
     AllowedPattern: ^[\w+=,.@-]+$
-    Default: ec2-bkt-static-web-policy
   PurposeOfCloudInitLogGrp:
     Type: String
     Description: |
@@ -153,7 +149,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupClass: STANDARD
-      LogGroupName: !Sub "/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
+      LogGroupName: !Sub "${Environment}/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
@@ -172,7 +168,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupClass: STANDARD
-      LogGroupName: !Sub "/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
+      LogGroupName: !Sub "${Environment}/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
