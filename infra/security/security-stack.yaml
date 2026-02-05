@@ -137,7 +137,7 @@ Resources:
               - s3:ListBucket
             Resource:
               - Fn::ImportValue:
-                  Fn::Sub: "{Environment}-storage-stack-asset-bkt-arn"
+                  Fn::Sub: "${Environment}-storage-stack-asset-bkt-arn"
           - Effect: Allow
             Action:
               - s3:GetObject
@@ -145,7 +145,7 @@ Resources:
               - !Join
                 - ""
                 - - Fn::ImportValue:
-                      Fn::Sub: "{Environment}-storage-stack-asset-bkt-arn"
+                      Fn::Sub: "${Environment}-storage-stack-asset-bkt-arn"
                   - "/*"
   CloudInitLogGrp:
     Type: AWS::Logs::LogGroup
