@@ -72,7 +72,7 @@ Resources:
         IamInstanceProfile:
           Name: 
             Fn::ImportValue:
-              Fn::!Sub: "${Environment}-security-stack-ec2-instance-profile"
+              Fn::Sub: "${Environment}-security-stack-ec2-instance-profile"
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
