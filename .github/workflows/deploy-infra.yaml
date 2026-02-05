@@ -30,13 +30,24 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Set ENV based on branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+          else
+            echo "ENV=unknown" >> $GITHUB_ENV
+          fi
+
       - name: Resetting infra deployment status
         run: |
           aws ssm put-parameter \
-            --name "/static-web/infra-ready" \
+            --name "/${ENV}/static-web-infra-ready" \
             --value "false" \
             --type String \
-            --overwrite
+            --overwrite \
+            --region $AWS_REGION
 
       - name: Set stack order
         id: stacks
@@ -45,7 +56,7 @@ jobs:
       - name: Validate and deploy stacks
         run: |
           for STACK in $STACKS; do
-            echo "==== Processing stack: $STACK-stack ===="
+            echo "==== Processing stack: $ENV-$STACK-stack ===="
 
             TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
             PARAMS_FILE="infra/$STACK/${{ github.ref == 'refs/heads/dev' && 'dev.json' || 'prod.json' }}"
@@ -59,7 +70,7 @@ jobs:
             echo "-> Validating CloudFormation template..."
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
 
-            STACK_NAME="${STACK}-stack"
+            STACK_NAME="${ENV}-${STACK}-stack"
 
             aws cloudformation deploy \
               --stack-name "$STACK_NAME" \
@@ -71,7 +82,7 @@ jobs:
 
       - name: Update storage ssm parameter
         run: |
-          STACK="storage-stack"
+          STACK="${ENV}-storage-stack"
           BUCKET_NAME=$(aws cloudformation describe-stacks \
             --stack-name "$STACK" \
             --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
@@ -84,7 +95,7 @@ jobs:
           fi
 
           aws ssm put-parameter \
-            --name "${{ vars.SSM_BUCKET_PARAM }}" \
+            --name "${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
             --value "$BUCKET_NAME" \
             --type String \
             --overwrite \
@@ -93,7 +104,7 @@ jobs:
 
       - name: Update app ssm parameter
         run: |
-          STACK="application-stack"
+          STACK="${ENV}-application-stack"
           ALB_DNS=$(aws cloudformation describe-stacks \
             --stack-name "$STACK" \
             --query "Stacks[0].Outputs[?OutputKey=='ALBPublicDNS'].OutputValue" \
@@ -106,7 +117,7 @@ jobs:
           fi
 
           aws ssm put-parameter \
-            --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
+            --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
             --value "$ALB_DNS" \
             --type String \
             --overwrite \
@@ -116,14 +127,15 @@ jobs:
       - name: Verify stack statuses
         run: |
           for STACK in $STACKS; do
+            STACK_NAME = $ENV-$STACK-stack
             STATUS=$(aws cloudformation describe-stacks \
-              --stack-name $STACK-stack \
+              --stack-name $STACK_NAME \
               --region ${{ env.AWS_REGION }} \
               --query "Stacks[0].StackStatus" \
               --output text)
-            echo "$STACK-stack status: $STATUS"
+            echo "$STACK_NAME status: $STATUS"
             if [[ "$STATUS" != "CREATE_COMPLETE" && "$STATUS" != "UPDATE_COMPLETE" ]]; then
-              echo "Error: $STACK-stack stack deployment failed"
+              echo "Error: $STACK_NAME stack deployment failed"
               exit 1
             fi
           done
@@ -131,7 +143,7 @@ jobs:
       - name: Setting infra deployment status
         run: |
           aws ssm put-parameter \
-            --name "/static-web/infra-ready" \
+            --name "/${ENV}/static-web-infra-ready" \
             --value "true" \
             --type String \
             --overwrite \

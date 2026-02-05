@@ -31,10 +31,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Set ENV based on branch
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+          else
+            echo "ENV=unknown" >> $GITHUB_ENV
+          fi
+
       - name: Check infra readiness
         run: |
           READY=$(aws ssm get-parameter \
-            --name "/static-web/infra-ready" \
+            --name "/${ENV}/static-web-infra-ready" \
             --query "Parameter.Value" \
             --output text \
             --region $AWS_REGION || echo "false")
@@ -47,14 +57,16 @@ jobs:
       - name: Fetch infra params from SSM
         run: |
           ALB_DNS=$(aws ssm get-parameter \
-          --name "${{ vars.SSM_ALB_DNS_PARAM }}" \
+          --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
           --query "Parameter.Value" \
-          --output text)
+          --output text \
+          --region $AWS_REGION)
 
           BUCKET_NAME=$(aws ssm get-parameter \
-          --name "${{ vars.SSM_BUCKET_PARAM }}" \
+          --name "${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
           --query "Parameter.Value" \
-          --output text)
+          --output text \
+          --region $AWS_REGION)
 
           echo "ALB_DNS=$ALB_DNS" >> $GITHUB_ENV
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
@@ -62,16 +74,6 @@ jobs:
       - name: Sync app to S3
         run: |
           aws s3 sync app/ s3://$BUCKET_NAME/ --delete
-
-      - name: Set ENV based on branch
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
-            echo "ENV=dev" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
-            echo "ENV=prod" >> $GITHUB_ENV
-          else
-            echo "ENV=unknown" >> $GITHUB_ENV
-          fi
 
       - name: Get target instance IDs
         run: |
@@ -112,7 +114,8 @@ jobs:
             echo "Waiting for command on $INSTANCE_ID"
             aws ssm wait command-executed \
               --command-id $COMMAND_ID \
-              --instance-id $INSTANCE_ID
+              --instance-id $INSTANCE_ID \
+              --region $AWS_REGION
           done
 
       - name: Fetch SSM command output on failure
@@ -121,7 +124,8 @@ jobs:
           for INSTANCE_ID in $INSTANCE_IDS; do
             aws ssm get-command-invocation \
               --command-id $COMMAND_ID \
-              --instance-id $INSTANCE_ID
+              --instance-id $INSTANCE_ID \
+              --region $AWS_REGION
           done
 
 
@@ -138,6 +142,21 @@ jobs:
 
           echo "Health check failed!!!"
           exit 1
+
+      - name: Display ALB DNS
+        if: success()
+        run: |
+          ALB_DNS=$(aws ssm get-parameter \
+            --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
+            --query "Parameter.Value" \
+            --output text \
+            --region $AWS_REGION)
+
+          echo "===================================="
+          echo "✅ Application deployed successfully"
+          echo "🌍 URL: http://$ALB_DNS"
+          echo "===================================="
+
 
 
 
