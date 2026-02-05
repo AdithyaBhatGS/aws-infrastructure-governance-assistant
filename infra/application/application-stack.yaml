@@ -48,7 +48,9 @@ Resources:
       LaunchTemplate:
         LaunchTemplateId: !GetAtt AppTemplate.LaunchTemplateId
         Version: !GetAtt AppTemplate.LatestVersionNumber
-      SubnetId: !ImportValue "network-stack-priv-subnet-id1"
+      SubnetId:
+        Fn::ImportValue:
+          Fn::Sub: "${Environment}-network-stack-priv-subnet-id1"
       AvailabilityZone: !Sub "${AWS::Region}a"
       Tags:
         - Key: Name
@@ -68,19 +70,24 @@ Resources:
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
-          Name: !ImportValue "security-stack-ec2-instance-profile"
+          Name: 
+            Fn::ImportValue:
+              Fn::Sub: "${Environment}-security-stack-ec2-instance-profile"
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
           - !Ref Environment
           - InstanceType
         SecurityGroupIds:
-          - !ImportValue "network-stack-app-sg-id"
+          - Fn::ImportValue:
+              Fn::Sub: "${Environment}-network-stack-app-sg-id"
         BlockDeviceMappings:
           - DeviceName: /dev/xvda
             Ebs:
               Encrypted: true
-              KmsKeyId: !ImportValue "security-stack-kms-key-arn"
+              KmsKeyId: 
+                Fn::ImportValue:
+                  Fn::Sub: "${Environment}-security-stack-kms-key-arn"
               DeleteOnTermination: true
               VolumeSize: 8
         UserData:
@@ -145,11 +152,14 @@ Resources:
       Name: !Ref LoadBalancerName
       Scheme: internet-facing
       SecurityGroups:
-        - !ImportValue "network-stack-alb-sg-id"
+        - Fn::ImportValue:
+            Fn::Sub: "${Environment}-network-stack-alb-sg-id"
       Type: application
       Subnets:
-        - !ImportValue "network-stack-pub-subnet-id1"
-        - !ImportValue "network-stack-pub-subnet-id2"
+        - Fn::ImportValue:
+            Fn::Sub: "${Environment}-network-stack-pub-subnet-id1"
+        - Fn::ImportValue:
+            Fn::Sub: "${Environment}-network-stack-pub-subnet-id2"
       Tags:
         - Key: Name
           Value: !Sub "${ProjectName}-load-balancer"
@@ -179,7 +189,9 @@ Resources:
       HealthyThresholdCount: 2
       UnhealthyThresholdCount: 2
       Name: !Ref ALBTargetGrpName
-      VpcId: !ImportValue network-stack-vpc-id
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: "${Environment}-network-stack-vpc-id"
       Port: 80
       Tags:
         - Key: Name
