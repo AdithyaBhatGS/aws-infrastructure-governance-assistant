@@ -57,13 +57,13 @@ jobs:
       - name: Fetch infra params from SSM
         run: |
           ALB_DNS=$(aws ssm get-parameter \
-          --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
+          --name "/${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
           --query "Parameter.Value" \
           --output text \
           --region $AWS_REGION)
 
           BUCKET_NAME=$(aws ssm get-parameter \
-          --name "${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
+          --name "/${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
           --query "Parameter.Value" \
           --output text \
           --region $AWS_REGION)
@@ -147,7 +147,7 @@ jobs:
         if: success()
         run: |
           ALB_DNS=$(aws ssm get-parameter \
-            --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
+            --name "/${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
             --query "Parameter.Value" \
             --output text \
             --region $AWS_REGION)

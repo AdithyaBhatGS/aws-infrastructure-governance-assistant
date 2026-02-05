@@ -95,7 +95,7 @@ jobs:
           fi
 
           aws ssm put-parameter \
-            --name "${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
+            --name "/${ENV}/${{ vars.SSM_BUCKET_PARAM }}" \
             --value "$BUCKET_NAME" \
             --type String \
             --overwrite \
@@ -117,7 +117,7 @@ jobs:
           fi
 
           aws ssm put-parameter \
-            --name "${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
+            --name "/${ENV}/${{ vars.SSM_ALB_DNS_PARAM }}" \
             --value "$ALB_DNS" \
             --type String \
             --overwrite \
