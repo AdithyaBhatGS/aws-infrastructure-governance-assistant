@@ -127,7 +127,7 @@ jobs:
       - name: Verify stack statuses
         run: |
           for STACK in $STACKS; do
-            STACK_NAME = "${ENV}-${STACK}-stack"
+            STACK_NAME="${ENV}-${STACK}-stack"
             STATUS=$(aws cloudformation describe-stacks \
               --stack-name $STACK_NAME \
               --region ${{ env.AWS_REGION }} \
