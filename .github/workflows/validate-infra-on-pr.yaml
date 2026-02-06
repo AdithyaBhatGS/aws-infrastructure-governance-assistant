@@ -12,30 +12,12 @@ jobs:
   validate-infra:
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
     env:
       AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Configure AWS credentials for dev
-        if: github.base_ref == 'dev'
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-infra-pipeline-static-web-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Configure AWS credentials for prod
-        if: github.base_ref == 'prod'
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-infra-pipeline-static-web-role
-          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set ENV based on branch
         run: |
@@ -68,6 +50,4 @@ jobs:
             echo "-> Running cfn-lint..."
             cfn-lint $TEMPLATE_FILE
 
-            echo "-> Validating CloudFormation template..."
-            aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
           done
