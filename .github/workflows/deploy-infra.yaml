@@ -12,6 +12,10 @@ jobs:
   deploy-infra:
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write
+      contents: read
+
     env:
       AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
 
