@@ -16,6 +16,10 @@ jobs:
   deploy-app:
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write
+      contents: read
+
     env:
       AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
 
@@ -24,11 +28,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials for dev
+        if: github.ref == 'refs/heads/dev'
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-app-pipeline-static-web-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials for prod
+        if: github.ref == 'refs/heads/prod'
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-app-pipeline-static-web-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Set ENV based on branch
