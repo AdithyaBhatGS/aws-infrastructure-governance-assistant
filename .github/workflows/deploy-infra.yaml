@@ -12,13 +12,12 @@ jobs:
   deploy-infra:
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
     env:
       AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
 
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
@@ -88,7 +87,8 @@ jobs:
               --template-file "$TEMPLATE_FILE" \
               --parameter-overrides file://"$PARAMS_FILE" \
               --capabilities CAPABILITY_NAMED_IAM \
-              --region "$AWS_REGION"
+              --region "$AWS_REGION" \
+              --debug
           done
 
       - name: Update storage ssm parameter
