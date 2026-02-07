@@ -166,6 +166,9 @@ Resources:
           Value: !Sub "${AWS::StackName}"
         - Key: CreatedBy
           Value: !Ref CreatedByName
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
   SystemLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -185,6 +188,9 @@ Resources:
           Value: !Sub "${AWS::StackName}"
         - Key: CreatedBy
           Value: !Ref CreatedByName
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
