@@ -160,12 +160,8 @@ Resources:
               - logs:PutLogEvents
               - logs:DescribeLogStreams
             Resource:
-              - !Sub
-                - '${CloudInitARN}:*'
-                - {CloudInitARN: !GetAtt CloudInitLogGroup.Arn}
-              - !Sub
-                - '${SystemLogGrpARN}:*'
-                - {SystemLogGrpARN: !GetAtt SystemLogGroup.Arn}
+              - !GetAtt CloudInitLogGroup.Arn
+              - !GetAtt SystemLogGroup.Arn
   EC2BktAccessPolicy:
     Type: AWS::IAM::RolePolicy
     Properties:
