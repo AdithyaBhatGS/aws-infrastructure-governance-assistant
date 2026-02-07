@@ -72,6 +72,48 @@ Parameters:
     AllowedPattern: ^[-A-Za-z0-9]+$
     Default: system
 Resources:
+  CloudInitLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      LogGroupName: !Sub "${Environment}/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-cloud-init-log-grp"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+  SystemLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      LogGroupName: !Sub "${Environment}/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-system-log-grp"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: StackType
+          Value: !Sub "${AWS::StackName}"
+        - Key: CreatedBy
+          Value: !Ref CreatedByName
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   EC2IAMRole:
     Type: AWS::IAM::Role
     Properties:
@@ -147,50 +189,6 @@ Resources:
                 - - Fn::ImportValue:
                       Fn::Sub: "${Environment}-storage-stack-asset-bkt-arn"
                   - "/*"
-  CloudInitLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupClass: STANDARD
-      LogGroupName: !Sub "${Environment}/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
-      RetentionInDays: 7
-      Tags:
-        - Key: Name
-          Value: !Sub "${ProjectName}-cloud-init-log-grp"
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Project
-          Value: !Ref ProjectName
-        - Key: Owner
-          Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-
-  SystemLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupClass: STANDARD
-      LogGroupName: !Sub "${Environment}/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
-      RetentionInDays: 7
-      Tags:
-        - Key: Name
-          Value: !Sub "${ProjectName}-system-log-grp"
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Project
-          Value: !Ref ProjectName
-        - Key: Owner
-          Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
