@@ -45,7 +45,7 @@ Parameters:
     Description: |
       Represents the purpose of the log group for cloud init level logs
     AllowedPattern: ^[A-Za-z0-9]+$
-    Default: infra
+    Default: infrastructure
   ComponentOfCloudInitLogGrp:
     Type: String
     Description: Represents the component of the log group for system level logs
@@ -60,7 +60,7 @@ Parameters:
     Type: String
     Description: Represents the purpose of the log group for system level logs
     AllowedPattern: ^[A-Za-z0-9]+$
-    Default: infra
+    Default: infrastructure
   ComponentOfSystemLogGrp:
     Type: String
     Description: Represents the component of the log group for system level logs
@@ -76,7 +76,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupClass: STANDARD
-      LogGroupName: !Sub "${Environment}/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
+      LogGroupName: !Sub "${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
@@ -97,7 +97,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupClass: STANDARD
-      LogGroupName: !Sub "${Environment}/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
+      LogGroupName: !Sub "${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
