@@ -28,16 +28,14 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-infra-pipeline-static-web-role
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # - name: Configure AWS credentials for prod
-        # if: github.ref == 'refs/heads/prod'
-        # uses: aws-actions/configure-aws-credentials@v2
-        # with:
-          # role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-infra-pipeline-static-web-role
-          # aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials for prod
+        if: github.ref == 'refs/heads/prod'
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-infra-pipeline-static-web-role
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
         run: pip install -r requirements.txt
