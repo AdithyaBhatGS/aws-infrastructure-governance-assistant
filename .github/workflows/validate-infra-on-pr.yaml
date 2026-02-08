@@ -19,16 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set ENV based on branch
-        run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
-            echo "ENV=dev" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
-            echo "ENV=prod" >> $GITHUB_ENV
-          else
-            echo "ENV=unknown" >> $GITHUB_ENV
-          fi
-
       - name: Install dependencies
         run: pip install -r requirements.txt
 
@@ -39,7 +29,7 @@ jobs:
       - name: Validate and deploy stacks
         run: |
           for STACK in $STACKS; do
-            echo "==== Processing stack: $ENV-$STACK-stack ===="
+            echo "==== Processing stack: $STACK-stack ===="
 
             TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
             PARAMS_FILE="infra/$STACK/${{ github.ref == 'refs/heads/dev' && 'dev.json' || 'prod.json' }}"

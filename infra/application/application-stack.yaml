@@ -105,17 +105,17 @@ Resources:
                     "collect_list": [
                       {
                         "file_path": "/var/log/cloud-init.log",
-                        "log_group_name": "${Environment}/infra/ec2/cloud-init",
+                        "log_group_name": "infrastructure/ec2/cloud-init",
                         "log_stream_name": "static-web-hosting"
                       },
                       {
                         "file_path": "/var/log/cloud-init-output.log",
-                        "log_group_name": "${Environment}/infra/ec2/cloud-init",
+                        "log_group_name": "infrastructure/ec2/cloud-init",
                         "log_stream_name": "static-web-hosting-output"
                       },
                       {
                         "file_path": "/var/log/messages",
-                        "log_group_name": "${Environment}/infra/ec2/system",
+                        "log_group_name": "infrastructure/ec2/system",
                         "log_stream_name": "static-web-hosting"
                       }
                     ]
@@ -235,4 +235,4 @@ Outputs:
       the load balancer
   ALBPublicDNS:
     Value: !GetAtt ALBFrontFacing.DNSName
-    Description: Represents the Public DNS of the Elastic Load Balancer
+    Description: Represents the Public DNS of the ELB
