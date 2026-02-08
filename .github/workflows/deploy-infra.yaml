@@ -24,11 +24,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials for dev
+        if: github.ref_name == 'refs/heads/dev'
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: >-
-            ${{ github.ref_name == 'dev' && 'arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-infra-pipeline-static-web-role'
-            || github.ref_name == 'prod' && 'arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-infra-pipeline-static-web-role' }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-infra-pipeline-static-web-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure AWS credentials for prod
+        if: github.ref_name == 'refs/heads/prod'
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-infra-pipeline-static-web-role
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
