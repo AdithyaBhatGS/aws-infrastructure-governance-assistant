@@ -49,27 +49,27 @@
 
 1. Linting using YAML
    - ```
-       yamllint TEMPLATE_FILE
+     yamllint TEMPLATE_FILE
      ```
 2. Linting using cfn-lint
    - ```
-       cfn-lint TEMPLATE_FILE
+     cfn-lint TEMPLATE_FILE
      ```
 3. Validating the template using cloudformation validate-template
    - ```
-      aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
+     aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
      ```
 4. Deployment order
    - storage stack > security stack > network stack > application stack
 5. Deploying the template
    - ```
-      aws cloudformation deploy \
-          --stack-name "STACK_NAME" \
-          --template-file "TEMPLATE_FILE" \
-          --parameter-overrides file://"PARAMS_FILE" \
-          --capabilities CAPABILITY_NAMED_IAM \
-          --region "AWS_REGION" \
-          --debug
+     aws cloudformation deploy \
+       --stack-name "STACK_NAME" \
+       --template-file "TEMPLATE_FILE" \
+       --parameter-overrides file://"PARAMS_FILE" \
+       --capabilities CAPABILITY_NAMED_IAM \
+       --region "AWS_REGION" \
+       --debug
      ```
 
 ### For automated deployments(using Actions):
