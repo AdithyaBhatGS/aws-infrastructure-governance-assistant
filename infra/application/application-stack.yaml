@@ -160,9 +160,9 @@ Resources:
 
             yum update -y aws-cfn-bootstrap
 
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppServer --configSets sequential_install --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppTemplate --configSets sequential_install --region ${AWS::Region}
 
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppServer --region ${AWS::Region}          
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppTemplate --region ${AWS::Region}
   ALBFrontFacing:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
