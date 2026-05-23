@@ -75,15 +75,15 @@ Resources:
       AWS::CloudFormation::Init:
         configSets:
           sequential_install:
-            - "cloudwatch_agent_setup"
+            - "cloudwatch_agent_configuration"
             - "httpd_installation_and_httpd_cloudwatch_agent_start"
 
-        cloudwatch_agent_setup:
+        cloudwatch_agent_configuration:
           packages:
             yum:
               amazon-cloudwatch-agent: []
           files:
-            /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/amazon-cloudwatch-agent.json:
+            /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
               content:
                 {
                   "logs": {
@@ -118,13 +118,16 @@ Resources:
           packages:
             yum:
               httpd: []
+          commands:
+            cloudwatch_agent_setup:
+              command: >
+                /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+                -a fetch-config
+                -m ec2
+                -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+                -s
           services:
             sysvinit:
-              amazon-cloudwatch-agent:
-                ensureRunning: "true"
-                enabled: "true"
-                files:
-                  - "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/amazon-cloudwatch-agent.json"
               httpd:
                 ensureRunning: "true"
                 enabled: "true"
