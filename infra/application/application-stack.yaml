@@ -44,6 +44,10 @@ Mappings:
 Resources:
   AppServer:
     Type: AWS::EC2::Instance
+    CreationPolicy: 
+      ResourceSignal:
+        Count: 1
+        Timeout: PT10M
     Properties:
       LaunchTemplate:
         LaunchTemplateId: !GetAtt AppTemplate.LaunchTemplateId
@@ -67,6 +71,63 @@ Resources:
           Value: !Ref CreatedByName
   AppTemplate:
     Type: AWS::EC2::LaunchTemplate
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          sequential_install:
+            - "cloudwatch_agent_setup"
+            - "httpd_installation_and_httpd_cloudwatch_agent_start"
+
+        cloudwatch_agent_setup:
+          packages:
+            yum:
+              amazon-cloudwatch-agent: []
+          files:
+            /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/amazon-cloudwatch-agent.json:
+              content:
+                {
+                  "logs": {
+                    "logs_collected": {
+                      "files": {
+                        "collect_list": [
+                          {
+                            "file_path": "/var/log/cloud-init.log",
+                            "log_group_name": "infrastructure/ec2/cloud-init",
+                            "log_stream_name": "static-web-hosting"
+                          },
+                          {
+                            "file_path": "/var/log/cloud-init-output.log",
+                            "log_group_name": "infrastructure/ec2/cloud-init",
+                            "log_stream_name": "static-web-hosting-output"
+                          },
+                          {
+                            "file_path": "/var/log/messages",
+                            "log_group_name": "infrastructure/ec2/system",
+                            "log_stream_name": "static-web-hosting"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              mode: "000644"
+              owner: "root"
+              group: "root"
+
+        httpd_installation_and_httpd_cloudwatch_agent_start:
+          packages:
+            yum:
+              httpd: []
+          services:
+            sysvinit:
+              amazon-cloudwatch-agent:
+                ensureRunning: "true"
+                enabled: "true"
+                files:
+                  - "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.d/amazon-cloudwatch-agent.json"
+              httpd:
+                ensureRunning: "true"
+                enabled: "true"
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
@@ -91,60 +152,14 @@ Resources:
               DeleteOnTermination: true
               VolumeSize: 8
         UserData:
-          Fn::Base64: |
+          Fn::Base64: !Sub |
             #!/bin/bash -xe
 
-            # Installing the cloudwatch agent
-            yum install -y amazon-cloudwatch-agent
+            yum update -y aws-cfn-bootstrap
 
-            cat << 'EOF' > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-            {
-              "logs": {
-                "logs_collected": {
-                  "files": {
-                    "collect_list": [
-                      {
-                        "file_path": "/var/log/cloud-init.log",
-                        "log_group_name": "infrastructure/ec2/cloud-init",
-                        "log_stream_name": "static-web-hosting"
-                      },
-                      {
-                        "file_path": "/var/log/cloud-init-output.log",
-                        "log_group_name": "infrastructure/ec2/cloud-init",
-                        "log_stream_name": "static-web-hosting-output"
-                      },
-                      {
-                        "file_path": "/var/log/messages",
-                        "log_group_name": "infrastructure/ec2/system",
-                        "log_stream_name": "static-web-hosting"
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-            EOF
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppServer --configSets sequential_install --region ${AWS::Region}
 
-            # AWS utility to start, stop {the agents} and fetch config
-
-            # Here we are trying to fetch config from file and start the agent
-
-            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-            -a fetch-config \
-            -m ec2 \
-            -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
-            -s
-            # Update the OS
-            # -----------------------------
-            yum update -y
-
-            # Install Apache Web Server
-            # -----------------------------
-            yum install -y httpd
-
-            # Enable and start Apache
-            systemctl enable httpd
-            systemctl start httpd
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppServer --region ${AWS::Region}          
   ALBFrontFacing:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
