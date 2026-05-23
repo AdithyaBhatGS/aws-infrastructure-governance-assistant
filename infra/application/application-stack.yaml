@@ -73,15 +73,11 @@ Resources:
     Type: AWS::EC2::LaunchTemplate
     Metadata:
       AWS::CloudFormation::Init:
-        configSets:
-          sequential_install:
-            - "cloudwatch_agent_configuration"
-            - "httpd_installation_and_httpd_cloudwatch_agent_start"
-
-        cloudwatch_agent_configuration:
+        config:
           packages:
             yum:
               amazon-cloudwatch-agent: []
+              httpd: []
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
               content:
@@ -113,13 +109,8 @@ Resources:
               mode: "000644"
               owner: "root"
               group: "root"
-
-        httpd_installation_and_httpd_cloudwatch_agent_start:
-          packages:
-            yum:
-              httpd: []
           commands:
-            cloudwatch_agent_setup:
+            01_cloudwatch_agent_setup:
               command: >
                 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
                 -a fetch-config
@@ -160,9 +151,9 @@ Resources:
 
             yum update -y aws-cfn-bootstrap
 
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppTemplate --configSets sequential_install --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppTemplate --region ${AWS::Region}
 
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppTemplate --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppServer --region ${AWS::Region}
   ALBFrontFacing:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
