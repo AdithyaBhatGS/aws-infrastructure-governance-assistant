@@ -36,12 +36,16 @@
 
 <details>
 <summary><b>Authentication Flow Diagram</b></summary>
+
 ![Authentication Flow](docs/diagrams/authentication.drawio.svg)
+
 </details>
 
 <details>
 <summary><b>IAM Policies Flow</b></summary>
+
 ![IAM Policies Flow](docs/diagrams/security_iam_flow_diagram.drawio.svg)
+
 </details>
 
 ## Project Organization
