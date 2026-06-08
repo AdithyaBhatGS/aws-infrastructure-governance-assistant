@@ -32,8 +32,9 @@
 
 ## Architecture Diagrams
 
-1. ![Authentication](docs/diagrams/authentication.drawio.svg)
-   - [✏️ Edit this diagram](https://diagrams.net)
+1. ![Authentication Flow Diagram](docs/diagrams/authentication.drawio.svg)
+
+2. ![BOOTSTRAP STACK Flow Diagram](docs/diagrams/security_iam_flow_diagram.drawio.svg)
 
 ## Project Organization
 
