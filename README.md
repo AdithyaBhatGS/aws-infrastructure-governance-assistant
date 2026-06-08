@@ -30,6 +30,11 @@
 
 ---
 
+## Architecture Diagrams
+
+1. ![Authentication](docs/diagrams/authentication.drawio.svg)
+   - [✏️ Edit this diagram](https://diagrams.net)
+
 ## Project Organization
 
 1. [.github/workflows](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/.github/workflows)
