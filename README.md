@@ -48,6 +48,13 @@
 
 </details>
 
+<details>
+<summary><b>CI/CD Pipeline Flow</b></summary>
+
+![CI/CD Pipeline Flow](docs/diagrams/ci-cd-flow.drawio.svg)
+
+</details>
+
 ## Project Organization
 
 1. [.github/workflows](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/.github/workflows)
