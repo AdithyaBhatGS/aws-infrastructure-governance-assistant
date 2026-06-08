@@ -44,7 +44,7 @@
 <details>
 <summary><b>IAM Policies Flow</b></summary>
 
-![IAM Policies Flow](docs/diagrams/security_iam_flow_diagram.drawio.svg)
+![IAM Policies Flow](docs/diagrams/security_foundation.drawio.svg)
 
 </details>
 
