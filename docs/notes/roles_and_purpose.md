@@ -13,7 +13,6 @@
 | InfraExecutionRole | CloudFormation                | <ul><li>VPC</li><li>Subnets</li><li>Route Tables</li><li>Internet Gateway</li><li>NAT</li><li>NAT</li><li>Security Groups</li><li>S3</li><li>IAM</li><li>CloudFront</li></ul>                                                                    | For creating the infrastructure                                                                       |
 | AppExecutionRole   | CloudFormation                | <ul><li>EC2</li><li>Launch Template</li><li>Auto Scaling</li><li>ALB</li><li>Target Group</li><li>CloudWatch</li><li>SSM</li></ul>                                                                                                               | For creating the application resources                                                                |
 
-| Permissions Boundary | Attached to | Allow | Deny |
-| -------------------- | ----------- | ----- | ---- |
-
+| Permissions Boundary | Attached to                                                                                                 | Allow                                                                                                                      | Deny                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Name of the boundary | <ul><li>InfraDeployRole</li><li>AppDeployRole</li><li>InfraExecutionRole</li><li>AppExecutionRole</li></ul> | <ul><li>CloudFormation</li><li>EC2</li><li>S3</li><li>ALB</li><li>ASG</li><li>CloudWatch</li><li>IAM \(limited\)</li></ul> | <ul><li>Organizations</li><li>Account-level admin operations</li></ul> |
