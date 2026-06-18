@@ -4,8 +4,12 @@
         "ParameterValue": "dev"
     },
     {
-        "ParameterKey": "CICDPermissionsBoundary",
-        "ParameterValue": "dev-ci-cd-permissions-boundary"
+        "ParameterKey": "DeploymentBoundary",
+        "ParameterValue": "dev-deployment-boundary"
+    },
+    {
+        "ParameterKey": "ValidationBoundary",
+        "ParameterValue": "dev-validation-boundary"
     },
     {
         "ParameterKey": "InfraExecutionPolicyName",

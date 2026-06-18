@@ -21,7 +21,10 @@ Parameters:
     Type: String
     Description: Represents the owner of the project
     Default: devOps
-  CICDPermissionsBoundary:
+  DeploymentBoundary:
+    Type: String
+    Description: Represents the permissions boundary policy name
+  ValidationBoundary:
     Type: String
     Description: Represents the permissions boundary policy name
   InfraExecutionPolicyName:
@@ -79,24 +82,14 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-  PermissionsBoundary:
+  DeploymentRoleBoundary:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Represents the permissions boundary for deployment roles
-      ManagedPolicyName: !Ref CICDPermissionsBoundary
+      ManagedPolicyName: !Ref DeploymentBoundary
       PolicyDocument:
         Version: "2012-10-17"
         Statement: 
-          - Effect: Allow
-            Action:
-              - 'ec2:*'
-              - 'autoscaling:*'
-              - 'elasticloadbalancing:*'
-              - 'cloudwatch:*'
-              - 'logs:*'
-              - 'ssm:*'
-            Resource: "*"
-          
           - Effect: Allow
             Action:
               - 's3:GetObject'
@@ -114,9 +107,43 @@ Resources:
               - 'iam:PassRole'
             Resource: "*"
 
+          - Effect: Deny
+            Action:
+              - 'iam:CreateUser'
+              - 'iam:CreateAccessKey'
+              - 'iam:AttachUserPolicy'
+              - 'iam:AttachRolePolicy'
+              - 'iam:PutRolePolicy'
+              - 'iam:CreatePolicy'
+              - 'iam:DeletePolicy'
+              - 'iam:UpdateAssumeRolePolicy'
+            Resource: "*"
+
+          - Effect: Deny
+            Action:
+              - 'organizations:*'
+            Resource: "*"
+  ValidationRoleBoundary:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Represents the permissions boundary for validation role
+      ManagedPolicyName: !Ref ValidationBoundary
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
           - Effect: Allow
             Action:
-              - 'kms:*'
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource: "*"
+
+          - Effect: Allow
+            Action:
+              - 'cloudformation:ValidateTemplate'
+              - 'cloudformation:DescribeStacks'
+              - 'cloudformation:DescribeStackEvents'
+              - 'cloudformation:ListStacks'
+              - 'cloudformation:GetTemplate'
             Resource: "*"
 
           - Effect: Deny
@@ -322,7 +349,7 @@ Resources:
 
           - Effect: Allow
             Action:
-              - s3: GetObject
+              - s3:GetObject
             Resource:
               - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
 
@@ -352,7 +379,7 @@ Resources:
                     Branch: !Ref BranchName
       ManagedPolicyArns:
         - !GetAtt InfraDeploymentPolicy.PolicyArn
-      PermissionsBoundary: !Ref PermissionsBoundary
+      PermissionsBoundary: !Ref DeploymentRoleBoundary
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -383,7 +410,7 @@ Resources:
                     Branch: !Ref BranchName
       ManagedPolicyArns:
         - !GetAtt AppDeploymentPolicy.PolicyArn
-      PermissionsBoundary: !Ref PermissionsBoundary
+      PermissionsBoundary: !Ref DeploymentRoleBoundary
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -435,7 +462,7 @@ Resources:
                     Branch: !Ref BranchName
       ManagedPolicyArns:
         - !GetAtt ValidationPolicy.PolicyArn
-      PermissionsBoundary: !Ref PermissionsBoundary
+      PermissionsBoundary: !Ref ValidationRoleBoundary
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -449,28 +476,35 @@ Outputs:
   PermissionBoundaryARN:
     Value: !GetAtt PermissionsBoundary.PolicyArn
     Description: Represents the ARN of the Permissions Boundary
-    Export: !Sub "${Environment}-bootstrap-permissions-boundary-arn"
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-permissions-boundary-arn"
   InfraExecutionRoleARN:
     Value: !GetAtt InfraExecutionRole.Arn
     Description: Represents the ARN of the Infra Execution Role
-    Export: !Sub "${Environment}-bootstrap-infra-execution-role-arn"
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-infra-execution-role-arn"
   AppExecutionRoleARN:
     Value: !GetAtt AppExecutionRole.Arn
     Description: Represents the ARN of the App Execution Role
-    Export: !Sub "${Environment}-bootstrap-app-execution-role-arn"
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-app-execution-role-arn"
   InfraDeployRoleARN:
     Value: !GetAtt InfraDeploymentRole.Arn
     Description: Represents the ARN of the Infra Deploy Role
-    Export: !Sub "${Environment}-bootstrap-infra-deploy-role-arn"
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-infra-deploy-role-arn"
   AppDeployRoleARN:
     Value: !GetAtt AppDeploymentRole.Arn
     Description: Represents the ARN of the App Deploy Role
-    Export: !Sub "${Environment}-bootstrap-app-deploy-role-arn"
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-app-deploy-role-arn"
   ValidationRoleARN:
     Value: !GetAtt ValidationRole.Arn
     Description: Represents the ARN of the Validation Role
-    Export: !Sub "bootstrap-validation-role-arn"
+    Export: 
+      Name: !Sub "bootstrap-validation-role-arn"
   OIDCARN:
     Value: !GetAtt GitHubOIDC.Arn
     Description: Represents the ARN of the OIDC
-    Export: !Sub "${Environment}-bootstrap-oidc-arn"
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-oidc-arn"
