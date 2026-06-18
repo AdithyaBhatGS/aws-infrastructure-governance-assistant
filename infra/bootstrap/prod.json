@@ -24,6 +24,22 @@
         "ParameterValue": "prod-app-execution-role"
     },
     {
+        "ParameterKey": "InfraDeploymentPolicyName",
+        "ParameterValue": "dev-infra-deployment-policy"
+    },
+    {
+        "ParameterKey": "AppDeploymentPolicyName",
+        "ParameterValue": "dev-app-deployment-policy"
+    },
+    {
+        "ParameterKey": "InfraDeploymentRoleName",
+        "ParameterValue": "dev-infra-deployment-role"
+    },
+    {
+        "ParameterKey": "AppDeploymentRoleName",
+        "ParameterValue": "dev-app-deployment-role"
+    },
+    {
         "ParameterKey": "BranchName",
         "ParameterValue": "prod"
     },
