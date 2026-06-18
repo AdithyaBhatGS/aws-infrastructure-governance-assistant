@@ -473,11 +473,16 @@ Resources:
         - Key: Owner
           Value: !Ref Owner
 Outputs:
-  PermissionBoundaryARN:
-    Value: !GetAtt PermissionsBoundary.PolicyArn
-    Description: Represents the ARN of the Permissions Boundary
+  DeploymentBoundaryARN:
+    Value: !GetAtt DeploymentRoleBoundary.PolicyArn
+    Description: Represents the ARN of the Permissions Boundary for deployment role
     Export: 
-      Name: !Sub "${Environment}-bootstrap-permissions-boundary-arn"
+      Name: !Sub "${Environment}-bootstrap-deployment-boundary-arn"
+  ValidationBoundaryARN:
+    Value: !GetAtt ValidationRoleBoundary.PolicyArn
+    Description: Represents the ARN of the Permissions Boundary for validation role
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-validation-boundary-arn"
   InfraExecutionRoleARN:
     Value: !GetAtt InfraExecutionRole.Arn
     Description: Represents the ARN of the Infra Execution Role
