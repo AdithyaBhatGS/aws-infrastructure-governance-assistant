@@ -1,6 +1,6 @@
 ## Roles and their purpose
 
-| Role            | Purpose                                                      |
+| Type of Role    | Purpose                                                      |
 | --------------- | ------------------------------------------------------------ |
 | Deployment Role | Tells cloudformation what to do                              |
 | Execution Role  | Permissions used by the cloudformation to perform the things |
