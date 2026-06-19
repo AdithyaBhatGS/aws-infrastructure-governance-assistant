@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: Represents the owner of the project
     Default: devOps
-  CreatedByName:
+  ManagedBy:
     Type: String
     Description: Represents the IAC used
     Default: CloudFormation
@@ -86,17 +86,15 @@ Resources:
       InstanceTenancy: default
       Tags:
         - Key: Name
-          Value: !Sub ${Environment}-${ProjectName}-vpc
+          Value: !Sub "${Environment}-${ProjectName}-vpc"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: MangedBy
+          Value: !Ref ManagedBy
   NetworkPubSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -113,10 +111,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPubSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -133,10 +129,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPriSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -153,10 +147,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPriSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -173,10 +165,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkInternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -189,16 +179,14 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkVPCInternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !GetAtt NetworkVPC.VpcId
       InternetGatewayId: !GetAtt NetworkInternetGateway.InternetGatewayId
-  NetworkEIP:
+  NetworkEIPA:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
@@ -211,45 +199,70 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
-  NetworkNATGateway:
-    Type: AWS::EC2::NatGateway
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+  NetworkEIPB:
+    Type: AWS::EC2::EIP
     Properties:
-      AllocationId: !GetAtt NetworkEIP.AllocationId
-      SubnetId: !GetAtt NetworkPubSubnet1.SubnetId
+      Domain: vpc
       Tags:
         - Key: Name
-          Value: !Sub ${Environment}-${ProjectName}-NAT-gw
+          Value: !Sub ${Environment}-${ProjectName}-EIP-${AWS::Region}b
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+  NetworkNATGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NetworkEIPA.AllocationId
+      SubnetId: !GetAtt NetworkPubSubnet1.SubnetId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-${AvailabilityZoneA}-NAT-gw
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+  NetworkNATGatewayB:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NetworkEIPB.AllocationId
+      SubnetId: !GetAtt NetworkPubSubnet2.SubnetId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Environment}-${ProjectName}-${AvailabilityZoneB}-NAT-gw
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPubRT1:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !GetAtt NetworkVPC.VpcId
       Tags:
         - Key: Name
-          Value: !Sub ${Environment}-${ProjectName}-Public- ${AvailabilityZoneA}-rt
+          Value: !Sub ${Environment}-${ProjectName}-Public-${AvailabilityZoneA}-rt
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPubRT2:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -263,10 +276,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPrivRT1:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -280,10 +291,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPrivRT2:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -297,10 +306,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkPubRTPubSub1Attachment:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -338,7 +345,13 @@ Resources:
     Properties:
       RouteTableId: !GetAtt NetworkPrivRT1.RouteTableId
       DestinationCidrBlock: !Ref PubDestCIDR
-      NatGatewayId: !GetAtt NetworkNATGateway.NatGatewayId
+      NatGatewayId: !GetAtt NetworkNATGatewayA.NatGatewayId
+  NetworkPrivRT2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !GetAtt NetworkPrivRT2.RouteTableId
+      DestinationCidrBlock: !Ref PubDestCIDR
+      NatGatewayId: !GetAtt NetworkNATGatewayB.NatGatewayId
   NetworkALBSecurityGrp:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -354,10 +367,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkAppSecurityGrp:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -373,10 +384,8 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub ${AWS::StackName}
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   NetworkALBSecurityGrpIngressIPV4:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -436,66 +445,66 @@ Outputs:
     Value: !GetAtt NetworkVPC.VpcId
     Description: Represents the ID of the VPC
     Export:
-      Name: !Sub ${AWS::StackName}-vpc-id
+      Name: !Sub "${Environment}-network-vpc-id"
   PublicSubnet1ID:
     Value: !GetAtt NetworkPubSubnet1.SubnetId
     Description: Represents the ID of the Public Subnet
     Export:
-      Name: !Sub ${AWS::StackName}-pub-subnet-id1
+      Name: !Sub "${Environment}-network-pub-subnet-id1"
   PublicSubnet2ID:
     Value: !GetAtt NetworkPubSubnet2.SubnetId
     Description: Represents the ID of the Public Subnet
     Export:
-      Name: !Sub ${AWS::StackName}-pub-subnet-id2
+      Name: !Sub "${Environment}-network-pub-subnet-id2"
   PrivateSubnet1ID:
     Value: !GetAtt NetworkPriSubnet1.SubnetId
     Description: Represents the ID of the Private Subnet
     Export:
-      Name: !Sub ${AWS::StackName}-priv-subnet-id1
+      Name: !Sub "${Environment}-network-priv-subnet-id1"
   PrivateSubnet2ID:
     Value: !GetAtt NetworkPriSubnet2.SubnetId
     Description: Represents the ID of the Private Subnet
     Export:
-      Name: !Sub ${AWS::StackName}-priv-subnet-id2
+      Name: !Sub "${Environment}-network-priv-subnet-id2"
   InternetGatewayID:
     Value: !GetAtt NetworkInternetGateway.InternetGatewayId
     Description: Represents the ID of the Internet Gateway
     Export:
-      Name: !Sub ${AWS::StackName}-igw-id
+      Name: !Sub "${Environment}-network-igw-id"
   PubRT1ID:
     Value: !GetAtt NetworkPubRT1.RouteTableId
     Description: Represents the ID of the Public Route Table
     Export:
-      Name: !Sub ${AWS::StackName}-pub-rt-id1
+      Name: !Sub "${Environment}-network-pub-rt-id1"
   PubRT2ID:
     Value: !GetAtt NetworkPubRT2.RouteTableId
     Description: Represents the ID of the Public Route Table
     Export:
-      Name: !Sub ${AWS::StackName}-pub-rt-id2
+      Name: !Sub "${Environment}-network-pub-rt-id2"
   PrivRTID1:
     Value: !GetAtt NetworkPrivRT1.RouteTableId
     Description: Represents the ID of the Private Route Table
     Export:
-      Name: !Sub ${AWS::StackName}-priv-rt-id1
+      Name: !Sub "${Environment}-network-priv-rt-id1"
   PrivRTID2:
     Value: !GetAtt NetworkPrivRT2.RouteTableId
     Description: Represents the ID of the Private Route Table
     Export:
-      Name: !Sub ${AWS::StackName}-priv-rt-id2
+      Name: !Sub "${Environment}-network-priv-rt-id2"
   AppSGID:
     Value: !GetAtt NetworkAppSecurityGrp.Id
     Description: Represents the ID of the Application Security Group
     Export:
-      Name: !Sub ${AWS::StackName}-app-sg-id
+      Name: !Sub "${Environment}-network-app-sg-id"
   ALBSGID:
     Value: !GetAtt NetworkALBSecurityGrp.Id
     Description: |
       Represents the ID of the Application Load Balancer
       Security Group
     Export:
-      Name: !Sub ${AWS::StackName}-alb-sg-id
+      Name: !Sub "${Environment}-network-alb-sg-id"
   NATGwID:
     Value: !GetAtt NetworkNATGateway.NatGatewayId
     Description: Represents the ID of the NAT gateway resource
     Export:
-      Name: !Sub ${AWS::StackName}-nat-gw-id
+      Name: !Sub "${Environment}-network-nat-gw-id"

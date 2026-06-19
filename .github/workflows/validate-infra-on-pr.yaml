@@ -1,4 +1,4 @@
-name: Infra Validation
+name: IAC Validation
 
 on:
   pull_request:
@@ -7,6 +7,10 @@ on:
     branches:
       - dev
       - prod
+
+permissions: 
+  id-token: write
+  contents: read
 
 jobs:
   validate-infra:
@@ -19,25 +23,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/template-validation-role
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Set stack order
         id: stacks
-        run: echo "STACKS=storage security network application" >> $GITHUB_ENV
+        run: echo "STACKS=storage network security" >> $GITHUB_ENV
 
       - name: Validate and deploy stacks
         run: |
+          set -e
+
           for STACK in $STACKS; do
             echo "==== Processing stack: $STACK-stack ===="
 
             TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
-            PARAMS_FILE="infra/$STACK/${{ github.ref == 'refs/heads/dev' && 'dev.json' || 'prod.json' }}"
+            PARAMS_FILE="infra/$STACK/${{ github.base_ref == 'dev' && 'dev.json' || 'prod.json' }}"
 
             echo "-> Running yamllint..."
             yamllint $TEMPLATE_FILE
 
             echo "-> Running cfn-lint..."
             cfn-lint $TEMPLATE_FILE
+
+            echo "-> Running cloudformation validate..."
+            aws cloudformation validate-template \
+              --template-body file://$TEMPLATE_FILE
 
           done

@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: Represents the owner of the project
     Default: devOps
-  CreatedByName:
+  ManagedBy:
     Type: String
     Description: Represents the IAC used
     Default: CloudFormation
@@ -48,26 +48,22 @@ Resources:
         Rules:
           - ObjectOwnership: BucketOwnerEnforced
       Tags:
-        - Key: Name
-          Value: !Sub "${ProjectName}-bkt"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
 Outputs:
   OutputBktName:
     Value: !Ref WebAssetBkt
     Description: Represents bucket name
     Export:
-      Name: !Sub "${AWS::StackName}-asset-bkt"
+      Name: !Sub "${Environment}-storage-artifact-bkt"
   OutputBucketARN:
     Value: !GetAtt WebAssetBkt.Arn
     Description: Represents the ARN of the bucket
     Export:
-      Name: !Sub "${AWS::StackName}-asset-bkt-arn"
+      Name: !Sub "${Environment}-storage-artifact-bkt-arn"
