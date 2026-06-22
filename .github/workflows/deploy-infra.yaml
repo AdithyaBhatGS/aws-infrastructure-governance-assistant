@@ -60,8 +60,7 @@ jobs:
 
           for STACK in $STACKS; do
             echo "================================================================"
-            echo 
-            "=========== Processing stack: ${ENV}-${STACK}-stack ============"
+            echo "=========== Processing stack: ${ENV}-${STACK}-stack ============"
             echo "================================================================"
 
             TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
