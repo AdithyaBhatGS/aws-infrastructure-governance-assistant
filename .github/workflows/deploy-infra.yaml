@@ -10,7 +10,7 @@ on:
     branches:
       - dev
       - prod
-  workflow_dispatch: 
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -32,7 +32,7 @@ jobs:
 
       - name: Set environment
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
+          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
             echo "ENV=dev" >> $GITHUB_ENV
             echo "AWS_REGION=${DEV_REGION}" >> $GITHUB_ENV
           else
@@ -76,12 +76,18 @@ jobs:
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
 
             STACK_NAME="${ENV}-${STACK}-stack"
-            
-            if [[ $ENV == "dev" ]]; then
+
+            echo "ENV=$ENV"
+            echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
+            echp "GITHUB_REF=$GITHUB_REF"
+
+            if [[ "$ENV" == "dev" ]]; then
               ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
             else
               ROLE_ARN="${PROD_EXECUTION_ROLE_ARN}"
             fi
+
+            echo "ROLE_ARN=${ROLE_ARN##*/}"
 
             aws cloudformation deploy \
               --stack-name "${STACK_NAME}" \
