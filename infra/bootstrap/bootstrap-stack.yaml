@@ -314,6 +314,9 @@ Resources:
               - cloudformation:ValidateTemplate
               - cloudformation:GetTemplate
               - cloudformation:ListStacks
+              - cloudformation:CreateChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
             Resource: '*'
 
           - Effect: Allow
