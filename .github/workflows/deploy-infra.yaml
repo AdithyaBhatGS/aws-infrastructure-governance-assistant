@@ -59,9 +59,9 @@ jobs:
           set -e
 
           for STACK in $STACKS; do
-            echo "================================================================"
-            echo "=========== Processing stack: ${ENV}-${STACK}-stack ============"
-            echo "================================================================"
+            echo "=================================================================="
+            echo "============= Processing stack: ${ENV}-${STACK}-stack =============="
+            echo "=================================================================="
 
             TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
             PARAMS_FILE="infra/${STACK}/${ENV}.json"
