@@ -8,10 +8,6 @@
         "ParameterValue":"prod-static-web-server-role"
     },
     {
-        "ParameterKey":"KeyAlias",
-        "ParameterValue":"alias/prod-static-web-server-disk-key"
-    },
-    {
         "ParameterKey":"EC2CloudWatchPolicyName",
         "ParameterValue":"prod-ec2-cloudwatch-static-web-policy"
     },

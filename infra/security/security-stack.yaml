@@ -28,10 +28,6 @@ Parameters:
       Represents the name associated to an IAM Role attached to the
       EC2 instance
     AllowedPattern: ^[\w+=,.@-]+$
-  KeyAlias:
-    Type: String
-    Description: Represents the alias for the KMS key
-    AllowedPattern: ^(alias/)[a-zA-Z0-9:/_-]+$
   EC2CloudWatchPolicyName:
     Type: String
     Description: Represents the name of the policy document of cloudwatch policy
@@ -230,7 +226,7 @@ Resources:
   EBSKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Ref KeyAlias
+      AliasName: !Sub "alias/${AWS::StackName}-${Environment}-key"
       TargetKeyId: !Ref EBSKey
 Outputs:
   EC2Role:
