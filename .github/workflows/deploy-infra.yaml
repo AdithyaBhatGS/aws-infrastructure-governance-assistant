@@ -28,6 +28,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Set environment
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+            echo "AWS_REGION=${DEV_REGION}" >> $GITHUB_ENV
+          else
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "AWS_REGION=${PROD_REGION}" >> $GITHUB_ENV
+          fi
+
       - name: Configure AWS credentials for dev
         if: github.ref == 'refs/heads/dev'
         uses: aws-actions/configure-aws-credentials@v6.1.0
@@ -37,16 +47,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Set environment
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
-            echo "ENV=dev" >> $GITHUB_ENV
-            echo "AWS_REGION=us-east-2" >> $GITHUB_ENV
-          else
-            echo "ENV=prod" >> $GITHUB_ENV
-            echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
-          fi
 
       - name: Set stack order
         run: |
