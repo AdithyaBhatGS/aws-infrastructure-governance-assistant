@@ -5,6 +5,6 @@
     },
     {
         "ParameterKey":"BktName",
-        "ParameterValue":"dev-web-static-assets"
+        "ParameterValue":"web-static-assets"
     }
 ]

@@ -49,6 +49,6 @@
     },
     {
         "ParameterKey": "ArtifactBucketName",
-        "ParameterValue": "dev-web-static-assets-storage-stack-bkt"
+        "ParameterValue": "web-static-assets-dev-storage-stack-bkt"
     }
 ]
