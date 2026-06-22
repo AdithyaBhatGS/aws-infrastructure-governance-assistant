@@ -24,7 +24,7 @@ jobs:
       DEV_REGION: us-east-2
       PROD_REGION: us-east-1
       DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_INFRA_EXECUTION_ROLE_ARN }}
-      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_INFRA_DEPLOY_ROLE_AR }}
+      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_INFRA_EXECUTION_ROLE_ARN }}
 
     steps:
       - name: Checkout code
@@ -90,7 +90,7 @@ jobs:
               --template-file "${TEMPLATE_FILE}" \
               --parameter-overrides file://"${PARAMS_FILE}" \
               --capabilities CAPABILITY_NAMED_IAM \
-              --role-arn "${ROLE_ARN}"
+              --role-arn "${ROLE_ARN}" \
               --region "${AWS_REGION}" \
               --debug
           done
