@@ -30,6 +30,31 @@
 
 ---
 
+## Architecture Diagrams
+
+### Architecture Deep Dives
+
+<details>
+<summary><b>Authentication Flow Diagram</b></summary>
+
+![Authentication Flow](docs/diagrams/authentication.drawio.svg)
+
+</details>
+
+<details>
+<summary><b>IAM Policies Flow</b></summary>
+
+![IAM Policies Flow](docs/diagrams/security_foundation.drawio.svg)
+
+</details>
+
+<details>
+<summary><b>CI/CD Pipeline Flow</b></summary>
+
+![CI/CD Pipeline Flow](docs/diagrams/ci-cd-flow.drawio.svg)
+
+</details>
+
 ## Project Organization
 
 1. [.github/workflows](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/.github/workflows)

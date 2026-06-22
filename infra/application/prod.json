@@ -10,5 +10,17 @@
     {
         "ParameterKey":"ALBTargetGrpName",
         "ParameterValue":"prod-static-hosting-target-grp"
+    },
+    {
+        "ParameterKey":"AutoScalingGroupName",
+        "ParameterValue":"prod-static-hosting-asg"
+    },
+    {
+        "ParameterKey":"AvailabilityZoneA",
+        "ParameterValue":"us-east-1a"
+    },
+    {
+        "ParameterKey":"AvailabilityZoneB",
+        "ParameterValue":"us-east-1b"
     }
 ]

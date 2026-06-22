@@ -1,0 +1,54 @@
+[
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "prod"
+    },
+    {
+        "ParameterKey": "DeploymentBoundary",
+        "ParameterValue": "prod-deployment-boundary"
+    },
+    {
+        "ParameterKey": "ValidationBoundary",
+        "ParameterValue": "prod-validation-boundary"
+    },
+    {
+        "ParameterKey": "InfraExecutionPolicyName",
+        "ParameterValue": "prod-infra-execution-policy"
+    },
+    {
+        "ParameterKey": "AppExecutionPolicyName",
+        "ParameterValue": "prod-app-execution-policy"
+    },
+    {
+        "ParameterKey": "InfraExecutionRoleName",
+        "ParameterValue": "prod-infra-execution-role"
+    },
+    {
+        "ParameterKey": "AppExecutionRoleName",
+        "ParameterValue": "prod-app-execution-role"
+    },
+    {
+        "ParameterKey": "InfraDeploymentPolicyName",
+        "ParameterValue": "dev-infra-deployment-policy"
+    },
+    {
+        "ParameterKey": "AppDeploymentPolicyName",
+        "ParameterValue": "dev-app-deployment-policy"
+    },
+    {
+        "ParameterKey": "InfraDeploymentRoleName",
+        "ParameterValue": "dev-infra-deployment-role"
+    },
+    {
+        "ParameterKey": "AppDeploymentRoleName",
+        "ParameterValue": "dev-app-deployment-role"
+    },
+    {
+        "ParameterKey": "BranchName",
+        "ParameterValue": "prod"
+    },
+    {
+        "ParameterKey": "ArtifactBucketName",
+        "ParameterValue": "prod-web-static-assets-storage-stack-bkt"
+    }
+]

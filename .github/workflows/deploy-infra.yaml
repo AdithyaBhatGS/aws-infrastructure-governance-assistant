@@ -1,76 +1,70 @@
-name: Infra Deployment
+name: Infra Deployment Pipeline
 
 on:
   push:
     paths:
-      - 'infra/**'
+      - 'infra/storage/**'
+      - 'infra/security/**'
+      - 'infra/network/**'
     branches:
       - dev
       - prod
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ${{ github.ref == 'refs/heads/dev' && 'us-east-2' || github.ref == 'refs/heads/prod' && 'us-east-1' }}
-
-    permissions:
-      id-token: write
-      contents: read
+      DEV_REGION: us-east-2
+      PROD_REGION: us-east-1
+      DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_EXECUTION_ROLE_ARN}}
+      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_EXECUTION_ROLE_ARN}}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials for dev
         if: github.ref == 'refs/heads/dev'
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/dev-infra-pipeline-static-web-role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Configure AWS credentials for prod
-        if: github.ref == 'refs/heads/prod'
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/prod-infra-pipeline-static-web-role
+          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_INFRA_DEPLOY_ROLE_ARN || secrets.PROD_INFRA_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Set ENV based on branch
+      - name: Set environment
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
             echo "ENV=dev" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
-            echo "ENV=prod" >> $GITHUB_ENV
+            echo "AWS_REGION=us-east-2" >> $GITHUB_ENV
           else
-            echo "ENV=unknown" >> $GITHUB_ENV
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
           fi
 
-      - name: Resetting infra deployment status
-        run: |
-          aws ssm put-parameter \
-            --name "/${ENV}/static-web-infra-ready" \
-            --value "false" \
-            --type String \
-            --overwrite \
-            --region $AWS_REGION
-
       - name: Set stack order
-        id: stacks
-        run: echo "STACKS=storage security network application" >> $GITHUB_ENV
+        run: |
+          echo "STACKS=storage network security" >> $GITHUB_ENV
 
       - name: Validate and deploy stacks
         run: |
+          set -e
+
           for STACK in $STACKS; do
-            echo "==== Processing stack: $ENV-$STACK-stack ===="
+            echo "================================================================"
+            echo 
+            "=========== Processing stack: ${ENV}-${STACK}-stack ============"
+            echo "================================================================"
 
-            TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
-            PARAMS_FILE="infra/$STACK/${{ github.ref == 'refs/heads/dev' && 'dev.json' || 'prod.json' }}"
-
+            TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
+            PARAMS_FILE="infra/${STACK}/${ENV}.json"
+            
             echo "-> Running yamllint..."
             yamllint $TEMPLATE_FILE
 
@@ -81,81 +75,19 @@ jobs:
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
 
             STACK_NAME="${ENV}-${STACK}-stack"
+            
+            if [[ $ENV == "dev" ]]; then
+              ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
+            else
+              ROLE_ARN="${PROD_EXECUTION_ROLE_ARN}"
+            fi
 
             aws cloudformation deploy \
-              --stack-name "$STACK_NAME" \
-              --template-file "$TEMPLATE_FILE" \
-              --parameter-overrides file://"$PARAMS_FILE" \
+              --stack-name "${STACK_NAME}" \
+              --template-file "${TEMPLATE_FILE}" \
+              --parameter-overrides file://"${PARAMS_FILE}" \
               --capabilities CAPABILITY_NAMED_IAM \
-              --region "$AWS_REGION" \
+              --role-arn "${ROLE_ARN}"
+              --region "${AWS_REGION}" \
               --debug
           done
-
-      - name: Update storage ssm parameter
-        run: |
-          STACK="${ENV}-storage-stack"
-          BUCKET_NAME=$(aws cloudformation describe-stacks \
-            --stack-name "$STACK" \
-            --query "Stacks[0].Outputs[?OutputKey=='OutputBktName'].OutputValue" \
-            --output text \
-            --region "$AWS_REGION")
-
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "BucketName output missing"
-            exit 1
-          fi
-
-          aws ssm put-parameter \
-            --name "/${ENV}${{ vars.SSM_BUCKET_PARAM }}" \
-            --value "$BUCKET_NAME" \
-            --type String \
-            --overwrite \
-            --region "$AWS_REGION"
-          echo "Stored $BUCKET_NAME in SSM"
-
-      - name: Update app ssm parameter
-        run: |
-          STACK="${ENV}-application-stack"
-          ALB_DNS=$(aws cloudformation describe-stacks \
-            --stack-name "$STACK" \
-            --query "Stacks[0].Outputs[?OutputKey=='ALBPublicDNS'].OutputValue" \
-            --output text \
-            --region "$AWS_REGION")
-
-          if [ -z "$ALB_DNS" ]; then
-            echo "ALB DNS output missing"
-            exit 1
-          fi
-
-          aws ssm put-parameter \
-            --name "/${ENV}${{ vars.SSM_ALB_DNS_PARAM }}" \
-            --value "$ALB_DNS" \
-            --type String \
-            --overwrite \
-            --region "$AWS_REGION"
-          echo "Stored $ALB_DNS in SSM"
-
-      - name: Verify stack statuses
-        run: |
-          for STACK in $STACKS; do
-            STACK_NAME="${ENV}-${STACK}-stack"
-            STATUS=$(aws cloudformation describe-stacks \
-              --stack-name $STACK_NAME \
-              --region ${{ env.AWS_REGION }} \
-              --query "Stacks[0].StackStatus" \
-              --output text)
-            echo "$STACK_NAME status: $STATUS"
-            if [[ "$STATUS" != "CREATE_COMPLETE" && "$STATUS" != "UPDATE_COMPLETE" ]]; then
-              echo "Error: $STACK_NAME stack deployment failed"
-              exit 1
-            fi
-          done
-
-      - name: Setting infra deployment status
-        run: |
-          aws ssm put-parameter \
-            --name "/${ENV}/static-web-infra-ready" \
-            --value "true" \
-            --type String \
-            --overwrite \
-            --region $AWS_REGION

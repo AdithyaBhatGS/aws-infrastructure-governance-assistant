@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: Represents the owner of the project
     Default: devOps
-  CreatedByName:
+  ManagedBy:
     Type: String
     Description: Represents the IAC used
     Default: CloudFormation
@@ -74,25 +74,23 @@ Parameters:
 Resources:
   CloudInitLogGroup:
     Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       LogGroupClass: STANDARD
       LogGroupName: !Sub "${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}-cloud-init-log-grp"
+          Value: !Sub "${Environment}-cloud-init-log-grp"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
   SystemLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -101,17 +99,15 @@ Resources:
       RetentionInDays: 7
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}-system-log-grp"
+          Value: !Sub "${Environment}-system-log-grp"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
   EC2IAMRole:
@@ -133,18 +129,14 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
       RoleName: !Sub '${APPEC2Role}-${AWS::StackName}'
       Tags:
-        - Key: Name
-          Value: !Sub "${ProjectName}-role-for-ec2"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
   EC2CloudWatchPolicy:
     Type: AWS::IAM::RolePolicy
     Properties:
@@ -179,7 +171,7 @@ Resources:
               - s3:ListBucket
             Resource:
               - Fn::ImportValue:
-                  Fn::Sub: "${Environment}-storage-stack-asset-bkt-arn"
+                  Fn::Sub: "${Environment}-storage-artifact-bkt-arn"
           - Effect: Allow
             Action:
               - s3:GetObject
@@ -187,7 +179,7 @@ Resources:
               - !Join
                 - ""
                 - - Fn::ImportValue:
-                      Fn::Sub: "${Environment}-storage-stack-asset-bkt-arn"
+                      Fn::Sub: "${Environment}-storage-artifact-bkt-arn"
                   - "/*"
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -226,17 +218,15 @@ Resources:
       EnableKeyRotation: true
       Tags:
         - Key: Name
-          Value: !Sub "${ProjectName}-server-ebs-key"
+          Value: !Sub "${Environment}-${ProjectName}-kms-key"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: StackType
-          Value: !Sub "${AWS::StackName}"
-        - Key: CreatedBy
-          Value: !Ref CreatedByName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
   EBSKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
@@ -247,24 +237,19 @@ Outputs:
     Value: !Ref EC2IAMRole
     Description: Represents the IAM Role name
     Export:
-      Name: !Sub "${AWS::StackName}-ec2-role"
+      Name: !Sub "${Environment}-security-ec2-role"
   EC2RoleARN:
     Value: !GetAtt EC2IAMRole.Arn
     Description: Represents the IAM Role ARN
     Export:
-      Name: !Sub "${AWS::StackName}-ec2-role-arn"
+      Name: !Sub "${Environment}-security-ec2-role-arn"
   IProfileName:
     Value: !Ref AppInstanceProfile
     Description: Represents the IAM Instance profile name
     Export:
-      Name: !Sub "${AWS::StackName}-ec2-instance-profile"
+      Name: !Sub "${Environment}-security-instance-profile"
   KMSKeyARN:
     Value: !GetAtt EBSKey.Arn
     Description: Represents the ARN of the KMS key
     Export:
-      Name: !Sub "${AWS::StackName}-kms-key-arn"
-  KMSKeyAlias:
-    Value: !Ref EBSKeyAlias
-    Description: Represents the alias of the KMS key
-    Export:
-      Name: !Sub "${AWS::StackName}-kms-key-alias"
+      Name: !Sub "${Environment}-security-kms-key-arn"
