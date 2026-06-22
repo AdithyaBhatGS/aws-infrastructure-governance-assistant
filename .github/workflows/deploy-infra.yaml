@@ -79,7 +79,7 @@ jobs:
 
             echo "ENV=$ENV"
             echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
-            echp "GITHUB_REF=$GITHUB_REF"
+            echo "GITHUB_REF=$GITHUB_REF"
 
             if [[ "$ENV" == "dev" ]]; then
               ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
