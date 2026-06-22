@@ -189,6 +189,7 @@ Resources:
               - 'iam:PassRole'
               - 'iam:GetRole'
               - 'iam:TagRole'
+              - 'iam:GetRolePolicy'
             Resource: '*'
 
           - Effect: Allow
