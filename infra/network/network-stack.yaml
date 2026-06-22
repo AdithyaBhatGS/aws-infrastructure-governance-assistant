@@ -504,12 +504,12 @@ Outputs:
     Export:
       Name: !Sub "${Environment}-network-alb-sg-id"
   NATGwIDA:
-    Value: !GetAtt NetworkNATGatewayA.Id
+    Value: !GetAtt NetworkNATGatewayA.NatGatewayId
     Description: Represents the ID of the NAT gateway A resource
     Export:
       Name: !Sub "${Environment}-network-nat-gw-id-a"
   NATGwIDB:
-    Value: !GetAtt NetworkNATGatewayB.Id
+    Value: !GetAtt NetworkNATGatewayB.NatGatewayId
     Description: Represents the ID of the NAT gateway B resource
     Export:
       Name: !Sub "${Environment}-network-nat-gw-id-b"
