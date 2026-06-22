@@ -94,6 +94,7 @@
        --parameter-overrides file://"PARAMS_FILE" \
        --capabilities CAPABILITY_NAMED_IAM \
        --region "AWS_REGION" \
+       --role-arn "ROLE_ARN" \
        --debug
      ```
 
