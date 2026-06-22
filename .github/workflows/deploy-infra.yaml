@@ -23,8 +23,8 @@ jobs:
     env:
       DEV_REGION: us-east-2
       PROD_REGION: us-east-1
-      DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_EXECUTION_ROLE_ARN}}
-      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_EXECUTION_ROLE_ARN}}
+      DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_EXECUTION_ROLE_ARN }}
+      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_EXECUTION_ROLE_ARN }}
 
     steps:
       - name: Checkout code
@@ -32,7 +32,7 @@ jobs:
 
       - name: Set environment
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "dev" ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
             echo "ENV=dev" >> $GITHUB_ENV
             echo "AWS_REGION=${DEV_REGION}" >> $GITHUB_ENV
           else
@@ -76,10 +76,6 @@ jobs:
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
 
             STACK_NAME="${ENV}-${STACK}-stack"
-
-            echo "ENV=$ENV"
-            echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
-            echo "GITHUB_REF=$GITHUB_REF"
 
             if [[ "$ENV" == "dev" ]]; then
               ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
