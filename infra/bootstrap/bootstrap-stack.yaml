@@ -457,9 +457,8 @@ Resources:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
               StringLike:
                 token.actions.githubusercontent.com:sub: !Sub
-                  - "repo:${Repo}:ref:refs/heads/${Branch}"
+                  - "repo:${Repo}:pull_request"
                   - Repo: !Ref RepoName
-                    Branch: !Ref BranchName
       ManagedPolicyArns:
         - !GetAtt ValidationPolicy.PolicyArn
       PermissionsBoundary: !Ref ValidationRoleBoundary
