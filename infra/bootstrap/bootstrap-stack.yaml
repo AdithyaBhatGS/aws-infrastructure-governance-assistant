@@ -190,22 +190,20 @@ Resources:
               - 'iam:GetRole'
               - 'iam:TagRole'
               - 'iam:GetRolePolicy'
-            Resource: '*'
-
-          - Effect: Allow
-            Action:
-              - 'kms:CreateKey'
-              - 'kms:DescribeKey'
-              - 'kms:Encrypt'
-              - 'kms:Decrypt'
-              - 'kms:GenerateDataKey'
-              - 'kms:CreateAlias'
+              - 'iam:PutRolePolicy'
+              - 'iam:GetInstanceProfile'
             Resource: '*'
 
           - Effect: Allow
             Action:
               - logs:*
               - cloudwatch:*
+            Resource: '*'
+
+          - Effect: Allow
+            Action:
+              - tag:TagResources
+              - tag:UntagResources
             Resource: '*'
   AppExecutionPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -234,14 +232,6 @@ Resources:
             Action:
               - 'logs:*'
               - 'cloudwatch:*'
-            Resource: '*'
-
-          - Effect: Allow
-            Action:
-              - 'kms:Decrypt'
-              - 'kms:Encrypt'
-              - 'kms:GenerateDataKey'
-              - 'kms:DescribeKey'
             Resource: '*'
   InfraExecutionRole:
     Type: AWS::IAM::Role
