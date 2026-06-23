@@ -188,6 +188,8 @@ Resources:
               - 'iam:AttachRolePolicy'
               - 'iam:PassRole'
               - 'iam:GetRole'
+              - 'iam:TagRole'
+              - 'iam:GetRolePolicy'
             Resource: '*'
 
           - Effect: Allow
@@ -232,11 +234,6 @@ Resources:
             Action:
               - 'logs:*'
               - 'cloudwatch:*'
-            Resource: '*'
-
-          - Effect: Allow
-            Action:
-              - 'iam:PassRole'
             Resource: '*'
 
           - Effect: Allow
