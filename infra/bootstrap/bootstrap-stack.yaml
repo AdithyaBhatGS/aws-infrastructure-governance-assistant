@@ -191,6 +191,7 @@ Resources:
               - 'iam:TagRole'
               - 'iam:GetRolePolicy'
               - 'iam:PutRolePolicy'
+              - 'iam:GetInstanceProfile'
             Resource: '*'
 
           - Effect: Allow
