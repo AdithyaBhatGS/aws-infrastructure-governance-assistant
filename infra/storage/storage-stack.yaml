@@ -29,8 +29,8 @@ Parameters:
 Resources:
   WebAssetBkt:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    # DeletionPolicy: Retain
+    # UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub '${BktName}-${AWS::StackName}-bkt'
       PublicAccessBlockConfiguration:
