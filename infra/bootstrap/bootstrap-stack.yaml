@@ -190,6 +190,7 @@ Resources:
               - 'iam:GetRole'
               - 'iam:TagRole'
               - 'iam:GetRolePolicy'
+              - 'iam:PutRolePolicy'
             Resource: '*'
 
           - Effect: Allow
