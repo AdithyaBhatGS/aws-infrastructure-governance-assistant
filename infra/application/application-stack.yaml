@@ -137,10 +137,6 @@ Resources:
         BlockDeviceMappings:
           - DeviceName: /dev/xvda
             Ebs:
-              Encrypted: true
-              KmsKeyId: 
-                Fn::ImportValue:
-                  Fn::Sub: "${Environment}-security-kms-key-arn"
               DeleteOnTermination: true
               VolumeSize: 8
         UserData:

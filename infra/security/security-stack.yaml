@@ -70,8 +70,6 @@ Parameters:
 Resources:
   CloudInitLogGroup:
     Type: AWS::Logs::LogGroup
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
     Properties:
       LogGroupClass: STANDARD
       LogGroupName: !Sub "${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
@@ -104,8 +102,6 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
   EC2IAMRole:
     Type: AWS::IAM::Role
     Properties:
@@ -183,51 +179,6 @@ Resources:
       Roles:
         - !Ref EC2IAMRole
       InstanceProfileName: !Sub '${APPEC2Role}-${AWS::StackName}'
-  EBSKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: KMS key for encrypting the EBS volumes
-      Enabled: true
-      KeySpec: SYMMETRIC_DEFAULT
-      KeyPolicy:
-        Version: 2012-10-17
-        Id: key-policy-for-ebs-encryption
-        Statement:
-          - Sid: Enable IAM User Permissions
-            Effect: Allow
-            Principal:
-              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
-            Action: 'kms:*'
-            Resource: '*'
-          - Sid: Access for services
-            Effect: Allow
-            Principal:
-              AWS: !GetAtt EC2IAMRole.Arn
-            Action:
-              - 'kms:Encrypt'
-              - 'kms:Decrypt'
-              - 'kms:ReEncrypt*'
-              - 'kms:GenerateDataKey*'
-              - 'kms:DescribeKey'
-            Resource: '*'
-      KeyUsage: ENCRYPT_DECRYPT
-      EnableKeyRotation: true
-      Tags:
-        - Key: Name
-          Value: !Sub "${Environment}-${ProjectName}-kms-key"
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Project
-          Value: !Ref ProjectName
-        - Key: Owner
-          Value: !Ref Owner
-        - Key: ManagedBy
-          Value: !Ref ManagedBy
-  EBSKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-${Environment}-key"
-      TargetKeyId: !Ref EBSKey
 Outputs:
   EC2Role:
     Value: !Ref EC2IAMRole
@@ -244,8 +195,3 @@ Outputs:
     Description: Represents the IAM Instance profile name
     Export:
       Name: !Sub "${Environment}-security-instance-profile"
-  KMSKeyARN:
-    Value: !GetAtt EBSKey.Arn
-    Description: Represents the ARN of the KMS key
-    Export:
-      Name: !Sub "${Environment}-security-kms-key-arn"
