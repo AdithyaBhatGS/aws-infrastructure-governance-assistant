@@ -192,6 +192,14 @@ Resources:
               - 'iam:GetRolePolicy'
               - 'iam:PutRolePolicy'
               - 'iam:GetInstanceProfile'
+              - 'iam:DeleteRole'
+              - 'iam:DeleteRolePolicy'
+              - 'iam:DetachRolePolicy'
+              - 'iam:RemoveRoleFromInstanceProfile'
+              - 'iam:DeleteInstanceProfile'
+              - 'iam:ListAttachedRolePolicies'
+              - 'iam:ListRolePolicies'
+              - 'iam:ListInstanceProfilesForRole'
             Resource: '*'
 
           - Effect: Allow
