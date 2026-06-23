@@ -202,6 +202,9 @@ Resources:
               - 'kms:Decrypt'
               - 'kms:GenerateDataKey'
               - 'kms:CreateAlias'
+              - 'kms:PutKeyPolicy'
+              - 'kms:TagResource'
+              - 'kms:EnableKeyRotation'
             Resource: '*'
 
           - Effect: Allow
@@ -209,6 +212,13 @@ Resources:
               - logs:*
               - cloudwatch:*
             Resource: '*'
+
+          - Effect: Allow
+            Action:
+              - tag:TagResources
+              - tag:UntagResources
+            Resource: '*'
+
   AppExecutionPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
