@@ -1,0 +1,9 @@
+# Only count YAML files inside an 'infra' or 'templates' folder
+
+infrastructure/*.yaml linguist-language=CloudFormation linguist-detectable=true
+infrastructure/*.yml linguist-language=CloudFormation linguist-detectable=true
+
+# Exclude CI/CD pipeline files from stats
+
+.github/workflows/*.yml linguist-detectable=false
+.github/workflows/*.yaml linguist-detectable=false
