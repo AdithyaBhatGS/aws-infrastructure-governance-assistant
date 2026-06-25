@@ -65,6 +65,10 @@ Parameters:
     Description: Represents the owner, repository name of the github account
     Default: AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app
     NoEcho: true
+  ValidationPolicyName:
+    Type: String
+    Description: Represents the name of the validation policy
+    Default: template-validation-policy
   ValidationRoleName:
     Type: String
     Description: Represents the name of the validation role
@@ -360,7 +364,7 @@ Resources:
             Action:
               - iam:PassRole
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-app-execution-role"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-app-infra-execution-role"
   InfraDeploymentRole:
     Type: AWS::IAM::Role
     Properties:
@@ -485,6 +489,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Represents the permissions for validation pipeline
+      ManagedPolicyName: !Ref ValidationPolicyName
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
