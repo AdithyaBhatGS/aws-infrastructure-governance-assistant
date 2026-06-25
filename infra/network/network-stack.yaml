@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: |
-  A Network Stack that provides basic network setup. Setup
-  includes VPC, Public & Private Subnets, Route Tables, Gateway
-  Endpoint.
+  Stack to deploy network resources. Includes VPC, Subnets, Internet Gateway, Route Tables, NAT Gateway, Security Groups
 Parameters:
   Environment:
     Type: String

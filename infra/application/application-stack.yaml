@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: An alb stack for deploying the ALB
+Description: Stack to deploy application infra resources. Includes ALB, ASG and related components
 
 Parameters:
   Environment:

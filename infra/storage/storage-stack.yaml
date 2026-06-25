@@ -1,8 +1,7 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
 Description: |
-  Contains a bucket holding the static assets required
-  for hosting the website
+  Stack to deploy storage resource. Includes an S3 bucket which is used a repository for application artifacts
 Parameters:
   Environment:
     Type: String
