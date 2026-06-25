@@ -1,4 +1,4 @@
-name: Infra Deployment Pipeline
+name: Infrastructure Deployment Pipeline
 
 on:
   push:
@@ -12,13 +12,13 @@ on:
       - prod
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
 
     env:
       DEV_REGION: us-east-2
@@ -27,32 +27,32 @@ jobs:
       PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_INFRA_EXECUTION_ROLE_ARN }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v7
 
-      - name: Set environment
+      - name: Set Environment
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
-            echo "ENV=dev" >> $GITHUB_ENV
-            echo "AWS_REGION=${DEV_REGION}" >> $GITHUB_ENV
+            echo "ENV=dev" >> "${GITHUB_ENV}"
+            echo "AWS_REGION=${DEV_REGION}" >> "${GITHUB_ENV}"
           else
             echo "ENV=prod" >> $GITHUB_ENV
-            echo "AWS_REGION=${PROD_REGION}" >> $GITHUB_ENV
+            echo "AWS_REGION=${PROD_REGION}" >> "${GITHUB_ENV}"
           fi
 
-      - name: Configure AWS credentials for dev
+      - name: Configure AWS credentials
         if: github.ref == 'refs/heads/dev'
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
           role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_INFRA_DEPLOY_ROLE_ARN || secrets.PROD_INFRA_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pip install -r requirements.txt
 
       - name: Set stack order
         run: |
-          echo "STACKS=storage network security" >> $GITHUB_ENV
+          echo "STACKS=storage network security" >> "${GITHUB_ENV}"
 
       - name: Validate and deploy stacks
         run: |

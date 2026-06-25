@@ -16,28 +16,36 @@
         "ParameterValue": "dev-infra-execution-policy"
     },
     {
-        "ParameterKey": "AppExecutionPolicyName",
-        "ParameterValue": "dev-app-execution-policy"
+        "ParameterKey": "AppInfraExecutionPolicyName",
+        "ParameterValue": "dev-app-infra-execution-policy"
     },
     {
         "ParameterKey": "InfraExecutionRoleName",
         "ParameterValue": "dev-infra-execution-role"
     },
     {
-        "ParameterKey": "AppExecutionRoleName",
-        "ParameterValue": "dev-app-execution-role"
+        "ParameterKey": "AppInfraExecutionRoleName",
+        "ParameterValue": "dev-app-infra-execution-role"
     },
     {
         "ParameterKey": "InfraDeploymentPolicyName",
         "ParameterValue": "dev-infra-deployment-policy"
     },
     {
-        "ParameterKey": "AppDeploymentPolicyName",
-        "ParameterValue": "dev-app-deployment-policy"
+        "ParameterKey": "AppInfraDeploymentPolicyName",
+        "ParameterValue": "dev-app-infra-deployment-policy"
     },
     {
         "ParameterKey": "InfraDeploymentRoleName",
         "ParameterValue": "dev-infra-deployment-role"
+    },
+    {
+        "ParameterKey": "AppInfraDeploymentRoleName",
+        "ParameterValue": "dev-app-infra-deployment-role"
+    },
+    {
+        "ParameterKey": "AppDeploymentPolicyName",
+        "ParameterValue": "dev-app-deployment-policy"
     },
     {
         "ParameterKey": "AppDeploymentRoleName",

@@ -1,0 +1,93 @@
+name: Application Infrastructure Pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'infra/application/**'
+      - '.github/workflows/deploy-app-infra.yaml'
+    branches:
+      - dev
+      - prod
+
+  workflow_dispatch:
+
+jobs:
+  deploy-app-infra:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      DEV_REGION: us-east-2
+      PROD_REGION: us-east-1
+      DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_APP_INFRA_EXECUTION_ROLE_ARN }}
+      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_APP_INFRA_EXECUTION_ROLE_ARN }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Set Environment
+        run: |
+          if [[ "${GITHUB_REF} == "refs/heads/dev" ]]; then
+            echo "ENV=dev" >> "${GITHUB_ENV}"
+            echo "AWS_REGION=${DEV_REGION}" >> "${GITHUB_ENV}"
+          else if [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
+            echo "ENV=prod" >> "${GITHUB_ENV}"
+            echo "AWS_REGION=${PROD_REGION}" >> "${GITHUB_ENV}"
+          fi
+
+      - name: Configure AWS credentials for dev
+        if: github.ref == 'refs/heads/dev'
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_INFRA_DEPLOY_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        run: |
+          echo "STACK=application" >> "${GITHUB_ENV}"
+
+      - name: Deploy stack
+        run: |
+          set -e
+
+          echo "=================================================================="
+          echo "============= Processing stack: ${ENV}-${STACK}-stack =============="
+          echo "=================================================================="
+
+          TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
+          PARAMS_FILE="infra/${STACK}/${ENV}.json"
+            
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Validating CloudFormation template..."
+          aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
+
+          STACK_NAME="${ENV}-${STACK}-stack"
+
+          if [[ "$ENV" == "dev" ]]; then
+            ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
+          else
+            ROLE_ARN="${PROD_EXECUTION_ROLE_ARN}"
+          fi
+
+          echo "ROLE_ARN=${ROLE_ARN##*/}"
+
+          aws cloudformation deploy \
+            --stack-name "${STACK_NAME}" \
+            --template-file "${TEMPLATE_FILE}" \
+            --parameter-overrides file://"${PARAMS_FILE}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --role-arn "${ROLE_ARN}" \
+            --region "${AWS_REGION}" \
+            --debug

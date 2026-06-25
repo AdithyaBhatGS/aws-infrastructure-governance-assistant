@@ -49,6 +49,12 @@ Parameters:
     Description: Represents the name of the Target Group
     AllowedPattern: ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,30}[A-Za-z0-9])?$
     MaxLength: 32
+  ALBRequestCountTargetValue:
+    Type: String
+    Description: Represents the Average ALB Request Count per Instance
+  CPUPolicyTargetValue:
+    Type: String
+    Description: The target utilization for the CPU metric
 Mappings:
   EnvironmentToInstanceType:
     dev:
@@ -56,7 +62,7 @@ Mappings:
     prod:
       InstanceType: t3.small
 Resources:
-  AppTemplate:
+  AppLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Metadata:
       AWS::CloudFormation::Init:
@@ -148,7 +154,7 @@ Resources:
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppTemplate --region ${AWS::Region}
 
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
-  ALBFrontFacing:
+  AppALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
@@ -174,7 +180,7 @@ Resources:
           Value: !Ref Owner
         - Key: ManagedBy
           Value: !Ref ManagedBy
-  ALBTargetGrp:
+  AppALBTargetGrp:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -202,7 +208,7 @@ Resources:
           Value: !Ref Owner
         - Key: ManagedBy
           Value: !Ref ManagedBy
-  ALBListener:
+  AppALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !GetAtt ALBFrontFacing.LoadBalancerArn
@@ -211,19 +217,19 @@ Resources:
       DefaultActions:
         - Type: forward
           TargetGroupArn: !GetAtt ALBTargetGrp.TargetGroupArn
-  AutoScalingGroup:
+  AppAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     CreationPolicy: 
       ResourceSignal:
         Count: 2
         Timeout: PT10M
-    UpdatePolicy: 
+    UpdatePolicy:
       AutoScalingRollingUpdate:
         MinInstancesInService: 1
         MaxBatchSize: 1
         WaitOnResourceSignals: true
         PauseTime: PT5M
-        SuspendProcesses: 
+        SuspendProcesses:
           - HealthCheck
           - ReplaceUnhealthy
     Properties:
@@ -262,6 +268,29 @@ Resources:
         - Key: ManagedBy
           Value: !Ref ManagedBy
           PropagateAtLaunch: true
+  ALBReqCountPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    DependsOn: AppALBListener
+    Properties:
+      AutoScalingGroupName: !Ref AppAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ALBRequestCountPerTarget
+          ResourceLabel: !Join
+            - "/"
+            - - !GetAtt AppALB.LoadBalancerFullName
+            - - !GetAtt AppALBTargetGrp.TargetGroupFullName
+        TargetValue: !Ref ALBRequestCountTargetValue
+  ALBCPUUtilizationPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref AppAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: !Ref CPUPolicyTargetValue
 Outputs:
   ASGARN:
     Value: !GetAtt AutoScalingGroup.AutoScalingGroupARN

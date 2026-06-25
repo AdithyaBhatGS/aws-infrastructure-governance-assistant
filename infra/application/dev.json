@@ -22,5 +22,13 @@
     {
         "ParameterKey":"AvailabilityZoneB",
         "ParameterValue":"us-east-2b"
+    },
+    {
+        "ParameterKey":"ALBRequestCountTargetValue",
+        "ParameterValue":"3"
+    },
+    {
+        "ParameterKey":"CPUPolicyTargetValue",
+        "ParameterValue":"75"
     }
 ]
