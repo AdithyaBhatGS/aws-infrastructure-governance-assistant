@@ -31,7 +31,7 @@ jobs:
 
       - name: Set Environment
         run: |
-          if [[ "${GITHUB_REF} == "refs/heads/dev" ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
             echo "ENV=dev" >> "${GITHUB_ENV}"
             echo "AWS_REGION=${DEV_REGION}" >> "${GITHUB_ENV}"
           else if [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
