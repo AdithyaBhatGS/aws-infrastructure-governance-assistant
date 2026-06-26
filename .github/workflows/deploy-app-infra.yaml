@@ -37,6 +37,8 @@ jobs:
           else if [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
             echo "ENV=prod" >> "${GITHUB_ENV}"
             echo "AWS_REGION=${PROD_REGION}" >> "${GITHUB_ENV}"
+          else
+            echo "${GITHUB_REF} is invalid..."
           fi
 
       - name: Configure AWS credentials for dev
