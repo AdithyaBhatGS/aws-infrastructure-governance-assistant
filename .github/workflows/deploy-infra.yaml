@@ -35,7 +35,7 @@ jobs:
           if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
             echo "ENV=dev" >> "${GITHUB_ENV}"
             echo "AWS_REGION=${DEV_REGION}" >> "${GITHUB_ENV}"
-          else if [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
+          elif [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
             echo "ENV=prod" >> $GITHUB_ENV
             echo "AWS_REGION=${PROD_REGION}" >> "${GITHUB_ENV}"
           else
