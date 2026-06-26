@@ -256,6 +256,11 @@ Resources:
               - 'logs:*'
               - 'cloudwatch:*'
             Resource: '*'
+
+          - Effect: Allow
+            Action:
+              - 'ssm:GetParameters'
+            Resource: '*'
   InfraExecutionRole:
     Type: AWS::IAM::Role
     Properties:
