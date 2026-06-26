@@ -211,12 +211,12 @@ Resources:
   AppALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !GetAtt ALBFrontFacing.LoadBalancerArn
+      LoadBalancerArn: !GetAtt AppALB.LoadBalancerArn
       Port: 80
       Protocol: HTTP
       DefaultActions:
         - Type: forward
-          TargetGroupArn: !GetAtt ALBTargetGrp.TargetGroupArn
+          TargetGroupArn: !GetAtt AppALBTargetGrp.TargetGroupArn
   AppAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     CreationPolicy: 
@@ -243,10 +243,10 @@ Resources:
         - !Ref AvailabilityZoneA
         - !Ref AvailabilityZoneB
       LaunchTemplate: 
-        LaunchTemplateId: !GetAtt AppTemplate.LaunchTemplateId
-        Version: !GetAtt AppTemplate.LatestVersionNumber
+        LaunchTemplateId: !GetAtt AppLaunchTemplate.LaunchTemplateId
+        Version: !GetAtt AppLaunchTemplate.LatestVersionNumber
       TargetGroupARNs:
-        - !GetAtt ALBTargetGrp.TargetGroupArn
+        - !GetAtt AppALBTargetGrp.TargetGroupArn
       VPCZoneIdentifier:
         - Fn::ImportValue:
             Fn::Sub: "${Environment}-network-priv-subnet-id1"
@@ -278,9 +278,9 @@ Resources:
         PredefinedMetricSpecification:
           PredefinedMetricType: ALBRequestCountPerTarget
           ResourceLabel: !Join
-            - "/"
+            - '/'
             - - !GetAtt AppALB.LoadBalancerFullName
-            - - !GetAtt AppALBTargetGrp.TargetGroupFullName
+              - !GetAtt AppALBTargetGrp.TargetGroupFullName
         TargetValue: !Ref ALBRequestCountTargetValue
   ALBCPUUtilizationPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
@@ -293,22 +293,22 @@ Resources:
         TargetValue: !Ref CPUPolicyTargetValue
 Outputs:
   ASGARN:
-    Value: !GetAtt AutoScalingGroup.AutoScalingGroupARN
+    Value: !GetAtt AppAutoScalingGroup.AutoScalingGroupARN
     Description: Represents the ARN of the ASG
   LaunchTempID:
-    Value: !GetAtt AppTemplate.LaunchTemplateId
+    Value: !GetAtt AppLaunchTemplate.LaunchTemplateId
     Description: Represents the ID of the launch template
   AMI:
     Value: !Ref AMIID
     Description: Represents the AMI ID of the app instance
   ALBARN:
-    Value: !GetAtt ALBFrontFacing.LoadBalancerArn
+    Value: !GetAtt AppALB.LoadBalancerArn
     Description: Represents the ARN of the load balancer
   ALBTargetGrpARN:
-    Value: !GetAtt ALBTargetGrp.TargetGroupArn
+    Value: !GetAtt AppALBTargetGrp.TargetGroupArn
     Description: |
       Represents the ARN of the target group associated with
       the load balancer
   ALBPublicDNS:
-    Value: !GetAtt ALBFrontFacing.DNSName
+    Value: !GetAtt AppALB.DNSName
     Description: Represents the Public DNS of the Elastic Load Balancing
