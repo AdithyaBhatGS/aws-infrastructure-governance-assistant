@@ -1,7 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: |
-  Stack to deploy IAM resources and Log Groups. Includes Instance Profile, Role, Log Groups
+Description: Stack to deploy IAM resources and Log Groups. Includes Instance Profile, Role, Log Groups
 Parameters:
   Environment:
     Type: String
