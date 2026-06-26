@@ -1,8 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: |
-  A security stack containing IAM Role, policies, kms key,
-  security groups etc
+Description: Stack to deploy IAM resources and Log Groups. Includes Instance Profile, Role, Log Groups
 Parameters:
   Environment:
     Type: String

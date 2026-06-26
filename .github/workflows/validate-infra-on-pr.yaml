@@ -1,20 +1,38 @@
-name: IAC Validation
+name: IAC Validation Pipeline
 
 on:
   pull_request:
-    paths:
-      - 'infra/**'
     branches:
       - dev
       - prod
 
-permissions: 
-  id-token: write
-  contents: read
-
 jobs:
-  validate-infra:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      application: ${{ steps.filter.outputs.application }}
+      network: ${{ steps.filter.outputs.network }}
+      security: ${{ steps.filter.outputs.security }}
+      storage: ${{ steps.filter.outputs.storage }}
+    steps:
+      - name: Checkout Code
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            application: 'infra/application/**'
+            network: 'infra/network/**'
+            security: 'infra/security/**'
+            storage: 'infra/storage/**'
+    
+  validate-application-infra:
+    needs: changes
+    if: ${{ needs.changes.outputs.application == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions: 
+      id-token: write
+      contents: read
 
     env:
       AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
@@ -32,27 +50,165 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Set stack order
+      - name: Set stack
         id: stacks
-        run: echo "STACKS=storage network security" >> $GITHUB_ENV
+        run: echo "STACK=application" >> $GITHUB_ENV
 
-      - name: Validate and deploy stacks
+      - name: Validate and deploy ${STACK}-stack
         run: |
           set -e
 
-          for STACK in $STACKS; do
-            echo "==== Processing stack: $STACK-stack ===="
+          echo "==== Processing stack: $STACK-stack ===="
 
-            TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+          TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
 
-            echo "-> Running yamllint..."
-            yamllint $TEMPLATE_FILE
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
 
-            echo "-> Running cfn-lint..."
-            cfn-lint $TEMPLATE_FILE
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
 
-            echo "-> Running cloudformation validate..."
-            aws cloudformation validate-template \
+          echo "-> Running cloudformation validate..."
+          aws cloudformation validate-template \
               --template-body file://$TEMPLATE_FILE
 
-          done
+  validate-network-infra:
+    needs: changes
+    if: ${{ needs.changes.outputs.network == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions: 
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        id: stacks
+        run: echo "STACK=network" >> $GITHUB_ENV
+
+      - name: Validate and deploy ${STACK}-stack
+        run: |
+          set -e
+
+          echo "==== Processing stack: $STACK-stack ===="
+
+          TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Running cloudformation validate..."
+          aws cloudformation validate-template \
+              --template-body file://$TEMPLATE_FILE
+  
+  validate-security-infra:
+    needs: changes
+    if: ${{ needs.changes.outputs.security == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions: 
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        id: stacks
+        run: echo "STACK=security" >> $GITHUB_ENV
+
+      - name: Validate and deploy ${STACK}-stack
+        run: |
+          set -e
+
+          echo "==== Processing stack: $STACK-stack ===="
+
+          TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Running cloudformation validate..."
+          aws cloudformation validate-template \
+              --template-body file://$TEMPLATE_FILE
+  
+  validate-storage-infra:
+    needs: changes
+    if: ${{ needs.changes.outputs.storage == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions: 
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        id: stacks
+        run: echo "STACK=storage" >> $GITHUB_ENV
+
+      - name: Validate and deploy ${STACK}-stack
+        run: |
+          set -e
+
+          echo "==== Processing stack: $STACK-stack ===="
+
+          TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Running cloudformation validate..."
+          aws cloudformation validate-template \
+              --template-body file://$TEMPLATE_FILE

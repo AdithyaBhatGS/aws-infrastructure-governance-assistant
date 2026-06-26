@@ -30,28 +30,34 @@ Parameters:
   InfraExecutionPolicyName:
     Type: String
     Description: Represents the name of the infra execution policy name
-  AppExecutionPolicyName:
+  AppInfraExecutionPolicyName:
     Type: String
-    Description: Represents the name of the app execution policy name
+    Description: Represents the name of the app infra execution policy name
   InfraExecutionRoleName:
     Type: String
     Description: Represents the name of the infra execution role
-  AppExecutionRoleName:
+  AppInfraExecutionRoleName:
     Type: String
-    Description: Represents the name of the app execution role
+    Description: Represents the name of the app infra execution role
   InfraDeploymentPolicyName:
     Type: String
     Description: Represents the name of the infra deployment policy
-  AppDeploymentPolicyName:
+  AppInfraDeploymentPolicyName:
     Type: String
-    Description: Represents the name of the app deployment policy
+    Description: Represents the name of the app infra deployment policy
   InfraDeploymentRoleName:
     Type: String
     Description: Represents the name of the infra deployment role
+  AppInfraDeploymentRoleName:
+    Type: String
+    Description: Represents the name of the app infra deployment role
+  AppDeploymentPolicyName:
+    Type: String
+    Description: Represents the name of the app deployment policy
   AppDeploymentRoleName:
     Type: String
     Description: Represents the name of the app deployment role
-  BranchName:
+  BranchName: 
     Type: String
     Description: Represents the branch name pattern
   RepoName:
@@ -59,6 +65,10 @@ Parameters:
     Description: Represents the owner, repository name of the github account
     Default: AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app
     NoEcho: true
+  ValidationPolicyName:
+    Type: String
+    Description: Represents the name of the validation policy
+    Default: template-validation-policy
   ValidationRoleName:
     Type: String
     Description: Represents the name of the validation role
@@ -96,12 +106,17 @@ Resources:
               - 's3:PutObject'
               - 's3:ListBucket'
             Resource: "*"
-          
+
           - Effect: Allow
             Action:
               - 'cloudformation:*'
             Resource: "*"
-          
+
+          - Effect: Allow
+            Action:
+              - 'autoscaling:*'
+            Resource: "*"
+
           - Effect: Allow
             Action:
               - 'iam:PassRole'
@@ -192,6 +207,14 @@ Resources:
               - 'iam:GetRolePolicy'
               - 'iam:PutRolePolicy'
               - 'iam:GetInstanceProfile'
+              - 'iam:DeleteRole'
+              - 'iam:DeleteRolePolicy'
+              - 'iam:DetachRolePolicy'
+              - 'iam:RemoveRoleFromInstanceProfile'
+              - 'iam:DeleteInstanceProfile'
+              - 'iam:ListAttachedRolePolicies'
+              - 'iam:ListRolePolicies'
+              - 'iam:ListInstanceProfilesForRole'
             Resource: '*'
 
           - Effect: Allow
@@ -205,11 +228,11 @@ Resources:
               - tag:TagResources
               - tag:UntagResources
             Resource: '*'
-  AppExecutionPolicy:
+  AppInfraExecutionPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: Represents the permission app execution
-      ManagedPolicyName: !Ref AppExecutionPolicyName
+      Description: Represents the permission app infra execution
+      ManagedPolicyName: !Ref AppInfraExecutionPolicyName
       PolicyDocument: 
         Version: "2012-10-17"
         Statement:
@@ -258,7 +281,7 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-  AppExecutionRole:
+  AppInfraExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument: 
@@ -271,8 +294,8 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       ManagedPolicyArns:
-        - !GetAtt AppExecutionPolicy.PolicyArn
-      RoleName: !Ref AppExecutionRoleName
+        - !GetAtt AppInfraExecutionPolicy.PolicyArn
+      RoleName: !Ref AppInfraExecutionRoleName
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -312,11 +335,11 @@ Resources:
               - iam:PassRole
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-infra-execution-role"
-  AppDeploymentPolicy:
+  AppInfraDeploymentPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties: 
-      Description: Represents the permissions for app deployment
-      ManagedPolicyName: !Ref AppDeploymentPolicyName
+      Description: Represents the permissions for app infra deployment
+      ManagedPolicyName: !Ref AppInfraDeploymentPolicyName
       PolicyDocument: 
         Version: "2012-10-17"
         Statement:
@@ -339,22 +362,9 @@ Resources:
 
           - Effect: Allow
             Action:
-              - s3:ListBucket
-            Resource:
-              - !Sub "arn:aws:s3:::${ArtifactBucketName}"
-
-          - Effect: Allow
-            Action:
-              - s3:GetObject
-              - s3:PutObject
-            Resource:
-              - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
-
-          - Effect: Allow
-            Action:
               - iam:PassRole
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-app-execution-role"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-app-infra-execution-role"
   InfraDeploymentRole:
     Type: AWS::IAM::Role
     Properties:
@@ -386,6 +396,64 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
+  AppInfraDeploymentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref AppInfraDeploymentRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub "arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com"
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub
+                  - "repo:${Repo}:ref:refs/heads/${Branch}"
+                  - Repo: !Ref RepoName
+                    Branch: !Ref BranchName
+      ManagedPolicyArns:
+        - !GetAtt AppInfraDeploymentPolicy.PolicyArn
+      PermissionsBoundary: !Ref DeploymentRoleBoundary
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+        - Key: Owner
+          Value: !Ref Owner
+  AppDeploymentPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Represents the permissions for app deployment
+      ManagedPolicyName: !Ref AppDeploymentPolicyName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::${ArtifactBucketName}"
+
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+
+          - Effect: Allow
+            Action:
+              - autoscaling:StartInstanceRefresh
+              - autoscaling:DescribeInstanceRefreshes
+              - autoscaling:DescribeAutoScalingGroups
+            Resource: "*"
   AppDeploymentRole:
     Type: AWS::IAM::Role
     Properties:
@@ -421,6 +489,7 @@ Resources:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Represents the permissions for validation pipeline
+      ManagedPolicyName: !Ref ValidationPolicyName
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -484,16 +553,21 @@ Outputs:
     Description: Represents the ARN of the Infra Execution Role
     Export: 
       Name: !Sub "${Environment}-bootstrap-infra-execution-role-arn"
-  AppExecutionRoleARN:
-    Value: !GetAtt AppExecutionRole.Arn
-    Description: Represents the ARN of the App Execution Role
+  AppInfraExecutionRoleARN:
+    Value: !GetAtt AppInfraExecutionRole.Arn
+    Description: Represents the ARN of the App Infra Execution Role
     Export: 
-      Name: !Sub "${Environment}-bootstrap-app-execution-role-arn"
+      Name: !Sub "${Environment}-bootstrap-app-infra-execution-role-arn"
   InfraDeployRoleARN:
     Value: !GetAtt InfraDeploymentRole.Arn
     Description: Represents the ARN of the Infra Deploy Role
     Export: 
       Name: !Sub "${Environment}-bootstrap-infra-deploy-role-arn"
+  AppInfraDeployRoleARN:
+    Value: !GetAtt AppInfraDeploymentRole.Arn
+    Description: Represents the ARN of the App Infra Deploy Role
+    Export: 
+      Name: !Sub "${Environment}-bootstrap-app-infra-deploy-role-arn"
   AppDeployRoleARN:
     Value: !GetAtt AppDeploymentRole.Arn
     Description: Represents the ARN of the App Deploy Role
