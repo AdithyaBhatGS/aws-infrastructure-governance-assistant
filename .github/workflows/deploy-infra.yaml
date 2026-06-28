@@ -43,7 +43,6 @@ jobs:
           fi
 
       - name: Configure AWS credentials
-        if: github.ref == 'refs/heads/dev'
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
           role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_INFRA_DEPLOY_ROLE_ARN || secrets.PROD_INFRA_DEPLOY_ROLE_ARN }}

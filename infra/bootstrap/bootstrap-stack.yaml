@@ -228,6 +228,14 @@ Resources:
               - tag:TagResources
               - tag:UntagResources
             Resource: '*'
+
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+            Resource:
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
   AppInfraExecutionPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -259,8 +267,11 @@ Resources:
 
           - Effect: Allow
             Action:
-              - 'ssm:GetParameters'
-            Resource: '*'
+              - ssm:GetParameter
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+            Resource:
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
   InfraExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -459,6 +470,12 @@ Resources:
               - autoscaling:DescribeInstanceRefreshes
               - autoscaling:DescribeAutoScalingGroups
             Resource: "*"
+
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
   AppDeploymentRole:
     Type: AWS::IAM::Role
     Properties:

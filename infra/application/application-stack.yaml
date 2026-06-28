@@ -21,9 +21,6 @@ Parameters:
     Type: String
     Description: Represents the IAC used
     Default: CloudFormation
-  AppVersion:
-    Type: String
-    Description: Represents the version of the app used by launch template
   AutoScalingGroupName:
     Type: String
     Description: Represents the name of the Auto Scaling Group
@@ -71,7 +68,8 @@ Resources:
             yum:
               amazon-cloudwatch-agent: []
               httpd: []
-              aws_cli: []
+              awscli: []
+              unzip: []
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
               content:
@@ -101,11 +99,67 @@ Resources:
                   }
                 }
               mode: "000644"
-              owner: "root"
-              group: "root"
+              owner: root
+              group: root
 
-            /var/www/html/version.txt:
-              content: !Ref AppVersion
+            /opt/app/deploy.sh:
+              mode: "000755"
+              owner: root
+              group: root
+              content:
+                Fn::Sub:
+                  - |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    exec > >(tee -a /var/log/app-deploy.log)
+                    exec 2>&1
+
+                    ARTIFACT_BUCKET="${ARTIFACT_BUCKET}"
+
+                    echo "========== Application Deployment =========="
+
+                    echo "Fetching current application version..."
+
+                    VERSION=$(aws s3 cp s3://${ARTIFACT_BUCKET}/app/current/version.txt -)
+
+                    if [ -z "$VERSION" ]; then
+                      echo "ERROR: version.txt is empty."
+                      exit 1
+                    fi
+
+                    echo "Current Version: ${VERSION}"
+
+                    mkdir -p /tmp/app
+
+                    echo "Downloading artifact..."
+
+                    aws s3 cp \
+                      s3://${ARTIFACT_BUCKET}/app/releases/${VERSION}.zip \
+                      /tmp/app/app.zip
+
+                    echo "Cleaning existing deployment..."
+
+                    rm -rf /var/www/html/*
+
+                    echo "Extracting artifact..."
+
+                    unzip -oq /tmp/app/app.zip -d /var/www/html
+
+                    chown -R apache:apache /var/www/html
+
+                    if [ ! -f /var/www/html/index.html ]; then
+                      echo "ERROR: index.html not found after deployment."
+                      exit 1
+                    fi
+
+                    echo "Restarting Apache..."
+
+                    systemctl restart httpd
+
+                    echo "Application deployment completed successfully."
+                  - ARTIFACT_BUCKET:
+                      Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
           commands:
             01_cloudwatch_agent_setup:
               command: >
@@ -115,15 +169,13 @@ Resources:
                 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
                 -s
             02_deploy_app:
-              command:
-                Fn::Sub:
-                  - |
-                    aws s3 sync s3://${ARTIFACT_BKT_NAME}/app/${AppVersion}/ /var/www/html
-                  - ARTIFACT_BKT_NAME :
-                      Fn::ImportValue: "${Environment}-storage-artifact-bkt"
+              command: "/bin/bash /opt/app/deploy.sh"
           services:
             sysvinit:
               httpd:
+                ensureRunning: "true"
+                enabled: "true"
+              amazon-cloudwatch-agent:
                 ensureRunning: "true"
                 enabled: "true"
     Properties:
@@ -291,6 +343,13 @@ Resources:
         PredefinedMetricSpecification:
           PredefinedMetricType: ASGAverageCPUUtilization
         TargetValue: !Ref CPUPolicyTargetValue
+  AutoScalingGroupParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/portfolio/${Environment}/asg-name"
+      Type: String
+      Value: !Ref AppAutoScalingGroup
+      Description: Auto Scaling Group used for application deployment
 Outputs:
   ASGARN:
     Value: !GetAtt AppAutoScalingGroup.AutoScalingGroupARN
@@ -312,3 +371,6 @@ Outputs:
   ALBPublicDNS:
     Value: !GetAtt AppALB.DNSName
     Description: Represents the Public DNS of the Elastic Load Balancing
+  ASGSSM:
+    Value: !Ref AutoScalingGroupParameter
+    Description: Represents the name of the SSM Parameter for Auto Scaling Group

@@ -1,0 +1,127 @@
+name: Application Deployment Pipeline
+
+on:
+  push:
+    paths:
+      - 'app/**'
+    branches:
+      - dev
+      - prod
+
+env:
+  AWS_REGION: ${{ github.ref == 'refs/heads/prod' && 'us-east-1' || 'us-east-2' }}
+  APP_PATH: app
+  ENVIRONEMENT: ${{ github.ref == 'refs/heads/prod' && 'prod' || 'dev'}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      sha: ${{ steps.vars.outputs.sha }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Retrieve SHA value
+        id: vars
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Construct build Folder
+        run: |
+          rm -rf build
+          mkdir -p build
+
+      - name: Build App Artifact
+        run: |
+          cp -r app/src/html/* build/
+
+          mkdir -p build/js build/css
+          cp -r app/src/css/* build/css || true
+          cp -r app/src/js/* build/js || true
+
+      - name: Create Zip
+        run: |
+          cd build
+          zip -r app.zip .
+          mv app.zip ../app.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-zip
+          path: app.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_DEPLOY_ROLE_ARN || secrets.PROD_APP_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: app-zip
+
+      - name: Get Version
+        run: echo "SHA=${{ needs.build.outputs.sha }}" >> "${GITHUB_ENV}"
+
+      - name: Fetch Bucket name from SSM
+        run: |
+          ARTIFACT_BUCKET=$(aws ssm get-parameter \
+            --name "/portfolio/${{ env.ENVIRONEMENT }}/artifact-bucket" \
+            --query "Parameter.Value" \
+            --output text 2>/dev/null || true)
+
+          if [ -z "$ARTIFACT_BUCKET" ]; then
+            echo "⚠️ Bucket not found...!!!"
+            echo "⚠️ Deploy the infrastructure(infra not ready yet)."
+            exit 0
+          fi
+
+          echo "ARTIFACT_BUCKET=${ARTIFACT_BUCKET}" >> "${GITHUB_ENV}"
+
+      - name: Upload Artifact to S3
+        run: |
+          aws s3 cp app.zip \
+            s3://"${ARTIFACT_BUCKET}"/app/releases/${{ env.SHA }}.zip
+
+      - name: Update the Pointer Version
+        run: |
+          echo ${{ env.SHA }} > version.txt
+
+          aws s3 cp version.txt \
+            s3://"${ARTIFACT_BUCKET}"/app/current/version.txt
+
+      - name: Fetch ASG name from SSM
+        run: |
+          ASG_NAME=$(aws ssm get-parameter \
+            --name "/portfolio/${{ env.ENVIRONEMENT }}/asg-name" \
+            --query "Parameter.Value" \
+            --output text 2>/dev/null || true)
+
+          echo "ASG_NAME=${ASG_NAME}" >> "${GITHUB_ENV}"
+
+      - name: Trigger Instance Refresh (if ASG exists)
+        run: |
+          if [ -z "${ASG_NAME}" ]; then
+            echo "⚠️ Bootstrap detected: ASG not found in SSM."
+            echo "✔ Artifact uploaded and version updated."
+            echo "✔ Skipping Instance Refresh (infra not ready yet)."
+            exit 0
+          fi
+
+          echo "🚀 Triggering Instance Refresh for ASG: ${ASG_NAME}"
+
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name "${ASG_NAME}"
