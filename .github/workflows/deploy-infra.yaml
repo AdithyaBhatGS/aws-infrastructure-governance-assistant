@@ -10,7 +10,12 @@ on:
     branches:
       - dev
       - prod
+
   workflow_dispatch:
+
+concurrency:
+  group: platform-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy-infra:

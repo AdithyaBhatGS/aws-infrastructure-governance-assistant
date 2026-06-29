@@ -121,31 +121,67 @@ Resources:
 
                     echo "Fetching current application version..."
 
-                    VERSION=$(aws s3 cp s3://${ARTIFACT_BUCKET}/app/current/version.txt -)
-
-                    if [ -z "$VERSION" ]; then
-                      echo "ERROR: version.txt is empty."
-                      exit 1
-                    fi
-
-                    echo "Current Version: ${VERSION}"
-
                     mkdir -p /tmp/app
 
-                    echo "Downloading artifact..."
+                    # -------------------------------------------------------
+                    # BOOTSTRAP SAFE CHECK
+                    # -------------------------------------------------------
 
+                    if ! aws s3 cp \
+                      s3://${ARTIFACT_BUCKET}/app/versions/current.txt \
+                      /tmp/app/current.txt >/dev/null 2>&1; then
+
+                      echo "Bootstrap deployment detected."
+                      echo "No current.txt found."
+
+                      cat >/var/www/html/index.html <<EOF
+                      <!DOCTYPE html>
+                      <html>
+                      <head>
+                          <title>Infrastructure Ready</title>
+                      </head>
+                      <body>
+                          <h2>Infrastructure deployed successfully</h2>
+                          <p>No application version has been deployed yet.</p>
+                      </body>
+                      </html>
+                      EOF
+
+                      chown -R apache:apache /var/www/html
+
+                      systemctl restart httpd
+
+                      echo "Bootstrap page served successfully."
+                      exit 0
+                    fi
+
+                    # -------------------------------------------------------
+                    # NORMAL DEPLOYMENT FLOW
+                    # -------------------------------------------------------
+                
+                    VERSION=$(cat /tmp/app/current.txt)
+                
+                    if [ -z "$VERSION" ]; then
+                      echo "ERROR: current.txt is empty."
+                      exit 1
+                    fi
+                
+                    echo "Current Version: ${VERSION}"
+                
+                    echo "Downloading artifact..."
+                
                     aws s3 cp \
                       s3://${ARTIFACT_BUCKET}/app/releases/${VERSION}.zip \
                       /tmp/app/app.zip
-
+                
                     echo "Cleaning existing deployment..."
-
+                
                     rm -rf /var/www/html/*
-
+                
                     echo "Extracting artifact..."
-
+                
                     unzip -oq /tmp/app/app.zip -d /var/www/html
-
+                
                     chown -R apache:apache /var/www/html
 
                     if [ ! -f /var/www/html/index.html ]; then
@@ -158,6 +194,7 @@ Resources:
                     systemctl restart httpd
 
                     echo "Application deployment completed successfully."
+
                   - ARTIFACT_BUCKET:
                       Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
           commands:

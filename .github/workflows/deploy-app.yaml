@@ -4,14 +4,20 @@ on:
   push:
     paths:
       - 'app/**'
+      - './github/workflows/deploy-app.yaml'
     branches:
       - dev
       - prod
 
+  workflow_dispatch:
+
+concurrency:
+  group: platform-deploy
+  cancel-in-progress: false
+
 env:
   AWS_REGION: ${{ github.ref == 'refs/heads/prod' && 'us-east-1' || 'us-east-2' }}
-  APP_PATH: app
-  ENVIRONEMENT: ${{ github.ref == 'refs/heads/prod' && 'prod' || 'dev'}}
+  ENVIRONMENT: ${{ github.ref == 'refs/heads/prod' && 'prod' || 'dev'}}
 
 jobs:
   build:
@@ -38,8 +44,12 @@ jobs:
           cp -r app/src/html/* build/
 
           mkdir -p build/js build/css
-          cp -r app/src/css/* build/css || true
-          cp -r app/src/js/* build/js || true
+          if [[ -d app/src/css ]]; then
+            cp -r app/src/css/* build/css || true
+          fi
+          if [[ -d app/src/js ]]; then
+            cp -r app/src/js/* build/js || true
+          fi
 
       - name: Create Zip
         run: |
@@ -79,13 +89,12 @@ jobs:
       - name: Fetch Bucket name from SSM
         run: |
           ARTIFACT_BUCKET=$(aws ssm get-parameter \
-            --name "/portfolio/${{ env.ENVIRONEMENT }}/artifact-bucket" \
+            --name "/portfolio/${{ env.ENVIRONMENT }}/artifact-bucket" \
             --query "Parameter.Value" \
             --output text 2>/dev/null || true)
 
           if [ -z "$ARTIFACT_BUCKET" ]; then
-            echo "⚠️ Bucket not found...!!!"
-            echo "⚠️ Deploy the infrastructure(infra not ready yet)."
+            echo "⚠️ Infra not ready - skipping deployment safely"
             exit 0
           fi
 
@@ -94,34 +103,73 @@ jobs:
       - name: Upload Artifact to S3
         run: |
           aws s3 cp app.zip \
-            s3://"${ARTIFACT_BUCKET}"/app/releases/${{ env.SHA }}.zip
+            s3://${ARTIFACT_BUCKET}/app/releases/${SHA}.zip
 
-      - name: Update the Pointer Version
+      - name: Update Version Files (SSM-backed S3)
         run: |
-          echo ${{ env.SHA }} > version.txt
+          mkdir -p /tmp/version
 
-          aws s3 cp version.txt \
-            s3://"${ARTIFACT_BUCKET}"/app/current/version.txt
+          if aws s3 cp s3://${ARTIFACT_BUCKET}/app/versions/current.txt /tmp/version/current.txt; then
+            aws s3 cp s3://${ARTIFACT_BUCKET}/app/versions/current.txt s3://${ARTIFACT_BUCKET}/app/versions/previous.txt
+          fi
+
+          echo $SHA > /tmp/version/current.txt
+
+          aws s3 cp /tmp/version/current.txt s3://${ARTIFACT_BUCKET}/app/versions/current.txt
+
 
       - name: Fetch ASG name from SSM
         run: |
           ASG_NAME=$(aws ssm get-parameter \
-            --name "/portfolio/${{ env.ENVIRONEMENT }}/asg-name" \
+            --name "/portfolio/${{ env.ENVIRONMENT }}/asg-name" \
             --query "Parameter.Value" \
             --output text 2>/dev/null || true)
+
+          if [ -z "${ASG_NAME}" ]; then
+            echo "⚠️ Bootstrap detected: ASG not found in SSM."
+            echo "✔ Artifact uploaded and version updated."
+            echo "✔ Version updated"
+            echo "⏭ Skipping instance refresh"
+            exit 0
+          fi
 
           echo "ASG_NAME=${ASG_NAME}" >> "${GITHUB_ENV}"
 
       - name: Trigger Instance Refresh (if ASG exists)
         run: |
-          if [ -z "${ASG_NAME}" ]; then
-            echo "⚠️ Bootstrap detected: ASG not found in SSM."
-            echo "✔ Artifact uploaded and version updated."
-            echo "✔ Skipping Instance Refresh (infra not ready yet)."
-            exit 0
-          fi
 
           echo "🚀 Triggering Instance Refresh for ASG: ${ASG_NAME}"
 
-          aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name "${ASG_NAME}"
+          REFRESH_ID=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name "${ASG_NAME}" \
+            --preferences '{
+              "MinHealthyPercentage": 50,
+              "MaxHealthyPercentage": 100,
+              "InstanceWarmup": 60,
+              "SkipMatching": false
+            }' \
+            --query 'InstanceRefreshId' \
+            --output text)
+
+          echo "REFRESH_ID=$REFRESH_ID" >> $GITHUB_ENV
+
+      - name: Wait for Instance Refresh
+        run: |
+          while true; do
+            STATUS=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name "${ASG_NAME}" \
+              --query "InstanceRefreshes | sort_by(@, &StartTime)[-1].Status" \
+              --output text)
+
+            echo "Status: $STATUS"
+
+            if [ "$STATUS" == "Successful" ]; then
+              exit 0
+            fi
+
+            if [ "$STATUS" == "Failed" ] || [ "$STATUS" == "Cancelled" ]; then
+              exit 1
+            fi
+
+            sleep 20
+          done

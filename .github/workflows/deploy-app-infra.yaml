@@ -11,6 +11,10 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: platform-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy-app-infra:
     runs-on: ubuntu-latest
