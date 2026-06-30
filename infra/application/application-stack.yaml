@@ -234,9 +234,7 @@ Resources:
 
             yum update -y aws-cfn-bootstrap
 
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppTemplate --region ${AWS::Region}
-
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppLaunchTemplate --region ${AWS::Region}
   AppALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
