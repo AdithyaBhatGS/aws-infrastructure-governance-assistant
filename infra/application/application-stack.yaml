@@ -218,7 +218,9 @@ Resources:
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
-          Name: dev-static-web-server-role-dev-security-stack
+          Name:
+            Fn::ImportValue:
+              Fn::Sub: "${Environment}-security-instance-profile"
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
@@ -324,11 +326,6 @@ Resources:
       MaxSize: 4
       DesiredCapacity: 2
       AutoScalingGroupName: !Ref AutoScalingGroupName
-      AvailabilityZoneDistribution:
-        CapacityDistributionStrategy: balanced-best-effort
-      AvailabilityZones:
-        - !Ref AvailabilityZoneA
-        - !Ref AvailabilityZoneB
       LaunchTemplate: 
         LaunchTemplateId: !GetAtt AppLaunchTemplate.LaunchTemplateId
         Version: !GetAtt AppLaunchTemplate.LatestVersionNumber
