@@ -320,7 +320,7 @@ Resources:
       AutoScalingGroupName: !Ref AutoScalingGroupName
       LaunchTemplate: 
         LaunchTemplateId: !GetAtt AppLaunchTemplate.LaunchTemplateId
-        Version: !GetAtt AppLaunchTemplate.LatestVersionNumber
+        Version: !GetAtt AppLaunchTemplate.DefaultVersionNumber
       TargetGroupARNs:
         - !GetAtt AppALBTargetGrp.TargetGroupArn
       VPCZoneIdentifier:
