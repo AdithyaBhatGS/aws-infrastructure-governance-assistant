@@ -26,12 +26,6 @@ Parameters:
     Description: Represents the name of the Auto Scaling Group
     AllowedPattern: ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,30}[A-Za-z0-9])?$
     MaxLength: 32
-  AvailabilityZoneA:
-    Type: AWS::EC2::AvailabilityZone::Name
-    Description: Choose an availablity zone A in the specified region
-  AvailabilityZoneB:
-    Type: AWS::EC2::AvailabilityZone::Name
-    Description: Choose an availablity zone B in the specified region
   AMIID:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Description: Represents the AMI ID
@@ -218,7 +212,9 @@ Resources:
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
-          Name: dev-static-web-server-role-dev-security-stack
+          Name:
+            Fn::ImportValue:
+              Fn::Sub: "${Environment}-security-instance-profile"
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
@@ -324,11 +320,6 @@ Resources:
       MaxSize: 4
       DesiredCapacity: 2
       AutoScalingGroupName: !Ref AutoScalingGroupName
-      AvailabilityZoneDistribution:
-        CapacityDistributionStrategy: balanced-best-effort
-      AvailabilityZones:
-        - !Ref AvailabilityZoneA
-        - !Ref AvailabilityZoneB
       LaunchTemplate: 
         LaunchTemplateId: !GetAtt AppLaunchTemplate.LaunchTemplateId
         Version: !GetAtt AppLaunchTemplate.LatestVersionNumber

@@ -16,14 +16,6 @@
         "ParameterValue":"dev-static-hosting-asg"
     },
     {
-        "ParameterKey":"AvailabilityZoneA",
-        "ParameterValue":"us-east-2a"
-    },
-    {
-        "ParameterKey":"AvailabilityZoneB",
-        "ParameterValue":"us-east-2b"
-    },
-    {
         "ParameterKey":"ALBRequestCountTargetValue",
         "ParameterValue":"3"
     },
