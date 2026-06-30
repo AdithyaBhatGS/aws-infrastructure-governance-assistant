@@ -5,7 +5,7 @@
     },
     {
         "ParameterKey":"APPEC2Role",
-        "ParameterValue":"dev-static-web-server-role"
+        "ParameterValue":"static-web-server-role"
     },
     {
         "ParameterKey":"EC2CloudWatchPolicyName",

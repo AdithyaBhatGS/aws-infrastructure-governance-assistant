@@ -268,11 +268,19 @@ Resources:
           - Effect: Allow
             Action:
               - ssm:GetParameters
+              - ssm:GetParameter
               - ssm:PutParameter
+              - ssm:DeleteParameter
               - ssm:DeleteParameters
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
               - !Sub "arn:aws:ssm:${AWS::Region}::parameter/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/static-web-server-role-${Environment}-security-stack"
   InfraExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -600,7 +608,7 @@ Outputs:
     Value: !GetAtt ValidationRole.Arn
     Description: Represents the ARN of the Validation Role
     Export: 
-      Name: !Sub "bootstrap-validation-role-arn"
+      Name: "bootstrap-validation-role-arn"
   OIDCARN:
     Value: !GetAtt GitHubOIDC.Arn
     Description: Represents the ARN of the OIDC
