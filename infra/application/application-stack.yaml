@@ -166,12 +166,12 @@ Resources:
                       exit 1
                     fi
                 
-                    echo "Current Version: ${VERSION}"
+                    echo "Current Version: $VERSION"
                 
                     echo "Downloading artifact..."
                 
                     aws s3 cp \
-                      s3://${ARTIFACT_BUCKET}/app/releases/${VERSION}.zip \
+                      s3://${ARTIFACT_BUCKET}/app/releases/$VERSION.zip \
                       /tmp/app/app.zip
                 
                     echo "Cleaning existing deployment..."
