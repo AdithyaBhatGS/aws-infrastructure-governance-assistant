@@ -299,9 +299,6 @@ Resources:
         - Type: forward
           TargetGroupArn: !GetAtt AppALBTargetGrp.TargetGroupArn
   AppAutoScalingGroup:
-    DependsOn:
-      - AppALBTargetGrp
-      - AppLaunchTemplate
     Type: AWS::AutoScaling::AutoScalingGroup
     CreationPolicy: 
       ResourceSignal:
