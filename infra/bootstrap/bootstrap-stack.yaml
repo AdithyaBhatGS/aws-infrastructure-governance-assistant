@@ -272,6 +272,7 @@ Resources:
               - ssm:DeleteParameters
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
+              - !Sub "arn:aws:ssm:${AWS::Region}::parameter/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
   InfraExecutionRole:
     Type: AWS::IAM::Role
     Properties:
