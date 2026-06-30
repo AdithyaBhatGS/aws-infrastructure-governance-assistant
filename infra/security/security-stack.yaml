@@ -189,7 +189,7 @@ Outputs:
     Export:
       Name: !Sub "${Environment}-security-ec2-role-arn"
   IProfileName:
-    Value: !Ref AppInstanceProfile
+    Value: !GetAtt AppInstanceProfile.Arn
     Description: Represents the IAM Instance profile name
     Export:
-      Name: !Sub "${Environment}-security-instance-profile"
+      Name: !Sub "${Environment}-security-instance-profile-arn"

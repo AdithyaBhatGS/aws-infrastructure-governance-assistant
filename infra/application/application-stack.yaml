@@ -212,9 +212,9 @@ Resources:
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
-          Name:
+          Arn:
             Fn::ImportValue:
-              Fn::Sub: "${Environment}-security-instance-profile"
+              Fn::Sub: "${Environment}-security-instance-profile-arn"
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
