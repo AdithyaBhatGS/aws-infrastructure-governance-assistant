@@ -54,6 +54,13 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
+  ArtifactBktParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/portfolio/${Environment}/artifact-bucket"
+      Type: String
+      Value: !Ref WebAssetBkt
+      Description: Artifact bucket for application deployments
 Outputs:
   OutputBktName:
     Value: !Ref WebAssetBkt
@@ -65,3 +72,6 @@ Outputs:
     Description: Represents the ARN of the bucket
     Export:
       Name: !Sub "${Environment}-storage-artifact-bkt-arn"
+  ArtifactBktSSM:
+    Value: !Ref ArtifactBktParameter
+    Description: Represents the Name of the SSM Parameter for Artifact Bucket

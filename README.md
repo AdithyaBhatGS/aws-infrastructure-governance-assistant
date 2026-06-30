@@ -22,6 +22,8 @@
         - VPC, Subnets,Internet Gateway, NAT Gateway, EIP, Route Tables, Security Groups
      4. [application stack](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/infra/application)
         - EC2, Launch template, ALB
+     5. [bootstrap stack](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/infra/bootstrap)
+        - OIDC, Deployment Roles, Execution Roles, PassRoles, Permissions Boundary
 4. Validation of infrastructure includes
    - yamllint
    - cfn-lint
@@ -105,8 +107,10 @@
    1. [validate-infra-on-pr.yaml](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/blob/dev/.github/workflows/validate-infra-on-pr.yaml)
       - Validates the cloudformation code for YAML, CloudFormation syntactical errors
    2. [deploy-infra.yaml](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/blob/dev/.github/workflows/deploy-infra.yaml)
-      - Deployes the infrastructure for every change on [infra/](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/infra) on push to dev/prod
+      - Deploys the infrastructure for every change on [infra/](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/infra) on push to dev/prod excluding the [infra/application](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/infra/application)
    3. [deploy-app.yaml](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/blob/dev/.github/workflows/deploy-app.yaml)
       - Deploys the application code from s3 to EC2 for every change to [app/](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/app/src) on push to dev/prod
+   4. [deploy-app-infra.yaml](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/blob/dev/.github/workflows/deploy-app-infra.yaml)
+      - Deploys the infra components required for Application. [infra/application/](https://github.com/AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app/tree/dev/infra/application) on push to dev/prod
 
 ---

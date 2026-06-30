@@ -1,9 +1,10 @@
-# Only count YAML files inside an 'infra' or 'templates' folder
+# 1. Un-exclude YAML globally so GitHub tracks it as a detectable language
+*.yaml linguist-detectable=true
+*.yml linguist-detectable=true
 
-infrastructure/*.yaml linguist-language=CloudFormation linguist-detectable=true
-infrastructure/*.yml linguist-language=CloudFormation linguist-detectable=true
+# 2. Reclassify files inside the 'infrastructure' folder as CloudFormation
+infra/**/*.yaml linguist-language=CloudFormation
+infra/**/*.yml linguist-language=CloudFormation
 
-# Exclude CI/CD pipeline files from stats
-
-.github/workflows/*.yml linguist-detectable=false
-.github/workflows/*.yaml linguist-detectable=false
+# 3. Explicitly hide CI/CD workflows and other YAML folders you don't want counted
+.github/workflows/** linguist-detectable=false
