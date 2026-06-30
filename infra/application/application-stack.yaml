@@ -218,9 +218,7 @@ Resources:
     Properties:
       LaunchTemplateData:
         IamInstanceProfile:
-          Name: 
-            Fn::ImportValue:
-              Fn::Sub: "${Environment}-security-instance-profile"
+          Name: dev-static-web-server-role-dev-security-stack
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
