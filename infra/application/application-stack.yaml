@@ -66,37 +66,38 @@ Resources:
 
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
-              content: !Sub
-                {
-                  "logs": {
-                    "logs_collected": {
-                      "files": {
-                        "collect_list": [
-                          {
-                            "file_path": "/var/log/cloud-init.log",
-                            "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
-                            "log_stream_name": "{{instance_id}}-cloud-init"
-                          },
-                          {
-                            "file_path": "/var/log/cloud-init-output.log",
-                            "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
-                            "log_stream_name": "{{instance_id}}-cloud-init-output"
-                          },
-                          {
-                            "file_path": "/var/log/messages",
-                            "log_group_name": "${Environment}/infrastructure/ec2/system",
-                            "log_stream_name": "{{instance_id}}-messages"
-                          },
-                          {
-                            "file_path": "/var/log/app-deploy.log",
-                            "log_group_name": "${Environment}/application/ec2/deploy",
-                            "log_stream_name": "{{instance_id}}-app-deploy"
-                          }
-                        ]
+              content:
+                Fn::Sub: |
+                  {
+                    "logs": {
+                      "logs_collected": {
+                        "files": {
+                          "collect_list": [
+                            {
+                              "file_path": "/var/log/cloud-init.log",
+                              "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
+                              "log_stream_name": "{{instance_id}}-cloud-init"
+                            },
+                            {
+                              "file_path": "/var/log/cloud-init-output.log",
+                              "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
+                              "log_stream_name": "{{instance_id}}-cloud-init-output"
+                            },
+                            {
+                              "file_path": "/var/log/messages",
+                              "log_group_name": "${Environment}/infrastructure/ec2/system",
+                              "log_stream_name": "{{instance_id}}-messages"
+                            },
+                            {
+                              "file_path": "/var/log/app-deploy.log",
+                              "log_group_name": "${Environment}/application/ec2/deploy",
+                              "log_stream_name": "{{instance_id}}-app-deploy"
+                            }
+                          ]
+                        }
                       }
                     }
                   }
-                }
               mode: "000644"
               owner: root
               group: root
@@ -114,7 +115,7 @@ Resources:
                     exec > >(tee -a /var/log/app-deploy.log)
                     exec 2>&1
 
-                    ARTIFACT_BUCKET="${ARTIFACT_BUCKET_NAME}"
+                    ARTIFACT_BUCKET="${ARTIFACT_BUCKET}"
 
                     echo "========== Application Deployment =========="
 
@@ -188,7 +189,7 @@ Resources:
 
                     echo "Application deployment completed successfully."
 
-                  - ARTIFACT_BUCKET_NAME:
+                  - ARTIFACT_BUCKET:
                       Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
           commands:
             01_cloudwatch_agent_setup:
