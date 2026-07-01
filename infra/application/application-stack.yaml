@@ -229,14 +229,17 @@ Resources:
               DeleteOnTermination: true
               VolumeSize: 8
         UserData:
-          Fn::Base64: !Sub
-            #!/bin/bash -xe
+          Fn::Base64:
+            Fn::Sub: |
+              #!/bin/bash -xe
 
-            yum update -y aws-cfn-bootstrap
+              yum update -y
 
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppLaunchTemplate --region ${AWS::Region}
+              yum install -y aws-cfn-bootstrap
 
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppAutoScalingGroup --region ${AWS::Region}
+              /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppLaunchTemplate --region ${AWS::Region}
+
+              /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppAutoScalingGroup --region ${AWS::Region}
   AppALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
