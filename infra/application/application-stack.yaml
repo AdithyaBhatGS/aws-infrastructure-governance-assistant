@@ -58,6 +58,12 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         config:
+          packages:
+            yum:
+              amazon-cloudwatch-agent: []
+              httpd: []
+              unzip: []
+
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
               content:
@@ -186,11 +192,6 @@ Resources:
                   - ARTIFACT_BUCKET:
                       Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
           commands:
-            01_package_installation:
-              command: >
-                dnf install -y amazon-cloudwatch-agent
-                dnf install -y httpd
-                dnf install -y unzip
             02_cloudwatch_agent_setup:
               command: >
                 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
