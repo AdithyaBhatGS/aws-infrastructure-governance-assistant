@@ -58,12 +58,6 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         config:
-          packages:
-            yum:
-              amazon-cloudwatch-agent: []
-              httpd: []
-              awscli: []
-              unzip: []
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
               content:
@@ -192,17 +186,22 @@ Resources:
                   - ARTIFACT_BUCKET:
                       Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
           commands:
-            01_cloudwatch_agent_setup:
+            01_package_installation:
+              command: >
+                dnf install -y amazon-cloudwatch-agent
+                dnf install -y httpd
+                dnf install -y unzip
+            02_cloudwatch_agent_setup:
               command: >
                 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
                 -a fetch-config
                 -m ec2
                 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
                 -s
-            02_deploy_app:
+            03_deploy_app:
               command: "/bin/bash /opt/app/deploy.sh"
           services:
-            sysvinit:
+            systemd:
               httpd:
                 ensureRunning: "true"
                 enabled: "true"
@@ -232,10 +231,6 @@ Resources:
           Fn::Base64:
             Fn::Sub: |
               #!/bin/bash -xe
-
-              yum update -y
-
-              yum install -y aws-cfn-bootstrap
 
               /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppLaunchTemplate --region ${AWS::Region}
 
