@@ -65,12 +65,27 @@ Parameters:
     Description: Represents the name of the log group for system level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
     Default: system
+  PurposeOfApplicationLogGrp:
+    Type: String
+    Description: Represents the purpose of the log group for application level logs
+    AllowedPattern: ^[A-Za-z0-9]+$
+    Default: application
+  ComponentOfApplicationLogGrp:
+    Type: String
+    Description: Represents the component of the log group for application level logs
+    AllowedPattern: ^[-A-Za-z0-9]+$
+    Default: ec2
+  NameOfApplicationLogGrp:
+    Type: String
+    Description: Represents the name of the log group for system level logs
+    AllowedPattern: ^[-A-Za-z0-9]+$
+    Default: deploy
 Resources:
   CloudInitLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupClass: STANDARD
-      LogGroupName: !Sub "${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
+      LogGroupName: !Sub "${Environment}/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
@@ -87,11 +102,28 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupClass: STANDARD
-      LogGroupName: !Sub "${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
+      LogGroupName: !Sub "${Environment}/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
       RetentionInDays: 7
       Tags:
         - Key: Name
           Value: !Sub "${Environment}-system-log-grp"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+        - Key: Owner
+          Value: !Ref Owner
+  ApplicationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupClass: STANDARD
+      LogGroupName: !Sub "${Environment}/${PurposeOfApplicationLogGrp}/${ComponentOfApplicationLogGrp}/${NameOfApplicationLogGrp}"
+      RetentionInDays: 7
+      Tags:
+        - Key: Name
+          Value: !Sub "${Environment}-application-log-grp"
         - Key: Environment
           Value: !Ref Environment
         - Key: Project
