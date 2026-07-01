@@ -193,12 +193,13 @@ Resources:
                       Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
           commands:
             02_cloudwatch_agent_setup:
-              command: >
-                /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
-                -a fetch-config
-                -m ec2
-                -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-                -s
+              command: |
+                sleep 10
+                /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+                  -a fetch-config \
+                  -m ec2 \
+                  -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+                  -s || echo "CloudWatch agent setup failed but continuing"
             03_deploy_app:
               command: "/bin/bash /opt/app/deploy.sh"
           services:
