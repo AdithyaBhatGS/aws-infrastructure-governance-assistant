@@ -220,6 +220,7 @@ Resources:
               - 'iam:CreatePolicyVersion'
               - 'iam:DeletePolicyVersion'
               - 'iam:SetDefaultPolicyVersion'
+              - 'iam:ListPolicyVersions'
               - 'iam:GetPolicy'
               - 'iam:GetPolicyVersion'
             Resource: '*'
