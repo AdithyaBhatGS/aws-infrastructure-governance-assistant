@@ -3,7 +3,7 @@ name: Application Infrastructure Pipeline
 on:
   push:
     paths:
-      - 'infra/launch_template/**'
+      - 'infra/launch-template/**'
       - 'infra/application/**'
       - '.github/workflows/deploy-app-infra.yaml'
     branches:
@@ -38,7 +38,7 @@ jobs:
         with:
           filters: |
             lt:
-              - 'infra/launch_template/**'
+              - 'infra/launch-template/**'
             app:
               - 'infra/application/**'
 

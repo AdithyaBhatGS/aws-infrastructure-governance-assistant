@@ -22,7 +22,7 @@ jobs:
         with:
           filters: |
             application: 'infra/application/**'
-            lt: 'infra/launch_template/**'
+            lt: 'infra/launch-template/**'
             network: 'infra/network/**'
             security: 'infra/security/**'
             storage: 'infra/storage/**'
