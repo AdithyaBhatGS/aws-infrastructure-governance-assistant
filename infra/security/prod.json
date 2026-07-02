@@ -1,11 +1,11 @@
 [
     {
         "ParameterKey": "Environment",
-        "ParameterValue":"prod"
+        "ParameterValue": "prod"
     },
     {
         "ParameterKey": "APPEC2Role",
-        "ParameterValue":"static-web-server-role"
+        "ParameterValue": "static-web-server-role"
     },
     {
         "ParameterKey": "CloudWatchPolicyName",
