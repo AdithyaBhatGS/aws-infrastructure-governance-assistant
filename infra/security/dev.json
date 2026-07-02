@@ -1,18 +1,30 @@
 [
     {
-        "ParameterKey":"Environment",
-        "ParameterValue":"dev"
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
     },
     {
-        "ParameterKey":"APPEC2Role",
-        "ParameterValue":"static-web-server-role"
+        "ParameterKey": "APPEC2Role",
+        "ParameterValue": "static-web-server-role"
     },
     {
-        "ParameterKey":"EC2CloudWatchPolicyName",
-        "ParameterValue":"dev-ec2-cloudwatch-static-web-policy"
+        "ParameterKey": "CloudWatchPolicyName",
+        "ParameterValue": "dev-cloudwatch-policy"
     },
     {
-        "ParameterKey":"EC2BktAccessPolicyName",
-        "ParameterValue":"dev-ec2-bkt-static-web-policy"
+        "ParameterKey": "CloudWatchAgentPolicyName",
+        "ParameterValue": "dev-cloudwatch-agent-policy"
+    },
+    {
+        "ParameterKey": "S3BucketPolicyName",
+        "ParameterValue": "dev-s3-bucket-policy"
+    },
+    {
+        "ParameterKey": "EC2MetadataPolicyName",
+        "ParameterValue": "dev-ec2-metadata-policy"
+    },
+    {
+        "ParameterKey": "CloudFormationPolicyName",
+        "ParameterValue": "dev-cloudformation-policy"
     }
 ]

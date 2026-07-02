@@ -26,14 +26,21 @@ Parameters:
       Represents the name associated to an IAM Role attached to the
       EC2 instance
     AllowedPattern: ^[\w+=,.@-]+$
-  EC2CloudWatchPolicyName:
+  CloudWatchPolicyName:
     Type: String
-    Description: Represents the name of the policy document of cloudwatch policy
-    AllowedPattern: ^[\w+=,.@-]+$
-  EC2BktAccessPolicyName:
+    Description: Represents the name of the cloudwatch policy
+  CloudWatchAgentPolicyName:
     Type: String
-    Description: Represents the name of the policy document of bkt access policy
-    AllowedPattern: ^[\w+=,.@-]+$
+    Description: Represents the name of the cloudwatch agent policy
+  S3BucketPolicyName:
+    Type: String
+    Description: Represents the name of the s3 bucket policy
+  EC2MetadataPolicyName:
+    Type: String
+    Description: Represents the name of the ec2 metadata policy
+  CloudFormationPolicyName:
+    Type: String
+    Description: Represents the name of the cloudformation policy
   PurposeOfCloudInitLogGrp:
     Type: String
     Description: |
@@ -149,6 +156,11 @@ Resources:
         access, write logs to cloudwatch
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - !GetAtt CloudWatchPolicy.PolicyArn
+        - !GetAtt CloudWatchAgentPolicy.PolicyArn
+        - !GetAtt S3BucketPolicy.PolicyArn
+        - !GetAtt EC2MetadataPolicy.PolicyArn
+        - !GetAtt CloudFormationPolicy.PolicyArn
       RoleName: !Sub '${APPEC2Role}-${AWS::StackName}'
       Tags:
         - Key: Environment
@@ -159,50 +171,72 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
-  EC2CloudWatchPolicy:
-    Type: AWS::IAM::RolePolicy
+  CloudWatchPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Ref EC2CloudWatchPolicyName
-      RoleName: !Ref EC2IAMRole
+      Description: Represents the permission for accessing the cloudwatch logs
+      ManagedPolicyName: !Ref CloudWatchPolicyName
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-              - logs:DescribeLogStreams
-            Resource:
-              - !Sub
-                - '${CloudInitARN}:*'
-                - {CloudInitARN: !GetAtt CloudInitLogGroup.Arn}
-              - !Sub
-                - '${SystemLogGrpARN}:*'
-                - {SystemLogGrpARN: !GetAtt SystemLogGroup.Arn}
-  EC2BktAccessPolicy:
-    Type: AWS::IAM::RolePolicy
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+              - 'logs:DescribeLogStreams'
+            Resource: '*'
+  CloudWatchAgentPolicy:
+    Type: AWS::IAM::ManagedPolicy
     Properties:
-      PolicyName: !Ref EC2BktAccessPolicyName
-      RoleName: !Ref EC2IAMRole
+      Description: Represents the permission for cloudwatch agent
+      ManagedPolicyName: !Ref CloudWatchAgentPolicyName
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
-              - s3:ListBucket
-            Resource:
-              - Fn::ImportValue:
-                  Fn::Sub: "${Environment}-storage-artifact-bkt-arn"
+              - 'cloudwatch:PutMetricData'
+            Resource: '*'
+  S3BucketPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Represents the permission for s3 bucket
+      ManagedPolicyName: !Ref S3BucketPolicyName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
           - Effect: Allow
             Action:
-              - s3:GetObject
-            Resource:
-              - !Join
-                - ""
-                - - Fn::ImportValue:
-                      Fn::Sub: "${Environment}-storage-artifact-bkt-arn"
-                  - "/*"
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource: '*'
+  EC2MetadataPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Represents the permission for ec2 metadata
+      ManagedPolicyName: !Ref EC2MetadataPolicyName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ec2:DescribeTags"
+            Resource: '*'
+  CloudFormationPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Represents the permission for cloudformation
+      ManagedPolicyName: !Ref CloudFormationPolicyName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'cloudformation:DescribeStackResource'
+              - 'cloudformation:DescribeStackResources'
+              - 'cloudformation:DescribeStacks'
+            Resource: '*'
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
