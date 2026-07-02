@@ -54,7 +54,6 @@ jobs:
     env:
       DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_APP_INFRA_EXECUTION_ROLE_ARN }}
       PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_APP_INFRA_EXECUTION_ROLE_ARN }}
-      SHA: ${{ github.sha }}
 
     steps:
       - name: Checkout Code
@@ -73,18 +72,29 @@ jobs:
         run: |
           echo "STACK=launch_template" >> "${GITHUB_ENV}"
 
+      - name: Generate runtime parameter file
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          jq --arg sha "$SHORT_SHA" '
+            map(
+              if .ParameterKey == "BootstrapVersion"
+              then .ParameterValue = $sha
+              else .
+              end
+            )
+          ' infra/launch_template/${ENVIRONMENT}.json > infra/launch_template/runtime-${ENVIRONMENT}.json
+
       - name: Deploy stack
         run: |
           set -e
-
-          SHORT_SHA="${SHA:0:7}"
 
           echo "=================================================================="
           echo "============= Processing stack: ${ENVIRONMENT}-${STACK}-stack =============="
           echo "=================================================================="
 
           TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
-          PARAMS_FILE="infra/${STACK}/${ENVIRONMENT}.json"
+          PARAMS_FILE="infra/${STACK}/runtime-${ENVIRONMENT}.json"
             
           echo "-> Running yamllint..."
           yamllint $TEMPLATE_FILE
@@ -108,11 +118,16 @@ jobs:
           aws cloudformation deploy \
             --stack-name "${STACK_NAME}" \
             --template-file "${TEMPLATE_FILE}" \
-            --parameter-overrides file://"${PARAMS_FILE}" BootstrapVersion="${SHORT_SHA}" \
+            --parameter-overrides "${PARAMS_FILE}" \
             --capabilities CAPABILITY_NAMED_IAM \
             --role-arn "${ROLE_ARN}" \
             --region "${AWS_REGION}" \
             --debug
+
+      - name: Cleanup runtime parameter file
+        if: always()
+        run: |
+          rm -f infra/launch_template/runtime-${ENVIRONMENT}.json
 
   deploy-app:
     runs-on: ubuntu-latest

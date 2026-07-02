@@ -2,5 +2,9 @@
     {
         "ParameterKey":"Environment",
         "ParameterValue":"dev"
+    },
+    {
+        "ParameterKey":"BootstrapVersion",
+        "ParameterValue":"placeholder"
     }
 ]

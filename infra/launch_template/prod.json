@@ -2,5 +2,9 @@
     {
         "ParameterKey":"Environment",
         "ParameterValue":"prod"
+    },
+    {
+        "ParameterKey":"BootstrapVersion",
+        "ParameterValue":"placeholder"
     }
 ]
