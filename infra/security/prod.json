@@ -1,10 +1,10 @@
 [
     {
-        "ParameterKey":"Environment",
+        "ParameterKey": "Environment",
         "ParameterValue":"prod"
     },
     {
-        "ParameterKey":"APPEC2Role",
+        "ParameterKey": "APPEC2Role",
         "ParameterValue":"static-web-server-role"
     },
     {
