@@ -101,7 +101,7 @@ jobs:
 
       - name: Set stack
         id: stacks
-        run: echo "STACK=launch_template" >> $GITHUB_ENV
+        run: echo "STACK=launch-template" >> $GITHUB_ENV
 
       - name: Validate and deploy ${STACK}-stack
         run: |

@@ -70,7 +70,7 @@ jobs:
 
       - name: Set stack
         run: |
-          echo "STACK=launch_template" >> "${GITHUB_ENV}"
+          echo "STACK=launch-template" >> "${GITHUB_ENV}"
 
       - name: Generate runtime parameter file
         run: |
