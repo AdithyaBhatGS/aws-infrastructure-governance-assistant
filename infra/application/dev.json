@@ -17,7 +17,7 @@
     },
     {
         "ParameterKey":"ALBRequestCountTargetValue",
-        "ParameterValue":"3"
+        "ParameterValue":"2"
     },
     {
         "ParameterKey":"CPUPolicyTargetValue",

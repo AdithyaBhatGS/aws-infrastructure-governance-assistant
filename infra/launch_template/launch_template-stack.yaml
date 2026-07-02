@@ -1,0 +1,234 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Stack to deploy launch template for ASG.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Choose either dev or prod
+  AMIID:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Description: Represents the AMI ID
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+  BootstrapVersion:
+    Type: String
+    Description: Git SHA or build version for forcing LT update
+
+Mappings:
+  EnvironmentToInstanceType:
+    dev:
+      InstanceType: t3.micro
+    prod:
+      InstanceType: t3.small
+
+Resources:
+  AppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              amazon-cloudwatch-agent: []
+              httpd: []
+              unzip: []
+          files:
+            /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
+              content:
+                Fn::Sub: |
+                  {
+                    "logs": {
+                      "logs_collected": {
+                        "files": {
+                          "collect_list": [
+                            {
+                              "file_path": "/var/log/cloud-init.log",
+                              "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
+                              "log_stream_name": "{{instance_id}}-cloud-init"
+                            },
+                            {
+                              "file_path": "/var/log/cloud-init-output.log",
+                              "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
+                              "log_stream_name": "{{instance_id}}-cloud-init-output"
+                            },
+                            {
+                              "file_path": "/var/log/app-*.log",
+                              "log_group_name": "${Environment}/application/ec2/deploy",
+                              "log_stream_name": "{{instance_id}}-app-deploy"
+                            }
+                          ]
+                        },
+                        "windows_events": {},
+                        "journal": {
+                          "collect_list": [
+                            {
+                              "journal_events": "all",
+                              "log_group_name": "${Environment}/infrastructure/ec2/system",
+                              "log_stream_name": "{{instance_id}}-system-journal"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+              mode: "000644"
+              owner: root
+              group: root
+
+            /opt/app/deploy.sh:
+              mode: "000755"
+              owner: root
+              group: root
+              content:
+                Fn::Sub:
+                  - |
+                    #!/bin/bash
+                    set -euo pipefail
+
+                    exec > >(tee -a /var/log/app-deploy.log)
+                    exec 2>&1
+
+                    ARTIFACT_BUCKET="${ARTIFACT_BUCKET}"
+
+                    echo "========== Application Deployment =========="
+
+                    echo "Fetching current application version..."
+
+                    mkdir -p /tmp/app
+
+                    # -------------------------------------------------------
+                    # BOOTSTRAP SAFE CHECK
+                    # -------------------------------------------------------
+
+                    if ! aws s3 cp \
+                      s3://${ARTIFACT_BUCKET}/app/versions/current.txt \
+                      /tmp/app/current.txt >/dev/null 2>&1; then
+
+                      echo "Bootstrap deployment detected."
+                      echo "No current.txt found."
+
+                      # SAFE FILE CREATION (NO HEREDOC)
+                      TOKEN=$(curl -s -X PUT "http://169.254.169.254" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+
+                      MY_INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254)
+
+                      printf "<!DOCTYPE html>\n<html>\n<head><title>Infrastructure Ready</title></head>\n<body>\n<h2>Infrastructure deployed successfully</h2>\n<p>Served by Instance ID: <strong>%s</strong></p>\n</body>\n</html>\n" "$MY_INSTANCE_ID" > /var/www/html/index.html
+
+                      chown -R apache:apache /var/www/html
+
+                      systemctl restart httpd
+
+                      echo "Bootstrap page served successfully."
+                      exit 0
+                    fi
+
+                    # -------------------------------------------------------
+                    # NORMAL DEPLOYMENT FLOW
+                    # -------------------------------------------------------
+
+                    VERSION=$(cat /tmp/app/current.txt)
+
+                    if [ -z "$VERSION" ]; then
+                      echo "ERROR: current.txt is empty."
+                      exit 1
+                    fi
+
+                    echo "Current Version: $VERSION"
+
+                    echo "Downloading artifact..."
+
+                    aws s3 cp \
+                      s3://${ARTIFACT_BUCKET}/app/releases/$VERSION.zip \
+                      /tmp/app/app.zip
+
+                    echo "Cleaning existing deployment..."
+
+                    rm -rf /var/www/html/*
+
+                    echo "Extracting artifact..."
+
+                    unzip -oq /tmp/app/app.zip -d /var/www/html
+
+                    chown -R apache:apache /var/www/html
+
+                    if [ ! -f /var/www/html/index.html ]; then
+                      echo "ERROR: index.html not found after deployment."
+                      exit 1
+                    fi
+
+                    echo "Restarting Apache..."
+
+                    systemctl restart httpd
+
+                    echo "Application deployment completed successfully."
+
+                  - ARTIFACT_BUCKET:
+                      Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
+          commands:
+            01_cloudwatch_agent_setup:
+              command: |
+                /bin/bash -c '
+                sleep 10
+                /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+                  -a fetch-config \
+                  -m ec2 \
+                  -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+                  -s
+                '
+            02_deploy_app:
+              command: "/bin/bash /opt/app/deploy.sh"
+          services:
+            systemd:
+              httpd:
+                ensureRunning: "true"
+                enabled: "true"
+              amazon-cloudwatch-agent:
+                ensureRunning: "true"
+                enabled: "true"
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::ImportValue:
+              Fn::Sub: "${Environment}-security-instance-profile-arn"
+        ImageId: !Ref AMIID
+        InstanceType: !FindInMap
+          - EnvironmentToInstanceType
+          - !Ref Environment
+          - InstanceType
+        SecurityGroupIds:
+          - Fn::ImportValue:
+              Fn::Sub: "${Environment}-network-app-sg-id"
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              DeleteOnTermination: true
+              VolumeSize: 8
+        UserData:
+          Fn::Base64:
+            Fn::Sub: |
+              #!/bin/bash -xe
+
+              echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
+
+              /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppLaunchTemplate --region ${AWS::Region}
+
+              /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppAutoScalingGroup --region ${AWS::Region}
+
+Outputs:
+  AMI:
+    Value: !Ref AMIID
+    Description: Represents the AMI ID of the app instance
+  LaunchTempID:
+    Value: !GetAtt AppLaunchTemplate.LaunchTemplateId
+    Description: Represents the ID of the launch template
+    Export:
+      Name: !Sub "${Environment}-launch-temp-id"
+  LaunchTempVersion:
+    Value: !GetAtt AppLaunchTemplate.LatestVersionNumber
+    Description: Represents the version of the launch template
+    Export:
+      Name: !Sub "${Environment}-launch-temp-version"

@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       application: ${{ steps.filter.outputs.application }}
+      lt: ${{ steps.filter.outputs.lt }}
       network: ${{ steps.filter.outputs.network }}
       security: ${{ steps.filter.outputs.security }}
       storage: ${{ steps.filter.outputs.storage }}
@@ -21,10 +22,11 @@ jobs:
         with:
           filters: |
             application: 'infra/application/**'
+            lt: 'infra/launch_template/**'
             network: 'infra/network/**'
             security: 'infra/security/**'
             storage: 'infra/storage/**'
-    
+
   validate-application-infra:
     needs: changes
     if: ${{ needs.changes.outputs.application == 'true' }}
@@ -53,6 +55,53 @@ jobs:
       - name: Set stack
         id: stacks
         run: echo "STACK=application" >> $GITHUB_ENV
+
+      - name: Validate and deploy ${STACK}-stack
+        run: |
+          set -e
+
+          echo "==== Processing stack: $STACK-stack ===="
+
+          TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Running cloudformation validate..."
+          aws cloudformation validate-template \
+              --template-body file://$TEMPLATE_FILE
+
+  validate-lt:
+    needs: changes
+    if: ${{ needs.changes.outputs.lt == 'true' }}
+    runs-on: ubuntu-latest
+
+    permissions: 
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        id: stacks
+        run: echo "STACK=launch_template" >> $GITHUB_ENV
 
       - name: Validate and deploy ${STACK}-stack
         run: |
