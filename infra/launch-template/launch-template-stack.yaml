@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy Launch Template for ASG
+Description: Stack to deploy Launch Template that holds configs for an ASG
 
 Parameters:
   Environment:
@@ -232,3 +232,6 @@ Outputs:
     Description: Represents the version of the launch template
     Export:
       Name: !Sub "${Environment}-launch-temp-version"
+  LaunchTemplateDefaultVersion:
+    Value: !GetAtt AppLaunchTemplate.DefaultVersionNumber
+    Description: Represents the default version of the launch template
