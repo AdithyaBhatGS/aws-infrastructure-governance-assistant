@@ -215,6 +215,13 @@ Resources:
               - 'iam:ListAttachedRolePolicies'
               - 'iam:ListRolePolicies'
               - 'iam:ListInstanceProfilesForRole'
+              - 'iam:CreatePolicy'
+              - 'iam:DeletePolicy'
+              - 'iam:CreatePolicyVersion'
+              - 'iam:DeletePolicyVersion'
+              - 'iam:SetDefaultPolicyVersion'
+              - 'iam:GetPolicy'
+              - 'iam:GetPolicyVersion'
             Resource: '*'
 
           - Effect: Allow
