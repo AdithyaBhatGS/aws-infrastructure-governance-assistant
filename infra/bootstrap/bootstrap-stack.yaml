@@ -223,6 +223,7 @@ Resources:
               - 'iam:ListPolicyVersions'
               - 'iam:GetPolicy'
               - 'iam:GetPolicyVersion'
+              - 'iam:ListEntitiesForPolicy'
             Resource: '*'
 
           - Effect: Allow
