@@ -70,15 +70,6 @@ Resources:
                               "log_stream_name": "{instance_id}-app-deploy"
                             }
                           ]
-                        },
-                        "journal": {
-                          "collect_list": [
-                            {
-                              "services": ["*"],
-                              "log_group_name": "${Environment}/infrastructure/ec2/system",
-                              "log_stream_name": "{instance_id}-system-journal"
-                            }
-                          ]
                         }
                       }
                     }
@@ -225,8 +216,6 @@ Resources:
                 sleep 30
   
                 echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
-
-                yum install -y amazon-cloudwatch-agent
 
                 /opt/aws/bin/cfn-init \
                   -v \
