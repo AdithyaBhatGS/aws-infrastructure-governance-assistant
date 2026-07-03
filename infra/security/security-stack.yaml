@@ -236,6 +236,8 @@ Resources:
               - 'cloudformation:DescribeStackResource'
               - 'cloudformation:DescribeStackResources'
               - 'cloudformation:DescribeStacks'
+              - 'cloudformation:SignalResource'
+              - 'autoscaling:DescribeAutoScalingInstances'
             Resource: '*'
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile

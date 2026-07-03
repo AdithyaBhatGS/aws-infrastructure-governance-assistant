@@ -118,7 +118,7 @@ Resources:
         MinInstancesInService: 1
         MaxBatchSize: 1
         WaitOnResourceSignals: true
-        PauseTime: PT5M
+        PauseTime: PT10M
         SuspendProcesses:
           - HealthCheck
           - ReplaceUnhealthy
