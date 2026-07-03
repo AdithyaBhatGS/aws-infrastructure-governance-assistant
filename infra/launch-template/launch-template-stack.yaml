@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy Launch Template for an ASG
+Description: Stack to deploy Launch Template
 
 Parameters:
   Environment:
