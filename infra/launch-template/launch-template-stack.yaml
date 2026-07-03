@@ -215,15 +215,29 @@ Resources:
               VolumeSize: 8
         UserData:
           Fn::Base64:
-            Fn::Sub: |
-              #!/bin/bash -xe
-
-              echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
-
-              /opt/aws/bin/cfn-init -v --stack ${LTStackName} --resource AppLaunchTemplate --region ${AWS::Region}
-
-              /opt/aws/bin/cfn-signal -e $? --stack ${ASGStackName} --resource AppAutoScalingGroup --region ${AWS::Region}
-
+            Fn::Sub:
+              - |
+                #!/bin/bash -xe
+  
+                sleep 30
+  
+                echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
+  
+                /opt/aws/bin/cfn-init \
+                  -v \
+                  --stack ${LTStackName} \
+                  --resource AppLaunchTemplate \
+                  --role ${ROLE_NAME}
+                  --region ${AWS::Region} 
+  
+                /opt/aws/bin/cfn-signal -e $? \
+                  --stack ${ASGStackName} \
+                  --resource AppAutoScalingGroup \
+                  --region ${AWS::Region} \
+                  --role ${ROLE_NAME}
+              - ROLE_NAME:
+                  Fn::ImportValue: !Sub "${Environment}-security-ec2-role"
+  
 Outputs:
   AMI:
     Value: !Ref AMIID
