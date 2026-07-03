@@ -225,12 +225,14 @@ Resources:
                 sleep 30
   
                 echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
-  
+
+                yum install -y amazon-cloudwatch-agent
+
                 /opt/aws/bin/cfn-init \
                   -v \
                   --stack ${LTStackName} \
                   --resource AppLaunchTemplate \
-                  --role ${ROLE_NAME}
+                  --role ${ROLE_NAME} \
                   --region ${AWS::Region} 
   
                 /opt/aws/bin/cfn-signal -e $? \
