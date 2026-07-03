@@ -16,6 +16,12 @@ Parameters:
   BootstrapVersion:
     Type: String
     Description: Git SHA or build version for forcing LT update
+  LTStackName:
+    Type: String
+    Description: Represents the name of the Launch Template Stack
+  ASGStackName:
+    Type: String
+    Description: Represents the name of the ASG Stack
 
 Mappings:
   EnvironmentToInstanceType:
@@ -214,9 +220,9 @@ Resources:
 
               echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
 
-              /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource AppLaunchTemplate --region ${AWS::Region}
+              /opt/aws/bin/cfn-init -v --stack ${LTStackName} --resource AppLaunchTemplate --region ${AWS::Region}
 
-              /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppAutoScalingGroup --region ${AWS::Region}
+              /opt/aws/bin/cfn-signal -e $? --stack ${ASGStackName} --resource AppAutoScalingGroup --region ${AWS::Region}
 
 Outputs:
   AMI:
