@@ -110,12 +110,14 @@ Resources:
                       echo "Bootstrap deployment detected."
                       echo "No current.txt found."
 
-                      # SAFE FILE CREATION (NO HEREDOC)
-                      TOKEN=$(curl -s -X PUT "http://169.254.169.254" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+                      # 1. Fetch IMDSv2 Token
+                      TOKEN=$(curl -s -X PUT "http://169.254.169" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
-                      MY_INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254)
+                      # 2. Fetch specific instance-id endpoint path
+                      MY_INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169)
 
-                      printf "<!DOCTYPE html>\n<html>\n<head><title>Infrastructure Ready</title></head>\n<body>\n<h2>Infrastructure deployed successfully</h2>\n<p>Served by Instance ID: <strong>%s</strong></p>\n</body>\n</html>\n" "$MY_INSTANCE_ID" > /var/www/html/index.html
+                      # 3. Safe file creation with updated header text
+                      printf "<!DOCTYPE html>\n<html>\n<head><title>Infrastructure Ready</title></head>\n<body>\n<h2>Infra ready</h2>\n<p>Served by Instance ID: <strong>%s</strong></p>\n</body>\n</html>\n" "$MY_INSTANCE_ID" > /var/www/html/index.html
 
                       chown -R apache:apache /var/www/html
 
