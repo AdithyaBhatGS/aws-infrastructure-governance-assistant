@@ -46,6 +46,10 @@ Resources:
               content:
                 Fn::Sub: |
                   {
+                    "agent": {
+                      "metrics_collection_interval": 60,
+                      "run_as_user": "root"
+                    },
                     "logs": {
                       "logs_collected": {
                         "files": {
@@ -53,27 +57,26 @@ Resources:
                             {
                               "file_path": "/var/log/cloud-init.log",
                               "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
-                              "log_stream_name": "{{instance_id}}-cloud-init"
+                              "log_stream_name": "{instance_id}-cloud-init"
                             },
                             {
                               "file_path": "/var/log/cloud-init-output.log",
                               "log_group_name": "${Environment}/infrastructure/ec2/cloud-init",
-                              "log_stream_name": "{{instance_id}}-cloud-init-output"
+                              "log_stream_name": "{instance_id}-cloud-init-output"
                             },
                             {
                               "file_path": "/var/log/app-*.log",
                               "log_group_name": "${Environment}/application/ec2/deploy",
-                              "log_stream_name": "{{instance_id}}-app-deploy"
+                              "log_stream_name": "{instance_id}-app-deploy"
                             }
                           ]
                         },
-                        "windows_events": {},
                         "journal": {
                           "collect_list": [
                             {
-                              "journal_events": "all",
+                              "services": ["*"],
                               "log_group_name": "${Environment}/infrastructure/ec2/system",
-                              "log_stream_name": "{{instance_id}}-system-journal"
+                              "log_stream_name": "{instance_id}-system-journal"
                             }
                           ]
                         }
