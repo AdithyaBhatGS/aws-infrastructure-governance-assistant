@@ -6,5 +6,13 @@
     {
         "ParameterKey": "BootstrapVersion",
         "ParameterValue": "placeholder"
+    },
+    {
+        "ParameterKey": "LTStackName",
+        "ParameterValue": "dev-launch-template-stack"
+    },
+    {
+        "ParameterKey": "ASGStackName",
+        "ParameterValue": "dev-application-stack"
     }
 ]
