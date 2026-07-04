@@ -22,7 +22,9 @@ Parameters:
   ASGStackName:
     Type: String
     Description: Represents the name of the ASG Stack
-
+  LaunchTemplateName: 
+    Type: String
+    Description: Represents the name of the Launch Template
 Mappings:
   EnvironmentToInstanceType:
     dev:
@@ -226,7 +228,7 @@ Resources:
                   --role ${ROLE_NAME}
               - ROLE_NAME:
                   Fn::ImportValue: !Sub "${Environment}-security-ec2-role"
-  
+      LaunchTemplateName: !Ref LaunchTemplateName
 Outputs:
   AMI:
     Value: !Ref AMIID
@@ -236,11 +238,3 @@ Outputs:
     Description: Represents the ID of the launch template
     Export:
       Name: !Sub "${Environment}-launch-temp-id"
-  LaunchTempVersion:
-    Value: !GetAtt AppLaunchTemplate.LatestVersionNumber
-    Description: Represents the version of the launch template
-    Export:
-      Name: !Sub "${Environment}-launch-temp-version"
-  LaunchTemplateDefaultVersion:
-    Value: !GetAtt AppLaunchTemplate.DefaultVersionNumber
-    Description: Represents the default version of the launch template
