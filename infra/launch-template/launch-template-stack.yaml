@@ -112,7 +112,7 @@ Resources:
                       echo "Bootstrap deployment detected."
                       echo "No current.txt found."
 
-                      printf "<html><body style='font-family:sans-serif;text-align:center;padding-top:10vh;background:#f4f6f9'><h2>Environment Ready</h2><p>Core infrastructure deployed successfully. Awaiting application code artifact deployment.</p></body></html>\n" > /var/www/html/index.htm
+                      printf "<html><body style='font-family:sans-serif;text-align:center;padding-top:10vh;background:#f4f6f9'><h2>Environment Ready</h2><p>Core infrastructure deployed successfully. Awaiting application code artifact deployment.</p></body></html>\n" > /var/www/html/index.html
 
                       chown -R apache:apache /var/www/html
 
