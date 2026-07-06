@@ -24,7 +24,7 @@
         "ParameterValue":"75"
     },
     {
-        "ParameterKey": "LaunchTemplateVersion",
-        "ParameterValue": "1"
+        "ParameterKey":"LaunchTemplateVersion",
+        "ParameterValue":"1"
     }
 ]

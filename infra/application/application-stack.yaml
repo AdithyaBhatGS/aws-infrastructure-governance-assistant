@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies and related components
+Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies
 
 Parameters:
   Environment:
@@ -37,10 +37,10 @@ Parameters:
     AllowedPattern: ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,30}[A-Za-z0-9])?$
     MaxLength: 32
   ALBRequestCountTargetValue:
-    Type: String
+    Type: Number
     Description: Represents the Average ALB Request Count per Instance
   CPUPolicyTargetValue:
-    Type: String
+    Type: Number
     Description: The target utilization for the CPU metric
   LaunchTemplateVersion:
     Type: Number
