@@ -214,7 +214,7 @@ jobs:
           jq --arg version "$LT_VERSION" '
             map(
               if .ParameterKey == "LaunchTemplateVersion"
-              then .ParameterValue = $version
+              then .ParameterValue = ($version | tonumber)
               else .
               end
             )
