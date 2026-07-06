@@ -109,6 +109,12 @@ Resources:
 
           - Effect: Allow
             Action:
+              - "ec2:DescribeLaunchTemplateVersions"
+              - "ec2:DescribeLaunchTemplates"
+            Resource: "*"
+
+          - Effect: Allow
+            Action:
               - 'cloudformation:*'
             Resource: "*"
 
