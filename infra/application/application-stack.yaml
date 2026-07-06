@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies and related components
+Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies
 
 Parameters:
   Environment:
@@ -42,7 +42,9 @@ Parameters:
   CPUPolicyTargetValue:
     Type: String
     Description: The target utilization for the CPU metric
-
+  LaunchTemplateVersion:
+    Type: Number
+    Description: Launch Template version to be used by the Auto Scaling Group
 Resources:
   AppALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -131,9 +133,7 @@ Resources:
         LaunchTemplateId:
           Fn::ImportValue:
             Fn::Sub: "${Environment}-launch-temp-id"
-        Version:
-          Fn::ImportValue:
-            Fn::Sub: "${Environment}-launch-temp-version"
+        Version: !Ref LaunchTemplateVersion
       TargetGroupARNs:
         - !GetAtt AppALBTargetGrp.TargetGroupArn
       VPCZoneIdentifier:

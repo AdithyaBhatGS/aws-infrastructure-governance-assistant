@@ -396,6 +396,12 @@ Resources:
 
           - Effect: Allow
             Action:
+              - "ec2:DescribeLaunchTemplateVersions"
+              - "ec2:DescribeLaunchTemplates"
+            Resource: "*"
+
+          - Effect: Allow
+            Action:
               - iam:PassRole
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-app-infra-execution-role"

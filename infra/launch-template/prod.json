@@ -14,5 +14,9 @@
     {
         "ParameterKey": "ASGStackName",
         "ParameterValue": "prod-application-stack"
+    },
+    {
+        "ParameterKey": "LaunchTemplateName",
+        "ParameterValue": "prod-static-web-lauch-template"
     }
 ]

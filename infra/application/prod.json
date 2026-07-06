@@ -22,5 +22,9 @@
     {
         "ParameterKey":"CPUPolicyTargetValue",
         "ParameterValue":"75"
+    },
+    {
+        "ParameterKey": "LaunchTemplateVersion",
+        "ParameterValue": ""
     }
 ]

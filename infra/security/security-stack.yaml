@@ -222,6 +222,7 @@ Resources:
           - Effect: Allow
             Action:
               - "ec2:DescribeTags"
+              - "autoscaling:DescribeAutoScalingInstances"
             Resource: '*'
   CloudFormationPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -237,7 +238,6 @@ Resources:
               - 'cloudformation:DescribeStackResources'
               - 'cloudformation:DescribeStacks'
               - 'cloudformation:SignalResource'
-              - 'autoscaling:DescribeAutoScalingInstances'
             Resource: '*'
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
