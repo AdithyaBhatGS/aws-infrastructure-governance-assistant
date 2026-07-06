@@ -48,8 +48,7 @@ jobs:
     needs: detect_changes
 
     outputs:
-      deploy_lt: ${{ steps.plan.outputs.deploy_lt }}
-      deploy_asg: ${{ steps.plan.outputs.deploy_asg }}
+      execution_mode: ${{ steps.plan.outputs.execution_mode }}
 
     steps:
       - name: Compute deployment plan
@@ -58,26 +57,23 @@ jobs:
           LT="${{ needs.detect_changes.outputs.lt_changed }}"
           APP="${{ needs.detect_changes.outputs.app_changed }}"
 
-          echo "LT changed: ${LT}"
-          echo "APP changed: ${APP}"
+          echo "LT Changed : $LT"
+          echo "APP Changed: $APP"
 
           if [[ "$LT" == "true" ]]; then
-            echo "deploy_lt=true" >> "$GITHUB_OUTPUT"
-            echo "deploy_asg=true" >> "$GITHUB_OUTPUT"
+            echo "execution_mode=lt_then_asg" >> "$GITHUB_OUTPUT"
 
           elif [[ "$APP" == "true" ]]; then
-            echo "deploy_lt=false" >> "$GITHUB_OUTPUT"
-            echo "deploy_asg=true" >> "$GITHUB_OUTPUT"
+            echo "execution_mode=asg_only" >> "$GITHUB_OUTPUT"
 
           else
-            echo "deploy_lt=false" >> "$GITHUB_OUTPUT"
-            echo "deploy_asg=false" >> "$GITHUB_OUTPUT"
+            echo "execution_mode=none" >> "$GITHUB_OUTPUT"
           fi
 
   deploy-lt:
     runs-on: ubuntu-latest
     needs: [detect_changes, plan_deployment]
-    if: ${{ needs.plan_deployment.outputs.deploy_lt == 'true' }}
+    if: ${{ needs.plan_deployment.outputs.execution_mode == 'lt_then_asg' }}
 
     permissions:
       id-token: write
@@ -167,9 +163,9 @@ jobs:
 
   deploy-app:
     runs-on: ubuntu-latest
-    needs: [detect_changes, plan_deployment]
+    needs: [detect_changes, plan_deployment, deploy-lt]
 
-    if: ${{ needs.plan_deployment.outputs.deploy_asg == 'true' }}
+    if: ${{ always() && needs.plan_deployment.outputs.execution_mode != 'none' }}
 
     permissions:
       id-token: write
