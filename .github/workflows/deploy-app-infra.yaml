@@ -211,7 +211,16 @@ jobs:
 
       - name: Build runtime ASG parameters
         run: |
-          jq --arg version "$LT_VERSION" '
+          TARGET_VERSION="${{ steps.lt_version.outputs.LT_VERSION }}"
+
+          if [ -z "$TARGET_VERSION" ]; then
+            echo "ERROR: Failed to retrieve Launch Template Version from previous step!"
+            exit 1
+          fi
+
+          echo "Injecting Launch Template Version: $TARGET_VERSION"
+
+          jq --arg version "$TARGET_VERSION" '
             map(
               if .ParameterKey == "LaunchTemplateVersion"
               then .ParameterValue = $version
