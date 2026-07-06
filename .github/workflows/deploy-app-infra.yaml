@@ -55,8 +55,8 @@ jobs:
       - name: Compute deployment plan
         id: plan
         run: |
-          LT: "${{ needs.detect_changes.outputs.lt_changed }}"
-          APP: "${{ needs.detect_changes.outputs.app_changed }}"
+          LT="${{ needs.detect_changes.outputs.lt_changed }}"
+          APP="${{ needs.detect_changes.outputs.app_changed }}"
 
           echo "LT changed: ${LT}"
           echo "APP changed: ${APP}"
