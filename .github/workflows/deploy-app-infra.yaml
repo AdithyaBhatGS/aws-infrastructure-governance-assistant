@@ -211,7 +211,8 @@ jobs:
 
       - name: Build runtime ASG parameters
         run: |
-          jq --arg version "$LT_VERSION" '
+          CLEAN_VERSION=$(echo "$LT_VERSION" | grep -oE '[0-9]+')
+          jq --arg version "$CLEAN_VERSION" '
             map(
               if .ParameterKey == "LaunchTemplateVersion"
               then .ParameterValue = ($version | tonumber)
