@@ -145,7 +145,7 @@ jobs:
             --preferences '{
               "MinHealthyPercentage": 50,
               "MaxHealthyPercentage": 100,
-              "InstanceWarmup": 60,
+              "InstanceWarmup": 120,
               "SkipMatching": false
             }' \
             --query 'InstanceRefreshId' \
