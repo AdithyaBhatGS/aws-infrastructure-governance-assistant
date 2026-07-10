@@ -200,7 +200,7 @@ jobs:
 
           VERSION=$(aws ec2 describe-launch-template-versions \
             --launch-template-name "${LT_NAME}" \
-            --query 'LaunchTemplateVersions[-1].VersionNumber' \
+            --query 'sort_by(LaunchTemplateVersions, &VersionNumber)[-1].VersionNumber' \
             --output text)
 
           echo "LT_VERSION=$VERSION" >> $GITHUB_OUTPUT
