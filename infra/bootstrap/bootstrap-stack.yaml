@@ -504,8 +504,13 @@ Resources:
           - Effect: Allow
             Action:
               - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParameterHistory
+              - ssm:GetParametersByPath
             Resource:
-              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
+              - "arn:aws:ssm:{AWS::Region}:{AWS::AccountId}:parameter/portfolio/${Environment}/artifact-bucket"
+              - "arn:aws:ssm:{AWS::Region}:{AWS::AccountId}:parameter/portfolio/${Environment}/asg-name"
+
   AppDeploymentRole:
     Type: AWS::IAM::Role
     Properties:
