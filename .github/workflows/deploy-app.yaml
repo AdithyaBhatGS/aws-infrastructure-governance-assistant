@@ -86,9 +86,6 @@ jobs:
       - name: Get Version
         run: echo "SHA=${{ needs.build.outputs.sha }}" >> "${GITHUB_ENV}"
 
-      - name: Debug Path
-        run: echo "Looking for path -> /portfolio/${{ env.ENVIRONMENT }}/artifact-bucket"
-
       - name: Fetch Bucket name from SSM
         run: |
           ARTIFACT_BUCKET=$(aws ssm get-parameter \
@@ -115,14 +112,15 @@ jobs:
         run: |
           mkdir -p /tmp/version
 
-          if aws s3 cp s3://${ARTIFACT_BUCKET}/app/versions/current.txt /tmp/version/current.txt; then
+          if aws s3api head-object --bucket "${ARTIFACT_BUCKET}" --key "app/versions/current.txt" >/dev/null 2>&1; then
+            echo "Current version found. Backing it up to previous.txt..."
             aws s3 cp s3://${ARTIFACT_BUCKET}/app/versions/current.txt s3://${ARTIFACT_BUCKET}/app/versions/previous.txt
+          else
+            echo "First deployment! No current.txt file found. Skipping backup."
           fi
 
           echo $SHA > /tmp/version/current.txt
-
           aws s3 cp /tmp/version/current.txt s3://${ARTIFACT_BUCKET}/app/versions/current.txt
-
 
       - name: Fetch ASG name from SSM
         run: |
