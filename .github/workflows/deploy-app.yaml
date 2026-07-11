@@ -162,9 +162,16 @@ jobs:
           while true; do
             STATUS=$(aws autoscaling describe-instance-refreshes \
               --auto-scaling-group-name "${ASG_NAME}" \
-              --query "InstanceRefreshes | sort_by(@, &StartTime)[-1].Status" \
-              --output text)
+              --instance-refresh-ids "${REFRESH_ID}" \
+              --query "InstanceRefreshes[0].Status" \
+              --output text 2>/dev/null)
 
+            if [[ -z "$STATUS" || "$STATUS" == "None" || "$STATUS" == "null" ]]; then
+              echo "Waiting for instance refresh to become visible..."
+              sleep 5
+              continue
+            fi
+            
             echo "Status: $STATUS"
 
             if [ "$STATUS" == "Successful" ]; then
