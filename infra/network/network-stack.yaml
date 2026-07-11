@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Stack to deploy network resources. Includes VPC, Subnets, Internet Gateway, Route Table, NAT Gateway, Security Group
+Description: Stack to deploy network resources. Includes VPC, Subnets, Internet Gateway, Route Tables, NAT Gateway, Security Group
 Parameters:
   Environment:
     Type: String

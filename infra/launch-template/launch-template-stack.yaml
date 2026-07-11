@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy Launch Template
+Description: Stack to deploy Launch Template. Contains cfn-init and cfn-signal
 
 Parameters:
   Environment:
