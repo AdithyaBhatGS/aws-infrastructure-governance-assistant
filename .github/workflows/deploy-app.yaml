@@ -86,16 +86,22 @@ jobs:
       - name: Get Version
         run: echo "SHA=${{ needs.build.outputs.sha }}" >> "${GITHUB_ENV}"
 
+      - name: Debug Path
+        run: echo "Looking for path -> /portfolio/${{ env.ENVIRONMENT }}/artifact-bucket"
+
       - name: Fetch Bucket name from SSM
         run: |
           ARTIFACT_BUCKET=$(aws ssm get-parameter \
             --name "/portfolio/${{ env.ENVIRONMENT }}/artifact-bucket" \
             --query "Parameter.Value" \
-            --output text 2>/dev/null || true)
+            --region ${{ env.AWS_REGION }}
+            --output text)
 
           if [ -z "$ARTIFACT_BUCKET" ]; then
             echo "⚠️ Infra not ready - skipping deployment safely"
             exit 0
+          else
+            echo "Fetched Bucket: ${ARTIFACT_BUCKET}"
           fi
 
           echo "ARTIFACT_BUCKET=${ARTIFACT_BUCKET}" >> "${GITHUB_ENV}"
