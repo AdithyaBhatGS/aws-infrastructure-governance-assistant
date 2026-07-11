@@ -504,8 +504,11 @@ Resources:
           - Effect: Allow
             Action:
               - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParameterHistory
+              - ssm:GetParametersByPath
             Resource:
-              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/${Environment}/*"
   AppDeploymentRole:
     Type: AWS::IAM::Role
     Properties:
