@@ -94,7 +94,7 @@ jobs:
           ARTIFACT_BUCKET=$(aws ssm get-parameter \
             --name "/portfolio/${{ env.ENVIRONMENT }}/artifact-bucket" \
             --query "Parameter.Value" \
-            --region ${{ env.AWS_REGION }}
+            --region ${{ env.AWS_REGION }} \
             --output text)
 
           if [ -z "$ARTIFACT_BUCKET" ]; then
