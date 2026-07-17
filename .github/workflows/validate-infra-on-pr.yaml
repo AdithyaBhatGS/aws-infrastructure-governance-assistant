@@ -293,7 +293,7 @@ jobs:
             --framework cloudformation \
             --external-checks-dir ./security/checkov/organization_policies \
             --skip-path ./infra/bootstrap \
-            -o console \
+            -o cli \
             -o json \
             --output-file-path checkov-report.json
 
