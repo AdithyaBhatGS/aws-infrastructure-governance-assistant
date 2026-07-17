@@ -169,5 +169,5 @@ Outputs:
     Export:
       Name: !Sub "${Environment}-central-logging-bucket-arn"
   ArtifactBktSSMOutput:
-    Description: Represents the Name of the SSM Parameter for artifact bucket
+    Description: Represents the name of the SSM Parameter for artifact bucket
     Value: !Ref ArtifactBktParameter
