@@ -296,6 +296,12 @@ jobs:
             -o json \
             --output-file-path console,checkov-report.json
 
+      - name: Debug workspace
+        if: always()
+        run: |
+          pwd
+          ls -R
+
       - name: Upload Checkov Report
         if: always()
         uses: actions/upload-artifact@v4
