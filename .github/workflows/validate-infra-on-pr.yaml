@@ -293,8 +293,9 @@ jobs:
             --framework cloudformation \
             --external-checks-dir ./security/checkov/organization_policies \
             --skip-path ./infra/bootstrap \
+            -o console \
             -o json \
-            --output-file-path console,checkov-report.json
+            --output-file-path checkov-report.json
 
       - name: Debug workspace
         if: always()
