@@ -258,6 +258,8 @@ Resources:
               - ssm:GetParameter
               - ssm:PutParameter
               - ssm:DeleteParameter
+              - ssm:AddTagsToResource
+              - ssm:RemoveTagsFromResource
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
   AppInfraExecutionPolicy:
