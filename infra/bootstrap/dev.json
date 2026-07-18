@@ -1,62 +1,62 @@
 [
-    {
-        "ParameterKey": "Environment",
-        "ParameterValue": "dev"
-    },
-    {
-        "ParameterKey": "DeploymentBoundary",
-        "ParameterValue": "dev-deployment-boundary"
-    },
-    {
-        "ParameterKey": "ValidationBoundary",
-        "ParameterValue": "dev-validation-boundary"
-    },
-    {
-        "ParameterKey": "InfraExecutionPolicyName",
-        "ParameterValue": "dev-infra-execution-policy"
-    },
-    {
-        "ParameterKey": "AppInfraExecutionPolicyName",
-        "ParameterValue": "dev-app-infra-execution-policy"
-    },
-    {
-        "ParameterKey": "InfraExecutionRoleName",
-        "ParameterValue": "dev-infra-execution-role"
-    },
-    {
-        "ParameterKey": "AppInfraExecutionRoleName",
-        "ParameterValue": "dev-app-infra-execution-role"
-    },
-    {
-        "ParameterKey": "InfraDeploymentPolicyName",
-        "ParameterValue": "dev-infra-deployment-policy"
-    },
-    {
-        "ParameterKey": "AppInfraDeploymentPolicyName",
-        "ParameterValue": "dev-app-infra-deployment-policy"
-    },
-    {
-        "ParameterKey": "InfraDeploymentRoleName",
-        "ParameterValue": "dev-infra-deployment-role"
-    },
-    {
-        "ParameterKey": "AppInfraDeploymentRoleName",
-        "ParameterValue": "dev-app-infra-deployment-role"
-    },
-    {
-        "ParameterKey": "AppDeploymentPolicyName",
-        "ParameterValue": "dev-app-deployment-policy"
-    },
-    {
-        "ParameterKey": "AppDeploymentRoleName",
-        "ParameterValue": "dev-app-deployment-role"
-    },
-    {
-        "ParameterKey": "BranchName",
-        "ParameterValue": "dev"
-    },
-    {
-        "ParameterKey": "ArtifactBucketName",
-        "ParameterValue": "web-static-assets-dev-storage-stack-bkt"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "DeploymentBoundary",
+    "ParameterValue": "dev-deployment-boundary"
+  },
+  {
+    "ParameterKey": "ValidationBoundary",
+    "ParameterValue": "dev-validation-boundary"
+  },
+  {
+    "ParameterKey": "InfraExecutionPolicyName",
+    "ParameterValue": "dev-infra-execution-policy"
+  },
+  {
+    "ParameterKey": "AppInfraExecutionPolicyName",
+    "ParameterValue": "dev-app-infra-execution-policy"
+  },
+  {
+    "ParameterKey": "InfraExecutionRoleName",
+    "ParameterValue": "dev-infra-execution-role"
+  },
+  {
+    "ParameterKey": "AppInfraExecutionRoleName",
+    "ParameterValue": "dev-app-infra-execution-role"
+  },
+  {
+    "ParameterKey": "InfraDeploymentPolicyName",
+    "ParameterValue": "dev-infra-deployment-policy"
+  },
+  {
+    "ParameterKey": "AppInfraDeploymentPolicyName",
+    "ParameterValue": "dev-app-infra-deployment-policy"
+  },
+  {
+    "ParameterKey": "InfraDeploymentRoleName",
+    "ParameterValue": "dev-infra-deployment-role"
+  },
+  {
+    "ParameterKey": "AppInfraDeploymentRoleName",
+    "ParameterValue": "dev-app-infra-deployment-role"
+  },
+  {
+    "ParameterKey": "AppDeploymentPolicyName",
+    "ParameterValue": "dev-app-deployment-policy"
+  },
+  {
+    "ParameterKey": "AppDeploymentRoleName",
+    "ParameterValue": "dev-app-deployment-role"
+  },
+  {
+    "ParameterKey": "BranchName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "ArtifactBucketName",
+    "ParameterValue": "app-artifact-bkt"
+  }
 ]
