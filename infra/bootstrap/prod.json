@@ -1,62 +1,62 @@
 [
-    {
-        "ParameterKey": "Environment",
-        "ParameterValue": "prod"
-    },
-    {
-        "ParameterKey": "DeploymentBoundary",
-        "ParameterValue": "prod-deployment-boundary"
-    },
-    {
-        "ParameterKey": "ValidationBoundary",
-        "ParameterValue": "prod-validation-boundary"
-    },
-    {
-        "ParameterKey": "InfraExecutionPolicyName",
-        "ParameterValue": "prod-infra-execution-policy"
-    },
-    {
-        "ParameterKey": "AppInfraExecutionPolicyName",
-        "ParameterValue": "prod-app-infra-execution-policy"
-    },
-    {
-        "ParameterKey": "InfraExecutionRoleName",
-        "ParameterValue": "prod-infra-execution-role"
-    },
-    {
-        "ParameterKey": "AppInfraExecutionRoleName",
-        "ParameterValue": "prod-app-infra-execution-role"
-    },
-    {
-        "ParameterKey": "InfraDeploymentPolicyName",
-        "ParameterValue": "prod-infra-deployment-policy"
-    },
-    {
-        "ParameterKey": "AppInfraDeploymentPolicyName",
-        "ParameterValue": "prod-app-infra-deployment-policy"
-    },
-    {
-        "ParameterKey": "InfraDeploymentRoleName",
-        "ParameterValue": "prod-infra-deployment-role"
-    },
-    {
-        "ParameterKey": "AppInfraDeploymentRoleName",
-        "ParameterValue": "prod-app-infra-deployment-role"
-    },
-    {
-        "ParameterKey": "AppDeploymentPolicyName",
-        "ParameterValue": "prod-app-deployment-policy"
-    },
-    {
-        "ParameterKey": "AppDeploymentRoleName",
-        "ParameterValue": "prod-app-deployment-role"
-    },
-    {
-        "ParameterKey": "BranchName",
-        "ParameterValue": "prod"
-    },
-    {
-        "ParameterKey": "ArtifactBucketName",
-        "ParameterValue": "web-static-assets-prod-storage-stack-bkt"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "DeploymentBoundary",
+    "ParameterValue": "prod-deployment-boundary"
+  },
+  {
+    "ParameterKey": "ValidationBoundary",
+    "ParameterValue": "prod-validation-boundary"
+  },
+  {
+    "ParameterKey": "InfraExecutionPolicyName",
+    "ParameterValue": "prod-infra-execution-policy"
+  },
+  {
+    "ParameterKey": "AppInfraExecutionPolicyName",
+    "ParameterValue": "prod-app-infra-execution-policy"
+  },
+  {
+    "ParameterKey": "InfraExecutionRoleName",
+    "ParameterValue": "prod-infra-execution-role"
+  },
+  {
+    "ParameterKey": "AppInfraExecutionRoleName",
+    "ParameterValue": "prod-app-infra-execution-role"
+  },
+  {
+    "ParameterKey": "InfraDeploymentPolicyName",
+    "ParameterValue": "prod-infra-deployment-policy"
+  },
+  {
+    "ParameterKey": "AppInfraDeploymentPolicyName",
+    "ParameterValue": "prod-app-infra-deployment-policy"
+  },
+  {
+    "ParameterKey": "InfraDeploymentRoleName",
+    "ParameterValue": "prod-infra-deployment-role"
+  },
+  {
+    "ParameterKey": "AppInfraDeploymentRoleName",
+    "ParameterValue": "prod-app-infra-deployment-role"
+  },
+  {
+    "ParameterKey": "AppDeploymentPolicyName",
+    "ParameterValue": "prod-app-deployment-policy"
+  },
+  {
+    "ParameterKey": "AppDeploymentRoleName",
+    "ParameterValue": "prod-app-deployment-role"
+  },
+  {
+    "ParameterKey": "BranchName",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "ArtifactBucketName",
+    "ParameterValue": "app-artifact-bkt"
+  }
 ]
