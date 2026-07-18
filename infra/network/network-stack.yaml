@@ -88,7 +88,7 @@ Resources:
           Value: !Ref ProjectName
         - Key: Owner
           Value: !Ref Owner
-        - Key: MangedBy
+        - Key: ManagedBy
           Value: !Ref ManagedBy
   NetworkPubSubnet1:
     Type: AWS::EC2::Subnet
@@ -383,6 +383,11 @@ Resources:
           Value: !Ref ManagedBy
   NetworkALBSecurityGrpIngressIPV4:
     Type: AWS::EC2::SecurityGroupIngress
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_260
+            comment: "ALB is an internet-facing entity without which traffic cannot be received"
     Properties:
       IpProtocol: tcp
       FromPort: 80
@@ -392,6 +397,11 @@ Resources:
       GroupId: !GetAtt NetworkALBSecurityGrp.Id
   NetworkALBSecurityGrpIngressIPV6:
     Type: AWS::EC2::SecurityGroupIngress
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_260
+            comment: "ALB is an internet-facing entity without which traffic cannot be received"
     Properties:
       IpProtocol: tcp
       FromPort: 80

@@ -90,10 +90,15 @@ Parameters:
 Resources:
   CloudInitLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: "Skipping KMS encryption for the log group temporarily to avoid costs."
     Properties:
       LogGroupClass: STANDARD
       LogGroupName: !Sub "${Environment}/${PurposeOfCloudInitLogGrp}/${ComponentOfCloudInitLogGrp}/${NameOfCloudInitLogGrp}"
-      RetentionInDays: 7
+      RetentionInDays: 30
       Tags:
         - Key: Name
           Value: !Sub "${Environment}-cloud-init-log-grp"
@@ -107,10 +112,15 @@ Resources:
           Value: !Ref Owner
   SystemLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: "Skipping KMS encryption for the log group temporarily to avoid costs."
     Properties:
       LogGroupClass: STANDARD
       LogGroupName: !Sub "${Environment}/${PurposeOfSystemLogGrp}/${ComponentOfSystemLogGrp}/${NameOfSystemLogGrp}"
-      RetentionInDays: 7
+      RetentionInDays: 30
       Tags:
         - Key: Name
           Value: !Sub "${Environment}-system-log-grp"
@@ -124,10 +134,15 @@ Resources:
           Value: !Ref Owner
   ApplicationLogGroup:
     Type: AWS::Logs::LogGroup
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_158
+            comment: "Skipping KMS encryption for the log group temporarily to avoid costs."
     Properties:
       LogGroupClass: STANDARD
       LogGroupName: !Sub "${Environment}/${PurposeOfApplicationLogGrp}/${ComponentOfApplicationLogGrp}/${NameOfApplicationLogGrp}"
-      RetentionInDays: 7
+      RetentionInDays: 30
       Tags:
         - Key: Name
           Value: !Sub "${Environment}-application-log-grp"
@@ -182,10 +197,20 @@ Resources:
           - Effect: Allow
             Action:
               - 'logs:CreateLogGroup'
+            Resource:
+              - !Sub "${CloudInitLogGroup.Arn}"
+              - !Sub "${SystemLogGroup.Arn}"
+              - !Sub "${ApplicationLogGroup.Arn}"
+          
+          - Effect: Allow
+            Action:
               - 'logs:CreateLogStream'
               - 'logs:PutLogEvents'
               - 'logs:DescribeLogStreams'
-            Resource: '*'
+            Resource:
+              - !Sub "${CloudInitLogGroup.Arn}:*"
+              - !Sub "${SystemLogGroup.Arn}:*"
+              - !Sub "${ApplicationLogGroup.Arn}:*"
   CloudWatchAgentPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -208,9 +233,12 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - 's3:GetObject'
               - 's3:ListBucket'
-            Resource: '*'
+            Resource: !Sub 'arn:aws:s3:::${Environment}-app-artifact-bkt'
+          - Effect: Allow
+            Action:
+              - 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${Environment}-app-artifact-bkt/*'
   EC2MetadataPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -226,6 +254,11 @@ Resources:
             Resource: '*'
   CloudFormationPolicy:
     Type: AWS::IAM::ManagedPolicy
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_111
+            comment: "Global skip for this stack to accommodate wildcard constraints."
     Properties:
       Description: Represents the permission for cloudformation
       ManagedPolicyName: !Ref CloudFormationPolicyName

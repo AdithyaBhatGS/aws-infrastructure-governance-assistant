@@ -163,7 +163,7 @@ Resources:
                     echo "Application deployment completed successfully."
 
                   - ARTIFACT_BUCKET:
-                      Fn::ImportValue: !Sub "${Environment}-storage-artifact-bkt"
+                      Fn::ImportValue: !Sub "${Environment}-app-artifact-bucket"
           commands:
             01_cloudwatch_agent_setup:
               command: |
@@ -191,6 +191,10 @@ Resources:
           Arn:
             Fn::ImportValue:
               Fn::Sub: "${Environment}-security-instance-profile-arn"
+        MetadataOptions:
+          HttpTokens: required
+          HttpEndpoint: enabled
+          HttpPutResponseHopLimit: 4
         ImageId: !Ref AMIID
         InstanceType: !FindInMap
           - EnvironmentToInstanceType
@@ -204,6 +208,7 @@ Resources:
             Ebs:
               DeleteOnTermination: true
               VolumeSize: 8
+              VolumeType: gp3
         UserData:
           Fn::Base64:
             Fn::Sub:

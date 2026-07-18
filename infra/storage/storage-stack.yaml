@@ -20,28 +20,37 @@ Parameters:
     Type: String
     Description: Represents the IAC used
     Default: CloudFormation
-  BktName:
+  ArtifactBktName:
     Type: String
     Description: Name of the Bucket which holds the static assets
     AllowedPattern: ^(?![0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$)(?!.*\.\.)(?!.*\.-)(?!.*-\.)(?!.*--)[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$
+  LoggingBucketName:
+    Type: String
+    Description: Name of the Bucket which holds the ALB access logs
+    AllowedPattern: ^(?![0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$)(?!.*\.\.)(?!.*\.-)(?!.*-\.)(?!.*--)[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$
 Resources:
-  WebAssetBkt:
+  CentralLogTargetBucket:
     Type: AWS::S3::Bucket
-    # DeletionPolicy: Retain
-    # UpdateReplacePolicy: Retain
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_145
+            comment: "ALB access logging requires SSE-S3 (AES256) encryption and does not support KMS"
+          - id: CKV_AWS_18
+            comment: "This is the logging destination bucket itself; logging it causes an infinite loop"
     Properties:
-      BucketName: !Sub '${BktName}-${AWS::StackName}-bkt'
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        IgnorePublicAcls: true
-        BlockPublicPolicy: true
-        RestrictPublicBuckets: true
+      BucketName: !Sub "${Environment}-${LoggingBucketName}"
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
-              SSEAlgorithm: 'aws:kms'
+              SSEAlgorithm: "AES256"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerEnforced
@@ -54,24 +63,111 @@ Resources:
           Value: !Ref ManagedBy
         - Key: Owner
           Value: !Ref Owner
+  CentralLogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CentralLogTargetBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowALBAccessLogs
+            Effect: Allow
+            Principal:
+              Service: delivery.logs.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "${CentralLogTargetBucket.Arn}/alb-access-logs/*"
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          - Sid: AllowS3ServerAccessLogs
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "${CentralLogTargetBucket.Arn}/s3-access-logs/*"
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Sub "${AWS::AccountId}"
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Environment}-${ArtifactBktName}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "aws:kms"
+      LoggingConfiguration:
+        DestinationBucketName: !Ref CentralLogTargetBucket
+        LogFilePrefix: s3-access-logs/artifact-bucket/
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+        - Key: Owner
+          Value: !Ref Owner
+  ArtifactBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ArtifactBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EnforceSecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource: 
+              - !GetAtt ArtifactBucket.Arn
+              - !Sub "${ArtifactBucket.Arn}/*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": "false"
   ArtifactBktParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub "/portfolio/${Environment}/artifact-bucket"
       Type: String
-      Value: !Ref WebAssetBkt
+      Value: !Ref ArtifactBucket
       Description: Artifact bucket for application deployments
+      Tags:
+        Environment: !Ref Environment
+        Project: !Ref ProjectName
+        ManagedBy: !Ref ManagedBy
+        Owner: !Ref Owner
 Outputs:
-  OutputBktName:
-    Value: !Ref WebAssetBkt
-    Description: Represents bucket name
+  ArtifactBktOutput:
+    Description: Represents the artifact bucket name
+    Value: !Ref ArtifactBucket
     Export:
-      Name: !Sub "${Environment}-storage-artifact-bkt"
-  OutputBucketARN:
-    Value: !GetAtt WebAssetBkt.Arn
+      Name: !Sub "${Environment}-app-artifact-bucket"
+  ArtifactBktARNOutput:
     Description: Represents the ARN of the bucket
+    Value: !GetAtt ArtifactBucket.Arn
     Export:
-      Name: !Sub "${Environment}-storage-artifact-bkt-arn"
-  ArtifactBktSSM:
+      Name: !Sub "${Environment}-app-artifact-bucket-arn"
+  CentralLogTargetBucketOutput:
+    Description: Represents the central log bucket name
+    Value: !Ref CentralLogTargetBucket
+    Export:
+      Name: !Sub "${Environment}-central-logging-bucket"
+  CentralLogTargetBucketARNOutput:
+    Description: Represents the central log bucket name
+    Value: !GetAtt CentralLogTargetBucket.Arn
+    Export:
+      Name: !Sub "${Environment}-central-logging-bucket-arn"
+  ArtifactBktSSMOutput:
+    Description: Represents the name of the SSM Parameter for artifact bucket
     Value: !Ref ArtifactBktParameter
-    Description: Represents the Name of the SSM Parameter for Artifact Bucket

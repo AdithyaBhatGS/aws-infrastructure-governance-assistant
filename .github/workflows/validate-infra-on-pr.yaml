@@ -15,17 +15,29 @@ jobs:
       network: ${{ steps.filter.outputs.network }}
       security: ${{ steps.filter.outputs.security }}
       storage: ${{ steps.filter.outputs.storage }}
+      infrastructure: ${{ steps.filter.outputs.infrastructure }}
     steps:
       - name: Checkout Code
         uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
-            application: 'infra/application/**'
-            lt: 'infra/launch-template/**'
-            network: 'infra/network/**'
-            security: 'infra/security/**'
-            storage: 'infra/storage/**'
+            application:
+              - 'infra/application/**'
+            lt:
+              - 'infra/launch-template/**'
+            network:
+              - 'infra/network/**'
+            security:
+              - 'infra/security/**'
+            storage:
+              - 'infra/storage/**'
+            infrastructure:
+              - 'infra/application/**'
+              - 'infra/launch-template/**'
+              - 'infra/network/**'
+              - 'infra/security/**'
+              - 'infra/storage/**'
 
   validate-application-infra:
     needs: changes
@@ -41,10 +53,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -88,10 +100,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -135,10 +147,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -182,10 +194,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -229,10 +241,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -261,3 +273,39 @@ jobs:
           echo "-> Running cloudformation validate..."
           aws cloudformation validate-template \
               --template-body file://$TEMPLATE_FILE
+
+  checkov-scan:
+    needs: changes
+    if: ${{ needs.changes.outputs.infrastructure == 'true' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Checkov Scan
+        run: |
+          checkov \
+            -d ./infra \
+            --framework cloudformation \
+            --external-checks-dir ./security/checkov/organization_policies \
+            --skip-path ./infra/bootstrap \
+            -o cli \
+            -o json \
+            --output-file-path checkov-report.json
+
+      - name: Debug workspace
+        if: always()
+        run: |
+          pwd
+          ls -R
+
+      - name: Upload Checkov Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-report
+          path: ./checkov-report.json

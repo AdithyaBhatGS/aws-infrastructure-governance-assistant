@@ -4,7 +4,11 @@
         "ParameterValue":"dev"
     },
     {
-        "ParameterKey":"BktName",
-        "ParameterValue":"web-static-assets"
+        "ParameterKey":"ArtifactBktName",
+        "ParameterValue":"app-artifact-bkt"
+    },
+    {
+        "ParameterKey":"LoggingBucketName",
+        "ParameterValue":"central-logging-bkt"
     }
 ]

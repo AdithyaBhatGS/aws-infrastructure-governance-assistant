@@ -1,10 +1,10 @@
-# 1. Un-exclude YAML globally so GitHub tracks it as a detectable language
-*.yaml linguist-detectable=true
-*.yml linguist-detectable=true
+# 1. Force GitHub to treat the CloudFormation language as detectable in the stats bar
+* linguist-language=CloudFormation
+* linguist-detectable=true
 
-# 2. Reclassify files inside the 'infrastructure' folder as CloudFormation
+# 2. Reclassify files inside the infrastructure folder
 infra/**/*.yaml linguist-language=CloudFormation
 infra/**/*.yml linguist-language=CloudFormation
 
-# 3. Explicitly hide CI/CD workflows and other YAML folders you don't want counted
+# 3. Explicitly hide CI/CD workflows and other YAML folders
 .github/workflows/** linguist-detectable=false
