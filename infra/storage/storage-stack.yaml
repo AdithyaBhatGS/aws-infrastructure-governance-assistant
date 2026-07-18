@@ -73,7 +73,7 @@ Resources:
           - Sid: AllowALBAccessLogs
             Effect: Allow
             Principal:
-              Service: delivery.logs.amazonaws.com
+              Service: logdelivery.elasticloadbalancing.amazonaws.com
             Action: s3:PutObject
             Resource: !Sub "${CentralLogTargetBucket.Arn}/alb-access-logs/*"
             Condition:
