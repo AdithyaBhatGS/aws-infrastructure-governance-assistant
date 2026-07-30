@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Platform Assistant Infrastructure
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: Choose either dev or prod
+  ProjectName:
+    Type: String
+    Description: Represents the project name
+    Default: AWS Infrastructure Governance Assistant
+  Owner:
+    Type: String
+    Description: Represents the owner of the project
+    Default: devOps
+  ManagedBy:
+    Type: String
+    Description: Represents the IAC used
+    Default: CloudFormation
+  DriftTableName:
+    Type: String
+    Description: Represents the table name that contains drift results
+Resources:
+  DriftResultsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DriftTableName
+      BillingMode: PAY_PER_REQUEST
+      # Keys and their type
+      AttributeDefinitions:
+        - AttributeName: AccountId
+          AttributeType: S
+        - AttributeName: ScanTime
+          AttributeType: S
+      # Defining roles for the attributes, here HASH -> Primary Key
+      KeySchema:
+        - AttributeName: AccountId
+          KeyType: HASH
+        - AttributeName: ScanTime
+          KeyType: RANGE
+
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      
+      SSESpecification:
+        SSEEnabled: true
+      
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: ManagedBy
+          Value: !Ref ManagedBy
+
+Outputs:
+  DriftResultsTableARN:
+    Description: Represents the ARN of the drift results table
+    Value: !GetAtt DriftResultsTable.Arn
+    Export:
+      Name: DriftResultsTableARN

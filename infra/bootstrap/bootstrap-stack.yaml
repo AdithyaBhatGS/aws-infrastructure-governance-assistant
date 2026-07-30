@@ -16,7 +16,7 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: static-web-hosting
+    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
@@ -63,7 +63,7 @@ Parameters:
   RepoName:
     Type: String
     Description: Represents the owner, repository name of the github account
-    Default: AdithyaBhatGS/multi-environment-cicd-pipeline-for-static-web-app
+    Default: AdithyaBhatGS/aws-infrastructure-governance-assistant
     NoEcho: true
   ValidationPolicyName:
     Type: String
@@ -306,9 +306,16 @@ Resources:
 
           - Effect: Allow
             Action:
+              - dynamodb:PutItem
+              - dynamodb:GetItem
+              - dynamodb:Scan
+            Resource: '*'
+
+          - Effect: Allow
+            Action:
               - iam:PassRole
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/static-web-server-role-${Environment}-security-stack"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-infrastructure-governance-assistant-role-${Environment}-security-stack"
   InfraExecutionRole:
     Type: AWS::IAM::Role
     Properties:

@@ -1,30 +1,30 @@
 [
-    {
-        "ParameterKey":"Environment",
-        "ParameterValue":"prod"
-    },
-    {
-        "ParameterKey":"LoadBalancerName",
-        "ParameterValue":"prod-static-hosting-alb"
-    },
-    {
-        "ParameterKey":"ALBTargetGrpName",
-        "ParameterValue":"prod-static-hosting-target-grp"
-    },
-    {
-        "ParameterKey":"AutoScalingGroupName",
-        "ParameterValue":"prod-static-hosting-asg"
-    },
-    {
-        "ParameterKey":"ALBRequestCountTargetValue",
-        "ParameterValue":"3"
-    },
-    {
-        "ParameterKey":"CPUPolicyTargetValue",
-        "ParameterValue":"75"
-    },
-    {
-        "ParameterKey":"LaunchTemplateVersion",
-        "ParameterValue":"1"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "LoadBalancerName",
+    "ParameterValue": "prod-aws-infrastructure-governance-assistant-alb"
+  },
+  {
+    "ParameterKey": "ALBTargetGrpName",
+    "ParameterValue": "prod-aws-infrastructure-governance-assistant-target-grp"
+  },
+  {
+    "ParameterKey": "AutoScalingGroupName",
+    "ParameterValue": "prod-aws-infrastructure-governance-assistant-asg"
+  },
+  {
+    "ParameterKey": "ALBRequestCountTargetValue",
+    "ParameterValue": "3"
+  },
+  {
+    "ParameterKey": "CPUPolicyTargetValue",
+    "ParameterValue": "75"
+  },
+  {
+    "ParameterKey": "LaunchTemplateVersion",
+    "ParameterValue": "1"
+  }
 ]

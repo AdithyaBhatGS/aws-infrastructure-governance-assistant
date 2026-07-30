@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "DriftTableName",
+    "ParameterValue": "prod-infrastructure-scan-results"
+  }
+]

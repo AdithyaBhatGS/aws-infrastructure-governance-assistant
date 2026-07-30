@@ -11,7 +11,7 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: static-web-hosting
+    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
@@ -41,6 +41,9 @@ Parameters:
   CloudFormationPolicyName:
     Type: String
     Description: Represents the name of the cloudformation policy
+  DynamoDBPolicyName:
+    Type: String
+    Description: Represents the name of the dynamoDB table that holds the drift results
   PurposeOfCloudInitLogGrp:
     Type: String
     Description: |
@@ -176,6 +179,7 @@ Resources:
         - !GetAtt S3BucketPolicy.PolicyArn
         - !GetAtt EC2MetadataPolicy.PolicyArn
         - !GetAtt CloudFormationPolicy.PolicyArn
+        - !GetAtt DynamoDBPolicy.PolicyArn
       RoleName: !Sub '${APPEC2Role}-${AWS::StackName}'
       Tags:
         - Key: Environment
@@ -271,7 +275,25 @@ Resources:
               - 'cloudformation:DescribeStackResources'
               - 'cloudformation:DescribeStacks'
               - 'cloudformation:SignalResource'
+              - 'cloudformation:ListStacks'
+              - 'cloudformation:DetectStackDrift'
+              - 'cloudformation:DescribeStackDriftDetectionStatus'
+              - 'cloudformation:DescribeStackResourceDrifts'
             Resource: '*'
+  DynamoDBPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Represents the permission for dynamoDB table that holds drift results
+      ManagedPolicyName: !Ref DynamoDBPolicyName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:PutItem
+              - dynamodb:GetItem
+              - dynamodb:Scan
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-drift-detection-table"
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:

@@ -1,22 +1,22 @@
 [
-    {
-        "ParameterKey": "Environment",
-        "ParameterValue": "dev"
-    },
-    {
-        "ParameterKey": "BootstrapVersion",
-        "ParameterValue": "placeholder"
-    },
-    {
-        "ParameterKey": "LTStackName",
-        "ParameterValue": "dev-launch-template-stack"
-    },
-    {
-        "ParameterKey": "ASGStackName",
-        "ParameterValue": "dev-application-stack"
-    },
-    {
-        "ParameterKey": "LaunchTemplateName",
-        "ParameterValue": "dev-static-web-lauch-template"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "BootstrapVersion",
+    "ParameterValue": "placeholder"
+  },
+  {
+    "ParameterKey": "LTStackName",
+    "ParameterValue": "dev-launch-template-stack"
+  },
+  {
+    "ParameterKey": "ASGStackName",
+    "ParameterValue": "dev-application-stack"
+  },
+  {
+    "ParameterKey": "LaunchTemplateName",
+    "ParameterValue": "dev-aws-infrastructure-governance-assistant-lauch-template"
+  }
 ]

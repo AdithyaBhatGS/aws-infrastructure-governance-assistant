@@ -1,30 +1,34 @@
 [
-    {
-        "ParameterKey": "Environment",
-        "ParameterValue": "prod"
-    },
-    {
-        "ParameterKey": "APPEC2Role",
-        "ParameterValue": "static-web-server-role"
-    },
-    {
-        "ParameterKey": "CloudWatchPolicyName",
-        "ParameterValue": "prod-cloudwatch-policy"
-    },
-    {
-        "ParameterKey": "CloudWatchAgentPolicyName",
-        "ParameterValue": "prod-cloudwatch-agent-policy"
-    },
-    {
-        "ParameterKey": "S3BucketPolicyName",
-        "ParameterValue": "prod-s3-bucket-policy"
-    },
-    {
-        "ParameterKey": "EC2MetadataPolicyName",
-        "ParameterValue": "prod-ec2-metadata-policy"
-    },
-    {
-        "ParameterKey": "CloudFormationPolicyName",
-        "ParameterValue": "prod-cloudformation-policy"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "APPEC2Role",
+    "ParameterValue": "aws-infrastructure-governance-assistant-role"
+  },
+  {
+    "ParameterKey": "CloudWatchPolicyName",
+    "ParameterValue": "prod-cloudwatch-policy"
+  },
+  {
+    "ParameterKey": "CloudWatchAgentPolicyName",
+    "ParameterValue": "prod-cloudwatch-agent-policy"
+  },
+  {
+    "ParameterKey": "S3BucketPolicyName",
+    "ParameterValue": "prod-s3-bucket-policy"
+  },
+  {
+    "ParameterKey": "EC2MetadataPolicyName",
+    "ParameterValue": "prod-ec2-metadata-policy"
+  },
+  {
+    "ParameterKey": "CloudFormationPolicyName",
+    "ParameterValue": "prod-cloudformation-policy"
+  },
+  {
+    "ParameterKey": "DynamoDBPolicyName",
+    "ParameterValue": "prod-dynamoDB-policy"
+  }
 ]

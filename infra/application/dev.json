@@ -1,30 +1,30 @@
 [
-    {
-        "ParameterKey":"Environment",
-        "ParameterValue":"dev"
-    },
-    {
-        "ParameterKey":"LoadBalancerName",
-        "ParameterValue":"dev-static-hosting-alb"
-    },
-    {
-        "ParameterKey":"ALBTargetGrpName",
-        "ParameterValue":"dev-static-hosting-target-grp"
-    },
-    {
-        "ParameterKey":"AutoScalingGroupName",
-        "ParameterValue":"dev-static-hosting-asg"
-    },
-    {
-        "ParameterKey":"ALBRequestCountTargetValue",
-        "ParameterValue":"2"
-    },
-    {
-        "ParameterKey":"CPUPolicyTargetValue",
-        "ParameterValue":"75"
-    },
-    {
-        "ParameterKey":"LaunchTemplateVersion",
-        "ParameterValue":"1"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "LoadBalancerName",
+    "ParameterValue": "dev-aws-infrastructure-governance-assistant-alb"
+  },
+  {
+    "ParameterKey": "ALBTargetGrpName",
+    "ParameterValue": "dev-aws-infrastructure-governance-assistant-target-grp"
+  },
+  {
+    "ParameterKey": "AutoScalingGroupName",
+    "ParameterValue": "dev-aws-infrastructure-governance-assistant-asg"
+  },
+  {
+    "ParameterKey": "ALBRequestCountTargetValue",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "CPUPolicyTargetValue",
+    "ParameterValue": "75"
+  },
+  {
+    "ParameterKey": "LaunchTemplateVersion",
+    "ParameterValue": "1"
+  }
 ]

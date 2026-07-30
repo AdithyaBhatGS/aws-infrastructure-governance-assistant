@@ -10,7 +10,7 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: static-web-hosting
+    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project

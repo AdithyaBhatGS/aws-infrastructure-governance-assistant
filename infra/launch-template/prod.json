@@ -1,22 +1,22 @@
 [
-    {
-        "ParameterKey": "Environment",
-        "ParameterValue": "prod"
-    },
-    {
-        "ParameterKey": "BootstrapVersion",
-        "ParameterValue": "placeholder"
-    },
-    {
-        "ParameterKey": "LTStackName",
-        "ParameterValue": "prod-launch-template-stack"
-    },
-    {
-        "ParameterKey": "ASGStackName",
-        "ParameterValue": "prod-application-stack"
-    },
-    {
-        "ParameterKey": "LaunchTemplateName",
-        "ParameterValue": "prod-static-web-lauch-template"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "BootstrapVersion",
+    "ParameterValue": "placeholder"
+  },
+  {
+    "ParameterKey": "LTStackName",
+    "ParameterValue": "prod-launch-template-stack"
+  },
+  {
+    "ParameterKey": "ASGStackName",
+    "ParameterValue": "prod-application-stack"
+  },
+  {
+    "ParameterKey": "LaunchTemplateName",
+    "ParameterValue": "prod-aws-infrastructure-governance-assistant-lauch-template"
+  }
 ]
