@@ -4,6 +4,18 @@
     "ParameterValue": "dev"
   },
   {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "AWS Infrastructure Governance Assistant"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "devOps"
+  },
+  {
+    "ParameterKey": "ManagedBy",
+    "ParameterValue": "CloudFormation"
+  },
+  {
     "ParameterKey": "APPEC2Role",
     "ParameterValue": "aws-infrastructure-governance-assistant-role"
   },
@@ -30,5 +42,41 @@
   {
     "ParameterKey": "DynamoDBPolicyName",
     "ParameterValue": "dev-dynamoDB-policy"
+  },
+  {
+    "ParameterKey": "PurposeOfCloudInitLogGrp",
+    "ParameterValue": "infrastructure"
+  },
+  {
+    "ParameterKey": "ComponentOfCloudInitLogGrp",
+    "ParameterValue": "ec2"
+  },
+  {
+    "ParameterKey": "NameOfCloudInitLogGrp",
+    "ParameterValue": "cloud-init"
+  },
+  {
+    "ParameterKey": "PurposeOfSystemLogGrp",
+    "ParameterValue": "infrastructure"
+  },
+  {
+    "ParameterKey": "ComponentOfSystemLogGrp",
+    "ParameterValue": "ec2"
+  },
+  {
+    "ParameterKey": "NameOfSystemLogGrp",
+    "ParameterValue": "system"
+  },
+  {
+    "ParameterKey": "PurposeOfApplicationLogGrp",
+    "ParameterValue": "application"
+  },
+  {
+    "ParameterKey": "ComponentOfApplicationLogGrp",
+    "ParameterValue": "ec2"
+  },
+  {
+    "ParameterKey": "NameOfApplicationLogGrp",
+    "ParameterValue": "deploy"
   }
 ]

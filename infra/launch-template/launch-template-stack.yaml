@@ -12,7 +12,6 @@ Parameters:
   AMIID:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Description: Represents the AMI ID
-    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
   BootstrapVersion:
     Type: String
     Description: Git SHA or build version for forcing LT update

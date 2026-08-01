@@ -1,42 +1,58 @@
 [
-    {
-        "ParameterKey":"Environment",
-        "ParameterValue":"prod"
-    },
-    {
-        "ParameterKey":"VPCCidr",
-        "ParameterValue": "10.1.0.0/16"
-    },
-    {
-        "ParameterKey":"PubSubCidrA",
-        "ParameterValue":"10.1.1.0/24"
-    },
-    {
-        "ParameterKey":"PubSubCidrB",
-        "ParameterValue": "10.1.2.0/24"
-    },
-    {
-        "ParameterKey":"PrivSubCidrA",
-        "ParameterValue": "10.1.3.0/24"
-    },
-    {
-        "ParameterKey":"PrivSubCidrB",
-        "ParameterValue":"10.1.4.0/24"
-    },
-    {
-        "ParameterKey":"ALBFirewall",
-        "ParameterValue":"prod-alb-security-grp"
-    },
-    {
-        "ParameterKey":"AppFirewall",
-        "ParameterValue":"prod-app-security-grp"
-    },
-    {
-        "ParameterKey":"AvailabilityZoneA",
-        "ParameterValue":"us-east-1a"
-    },
-    {
-        "ParameterKey":"AvailabilityZoneB",
-        "ParameterValue":"us-east-1b"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "AWS Infrastructure Governance Assistant"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "devOps"
+  },
+  {
+    "ParameterKey": "ManagedBy",
+    "ParameterValue": "CloudFormation"
+  },
+  {
+    "ParameterKey": "VPCCidr",
+    "ParameterValue": "10.1.0.0/16"
+  },
+  {
+    "ParameterKey": "PubSubCidrA",
+    "ParameterValue": "10.1.1.0/24"
+  },
+  {
+    "ParameterKey": "PubSubCidrB",
+    "ParameterValue": "10.1.2.0/24"
+  },
+  {
+    "ParameterKey": "PrivSubCidrA",
+    "ParameterValue": "10.1.3.0/24"
+  },
+  {
+    "ParameterKey": "PrivSubCidrB",
+    "ParameterValue": "10.1.4.0/24"
+  },
+  {
+    "ParameterKey": "PubDestCIDR",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "ALBFirewall",
+    "ParameterValue": "prod-alb-security-grp"
+  },
+  {
+    "ParameterKey": "AppFirewall",
+    "ParameterValue": "prod-app-security-grp"
+  },
+  {
+    "ParameterKey": "AvailabilityZoneA",
+    "ParameterValue": "us-east-1a"
+  },
+  {
+    "ParameterKey": "AvailabilityZoneB",
+    "ParameterValue": "us-east-1b"
+  }
 ]

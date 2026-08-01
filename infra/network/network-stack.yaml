@@ -10,15 +10,12 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
-    Default: devOps
   ManagedBy:
     Type: String
     Description: Represents the IAC used
-    Default: CloudFormation
   VPCCidr:
     Type: String
     Description: Represents the CIDR block of the VPC
@@ -54,7 +51,6 @@ Parameters:
     Type: String
     Description: Represents the Destination CIDR block
     AllowedPattern: ^0\.0\.0\.0/0$
-    Default: 0.0.0.0/0
   ALBFirewall:
     Type: String
     Description: Represents the name of the ALB security group

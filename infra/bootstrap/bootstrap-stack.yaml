@@ -12,15 +12,12 @@ Parameters:
   ManagedBy:
     Type: String
     Description: Represents the entity that manages the infrastructure
-    Default: CloudFormation
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
-    Default: devOps
   DeploymentBoundary:
     Type: String
     Description: Represents the permissions boundary policy name
@@ -63,16 +60,13 @@ Parameters:
   RepoName:
     Type: String
     Description: Represents the owner, repository name of the github account
-    Default: AdithyaBhatGS/aws-infrastructure-governance-assistant
     NoEcho: true
   ValidationPolicyName:
     Type: String
     Description: Represents the name of the validation policy
-    Default: template-validation-policy
   ValidationRoleName:
     Type: String
     Description: Represents the name of the validation role
-    Default: template-validation-role
   ArtifactBucketName:
     Type: String
     Description: Represents the name of the artifact bucket name

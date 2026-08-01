@@ -12,15 +12,12 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
-    Default: devOps
   ManagedBy:
     Type: String
     Description: Represents the IAC used
-    Default: CloudFormation
   AutoScalingGroupName:
     Type: String
     Description: Represents the name of the Auto Scaling Group

@@ -4,6 +4,18 @@
     "ParameterValue": "dev"
   },
   {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "AWS Infrastructure Governance Assistant"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "devOps"
+  },
+  {
+    "ParameterKey": "ManagedBy",
+    "ParameterValue": "CloudFormation"
+  },
+  {
     "ParameterKey": "LoadBalancerName",
     "ParameterValue": "dev-aws-infrastructure-governance-assistant-alb"
   },

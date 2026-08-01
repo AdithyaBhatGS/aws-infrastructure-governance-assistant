@@ -12,15 +12,12 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
-    Default: devOps
   ManagedBy:
     Type: String
     Description: Represents the IAC used
-    Default: CloudFormation
   DriftTableName:
     Type: String
     Description: Represents the table name that contains drift results
@@ -58,7 +55,18 @@ Resources:
           Value: !Ref Owner
         - Key: ManagedBy
           Value: !Ref ManagedBy
-
+  # DriftTableParameter:
+    # Type: AWS::SSM::Parameter
+    # Properties:
+      # Name: !Sub "/portfolio/${Environment}/drift-table"
+      # Type: String
+      # Value: !Ref DriftResultsTable
+      # Description: Represents the name of the table which holds drift results
+      # Tags:
+        # Environment: !Ref Environment
+        # Project: !Ref ProjectName
+        # ManagedBy: !Ref ManagedBy
+        # Owner: !Ref Owner
 Outputs:
   DriftResultsTableARN:
     Description: Represents the ARN of the drift results table

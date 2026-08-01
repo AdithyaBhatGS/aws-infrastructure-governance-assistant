@@ -11,15 +11,12 @@ Parameters:
   ProjectName:
     Type: String
     Description: Represents the project name
-    Default: AWS Infrastructure Governance Assistant
   Owner:
     Type: String
     Description: Represents the owner of the project
-    Default: devOps
   ManagedBy:
     Type: String
     Description: Represents the IAC used
-    Default: CloudFormation
   APPEC2Role:
     Type: String
     Description: |
@@ -49,47 +46,38 @@ Parameters:
     Description: |
       Represents the purpose of the log group for cloud init level logs
     AllowedPattern: ^[A-Za-z0-9]+$
-    Default: infrastructure
   ComponentOfCloudInitLogGrp:
     Type: String
     Description: Represents the component of the log group for system level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
-    Default: ec2
   NameOfCloudInitLogGrp:
     Type: String
     Description: Represents the name of the log group for system level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
-    Default: cloud-init
   PurposeOfSystemLogGrp:
     Type: String
     Description: Represents the purpose of the log group for system level logs
     AllowedPattern: ^[A-Za-z0-9]+$
-    Default: infrastructure
   ComponentOfSystemLogGrp:
     Type: String
     Description: Represents the component of the log group for system level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
-    Default: ec2
   NameOfSystemLogGrp:
     Type: String
     Description: Represents the name of the log group for system level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
-    Default: system
   PurposeOfApplicationLogGrp:
     Type: String
     Description: Represents the purpose of the log group for application level logs
     AllowedPattern: ^[A-Za-z0-9]+$
-    Default: application
   ComponentOfApplicationLogGrp:
     Type: String
     Description: Represents the component of the log group for application level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
-    Default: ec2
   NameOfApplicationLogGrp:
     Type: String
     Description: Represents the name of the log group for application level logs
     AllowedPattern: ^[-A-Za-z0-9]+$
-    Default: deploy
 Resources:
   CloudInitLogGroup:
     Type: AWS::Logs::LogGroup
@@ -293,7 +281,7 @@ Resources:
               - dynamodb:PutItem
               - dynamodb:GetItem
               - dynamodb:Scan
-            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-drift-detection-table"
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-infrastructure-scan-results"
   AppInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:

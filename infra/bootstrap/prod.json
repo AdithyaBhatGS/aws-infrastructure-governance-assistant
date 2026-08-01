@@ -4,6 +4,18 @@
     "ParameterValue": "prod"
   },
   {
+    "ParameterKey": "ManagedBy",
+    "ParameterValue": "CloudFormation"
+  },
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "AWS Infrastructure Governance Assistant"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "devOps"
+  },
+  {
     "ParameterKey": "DeploymentBoundary",
     "ParameterValue": "prod-deployment-boundary"
   },
@@ -54,6 +66,18 @@
   {
     "ParameterKey": "BranchName",
     "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "RepoName",
+    "ParameterValue": "AdithyaBhatGS/aws-infrastructure-governance-assistant"
+  },
+  {
+    "ParameterKey": "ValidationPolicyName",
+    "ParameterValue": "template-validation-policy"
+  },
+  {
+    "ParameterKey": "ValidationRoleName",
+    "ParameterValue": "template-validation-role"
   },
   {
     "ParameterKey": "ArtifactBucketName",
