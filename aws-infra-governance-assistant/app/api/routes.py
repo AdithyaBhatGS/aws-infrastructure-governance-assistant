@@ -4,8 +4,14 @@ import os
 import boto3
 
 from app.services.cloudformation_service import CloudFormationService
-from app.services.dynamodb_services import DynamoDBService
+from app.services.dynamodb_service import DynamoDBService
 from app.services.resource_discovery_service import ResourceDiscoveryService
+from app.services.aws_identity_service import AWSIdentityService
+
+from app.models.recommendation import ResourceDiscoveryReponse
+from app.models.drift import DriftResponse, StackDriftResult
+from app.models.snapshot import HistorySummaryResponse, SnapshotResponse
+from app.models.stack import StackListResponse
 
 # Create mini apps rather than a single giant router file
 router = APIRouter()
@@ -14,6 +20,7 @@ router = APIRouter()
 service = CloudFormationService()
 dynamodbService = DynamoDBService()
 resourceDiscoveryService = ResourceDiscoveryService()
+awsIdentityService = AWSIdentityService()
 
 sts_client = boto3.client("sts")
 
@@ -29,19 +36,19 @@ def health():
         "status": "healthy"
     }
 
-@router.get("/stacks")
+@router.get("/stacks", response_model=StackListResponse)
 def list_stacks():
     return service.list_active_stacks()
 
-@router.post("/drift/analyze/{stack_name}")
+@router.post("/drift/analyze/{stack_name}", response_model=StackDriftResult)
 def analyze_drift(stack_name: str):
     return service.analyze_drift(stack_name)
 
-@router.get("/drift/analyze/account")
+@router.post("/drift/analyze/account", response_model=DriftResponse)
 def analyze_account_drift():
     response = service.analyze_account_drift()
 
-    account_id = sts_client.get_caller_identity()["Account"]
+    account_id = awsIdentityService.get_account_id()
 
     dynamodbService.save_snapshot(
         account_id=account_id,
@@ -51,10 +58,10 @@ def analyze_account_drift():
 
     return response
 
-@router.get("/drift/latest")
+@router.get("/drift/latest", response_model=SnapshotResponse)
 def get_latest_drift():
 
-    account_id = sts_client.get_caller_identity()["Account"]
+    account_id = awsIdentityService.get_account_id()
 
     response = dynamodbService.get_latest_snapshot(
         account_id=account_id,
@@ -62,10 +69,10 @@ def get_latest_drift():
 
     return response
 
-@router.get("/drift/history")
+@router.get("/drift/history", response_model=list[HistorySummaryResponse])
 def get_historical_trend():
 
-    account_id = sts_client.get_caller_identity()["Account"]
+    account_id = awsIdentityService.get_account_id()
 
     response = dynamodbService.get_history(
         account_id=account_id
@@ -73,7 +80,7 @@ def get_historical_trend():
 
     return response
 
-@router.get("/resource_discovery")
+@router.get("/resource_discovery", response_model=ResourceDiscoveryReponse)
 def get_resource_discovery():
     response = resourceDiscoveryService.discover_resources()
     return response
