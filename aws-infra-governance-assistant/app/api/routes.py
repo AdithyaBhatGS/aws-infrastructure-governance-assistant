@@ -36,7 +36,7 @@ def health():
         "status": "healthy"
     }
 
-@router.get("/stacks", response_model=StackListResponse)
+@router.get("/stacks/list", response_model=StackListResponse)
 def list_stacks():
     return service.list_active_stacks()
 
