@@ -35,3 +35,21 @@ def discover_resources():
     response.raise_for_status()
 
     return response.json()
+
+def analyze_account_drift():
+    response = requests.post(
+        f"{BASE_URL}/drift/analyze/account"
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+def analyze_stack_drift(stack_name):
+    response = requests.post(
+        f"{BASE_URL}/drift/analyze/stack/{stack_name}"
+    )
+
+    response.raise_for_status()
+
+    return response.json()

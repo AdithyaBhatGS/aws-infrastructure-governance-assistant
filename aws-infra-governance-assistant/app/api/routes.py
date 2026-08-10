@@ -40,7 +40,7 @@ def health():
 def list_stacks():
     return service.list_active_stacks()
 
-@router.post("/drift/analyze/{stack_name}", response_model=StackDriftResult)
+@router.post("/drift/analyze/stack/{stack_name}", response_model=StackDriftResult)
 def analyze_drift(stack_name: str):
     return service.analyze_drift(stack_name)
 

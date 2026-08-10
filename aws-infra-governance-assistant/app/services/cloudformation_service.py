@@ -119,9 +119,8 @@ class CloudFormationService:
         }
 
     def analyze_account_drift(self):
-
+        
         stacks_drifted_data = []
-
 
         active_stacks = self.list_active_stacks()
 
