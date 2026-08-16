@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-
+import json
 import os
 import boto3
 
@@ -7,10 +7,11 @@ from app.services.cloudformation_service import CloudFormationService
 from app.services.dynamodb_service import DynamoDBService
 from app.services.resource_discovery_service import ResourceDiscoveryService
 from app.services.aws_identity_service import AWSIdentityService
+from app.services.history_service import HistoryService
 
-from app.models.recommendation import ResourceDiscoveryReponse
+from app.models.recommendation import ResourceDiscoveryResponse
 from app.models.drift import DriftResponse, StackDriftResult
-from app.models.snapshot import HistorySummaryResponse, SnapshotResponse
+from app.models.snapshot import SnapshotResponse
 from app.models.stack import StackListResponse
 
 # Create mini apps rather than a single giant router file
@@ -21,7 +22,7 @@ service = CloudFormationService()
 dynamodbService = DynamoDBService()
 resourceDiscoveryService = ResourceDiscoveryService()
 awsIdentityService = AWSIdentityService()
-
+historyService = HistoryService()
 sts_client = boto3.client("sts")
 
 @router.get("/")
@@ -69,18 +70,20 @@ def get_latest_drift():
 
     return response
 
-@router.get("/drift/history", response_model=list[HistorySummaryResponse])
+@router.get("/drift/history")
 def get_historical_trend():
 
     account_id = awsIdentityService.get_account_id()
+    environment = os.environ["ENVIRONMENT"]
 
-    response = dynamodbService.get_history(
+    response = dynamodbService.get_drift_snapshots(
         account_id=account_id
     )
 
-    return response
+    return historyService.get_history(response, environment)
 
-@router.get("/resource_discovery", response_model=ResourceDiscoveryReponse)
+@router.get("/resource_discovery", response_model=ResourceDiscoveryResponse)
 def get_resource_discovery():
     response = resourceDiscoveryService.discover_resources()
     return response
+
