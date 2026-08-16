@@ -9,7 +9,7 @@ class CloudFormationService:
             "cloudformation"
         )
 
-    def list_active_stacks(self):
+    def list_active_stacks(self) -> dict:
 
         response = self.client.list_stacks(
             StackStatusFilter=[
@@ -33,7 +33,7 @@ class CloudFormationService:
             "stacks": stacks
         }
 
-    def analyze_drift(self, stack_name: str):
+    def analyze_drift(self, stack_name: str) -> dict:
 
         # Start a fresh drift detection
         response = self.client.detect_stack_drift(
@@ -118,7 +118,7 @@ class CloudFormationService:
             "resources": resources
         }
 
-    def analyze_account_drift(self):
+    def analyze_account_drift(self) -> dict:
 
         stacks_drifted_data = []
 

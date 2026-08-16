@@ -8,7 +8,7 @@ class AWSIdentityService:
             "sts"
         )
 
-    def get_account_id(self):
+    def get_account_id(self) -> str:
 
         response = self.sts_client.get_caller_identity()
 

@@ -15,7 +15,7 @@ class DynamoDBService:
             self.table_name
         )
 
-    def save_snapshot(self, account_id: str, environment: str, drift_result: dict):
+    def save_snapshot(self, account_id: str, environment: str, drift_result: dict) -> dict:
 
         scan_time = datetime.now(timezone.utc).strftime(
                     "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -39,7 +39,7 @@ class DynamoDBService:
             "message": "Drift snapshot stored successfully"
         }
 
-    def get_latest_snapshot(self, account_id: str):
+    def get_latest_snapshot(self, account_id: str) -> dict:
 
         response = self.table.query(
             KeyConditionExpression = Key("AccountId").eq(account_id),
@@ -56,21 +56,10 @@ class DynamoDBService:
 
         return items[0]
 
-    def get_history(self, account_id: str):
+    def get_drift_snapshots(self, account_id: str) -> list:
 
         response = self.table.query(
-            KeyConditionExpression = Key("AccountId").eq(account_id),
-            ScanIndexForward = False,
+            KeyConditionExpression = Key("AccountId").eq(account_id)
         )
 
-        history = []
-
-        for item in response.get("Items", []):
-            history.append({
-                "ScanTime": item["ScanTime"],
-                "AccountStatus": item["AccountStatus"],
-                "TotalStacks": item["TotalStacks"],
-                "DriftedStacks": item["DriftedStacks"]
-            })
-
-        return history
+        return response.get("Items", [])
