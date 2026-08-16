@@ -1,28 +1,19 @@
 from datetime import datetime
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.models.drift import StackDriftResult
 
-class HistorySummaryResponse(BaseModel):
-    ScanTime: datetime
-
-    AccountStatus: str
-
-    TotalStacks: int
-
-    DriftedStacks: int
-
 class SnapshotResponse(BaseModel):
-    AccountId: str
+    account_id: str = Field(alias="AccountId")
 
-    ScanTime: datetime
+    scan_time: datetime = Field(alias="ScanTime")
 
-    Environment: str
+    environment: str = Field(alias="Environment")
 
-    AccountStatus: str
+    account_status: str = Field(alias="AccountStatus")
 
-    TotalStacks: int
+    total_stacks: int = Field(alias="TotalStacks")
 
-    DriftedStacks: int
+    drifted_stacks: int = Field(alias="DriftedStacks")
 
-    Results: List[StackDriftResult]
+    results: List[StackDriftResult] = Field(alias="Results")

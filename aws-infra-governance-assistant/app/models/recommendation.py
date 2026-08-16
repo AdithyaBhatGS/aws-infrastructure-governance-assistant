@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Dict, Optional
+from datetime import datetime
 
 class Recommendation(BaseModel):
     resource_type: str
@@ -30,10 +31,10 @@ class ResourceSummary(BaseModel):
 
     low: int
 
-class ResourceDiscoveryReponse(BaseModel):
+class ResourceDiscoveryResponse(BaseModel):
     account_id: str
 
-    scan_time: str
+    scan_time: datetime
 
     summary: ResourceSummary
 

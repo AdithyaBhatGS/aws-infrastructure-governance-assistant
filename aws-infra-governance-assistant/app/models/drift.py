@@ -2,13 +2,13 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class PropertyDifference(BaseModel):
-    PropertyPath: str
+    property_path: str = Field(alias="PropertyPath")
 
-    ExpectedValue: str
+    expected_value: str = Field(alias="ExpectedValue")
 
-    ActualValue: str
+    actual_value: str = Field(alias="ActualValue")
 
-    DifferenceType: str
+    difference_type: str = Field(alias="DifferenceType")
 
 class DriftResource(BaseModel):
     logical_id: str
