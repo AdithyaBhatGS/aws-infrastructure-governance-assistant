@@ -25,7 +25,7 @@ class ResourceDiscoveryService:
             "elbv2"
         )
 
-    def discover_resources(self):
+    def discover_resources(self) -> dict:
         recommendations = []
         warnings = []
 
@@ -121,7 +121,7 @@ class ResourceDiscoveryService:
             "recommendations": recommendations
         }
 
-    def find_unused_ebs_volumes(self):
+    def find_unused_ebs_volumes(self) -> dict:
 
         try:
             response = self.ec2_client.describe_volumes(
@@ -190,7 +190,7 @@ class ResourceDiscoveryService:
                 ]
             }
 
-    def find_unused_elastic_ips(self):
+    def find_unused_elastic_ips(self) -> dict:
 
         try:
             response = self.ec2_client.describe_addresses()
@@ -247,7 +247,7 @@ class ResourceDiscoveryService:
                 ]
             }
 
-    def find_empty_s3_buckets(self):
+    def find_empty_s3_buckets(self) -> dict:
 
         try:
             response = self.s3_client.list_buckets()
@@ -324,7 +324,7 @@ class ResourceDiscoveryService:
             "warnings": warnings
         }
 
-    def find_nat_gateways(self):
+    def find_nat_gateways(self) -> dict:
 
         try:
             response = self.ec2_client.describe_nat_gateways()
@@ -332,9 +332,9 @@ class ResourceDiscoveryService:
             nat_gateways = []
 
             for nat in response.get("NatGateways", []):
-    
+
                 if nat["State"] == "available":
-    
+
                     nat_gateways.append(
                         {
                             "resource_type": "NAT_GATEWAY",
@@ -347,7 +347,7 @@ class ResourceDiscoveryService:
                             }
                         }
                     )
-    
+
             return {
                 "recommendations": nat_gateways,
                 "warnings": []
@@ -384,7 +384,7 @@ class ResourceDiscoveryService:
                 ]
             }
 
-    def find_load_balancers(self):
+    def find_load_balancers(self) -> dict:
         try:
             response = self.elbv2_client.describe_load_balancers()
             

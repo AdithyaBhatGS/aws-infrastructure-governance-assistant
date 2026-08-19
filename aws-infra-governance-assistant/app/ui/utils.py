@@ -1,6 +1,16 @@
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
-def format_elapsed_time(scan_time):
+def format_scan_time(scan_time: str) -> str:
+    dt = datetime.fromisoformat(
+        scan_time.replace("Z", "+00:00")
+    )
+
+    dt = dt.astimezone(ZoneInfo("Asia/Kolkata"))
+
+    return dt.strftime("%d %b %Y · %I:%M %p")
+
+def format_elapsed_time(scan_time: str) -> str:
     scan_datetime = datetime.fromisoformat(
         scan_time.replace("Z", "+00:00")
     )

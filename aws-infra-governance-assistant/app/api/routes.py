@@ -13,6 +13,7 @@ from app.models.recommendation import ResourceDiscoveryResponse
 from app.models.drift import DriftResponse, StackDriftResult
 from app.models.snapshot import SnapshotResponse
 from app.models.stack import StackListResponse
+from app.models.history import DriftHistoryEntry
 
 # Create mini apps rather than a single giant router file
 router = APIRouter()
@@ -70,7 +71,7 @@ def get_latest_drift():
 
     return response
 
-@router.get("/drift/history")
+@router.get("/drift/history", response_model=list[DriftHistoryEntry])
 def get_historical_trend():
 
     account_id = awsIdentityService.get_account_id()

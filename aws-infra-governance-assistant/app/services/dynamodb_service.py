@@ -56,7 +56,7 @@ class DynamoDBService:
 
         return items[0]
 
-    def get_drift_snapshots(self, account_id: str) -> list:
+    def get_drift_snapshots(self, account_id: str) -> list[dict]:
 
         response = self.table.query(
             KeyConditionExpression = Key("AccountId").eq(account_id)

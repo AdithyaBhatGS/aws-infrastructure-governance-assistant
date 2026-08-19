@@ -1,3 +1,5 @@
+from app.models.history import DriftHistoryEntry
+
 class HistoryService():
 
     def _filter_environment(self, snapshots: list[dict], environment: str) -> list[dict]:

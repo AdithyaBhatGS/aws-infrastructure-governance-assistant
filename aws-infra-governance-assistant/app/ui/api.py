@@ -53,3 +53,12 @@ def analyze_stack_drift(stack_name):
     response.raise_for_status()
 
     return response.json()
+
+def get_drift_history():
+    response = requests.get(
+        f"{BASE_URL}/drift/history"
+    )
+
+    response.raise_for_status()
+
+    return response.json()

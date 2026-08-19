@@ -4,10 +4,11 @@ from api import (
     get_latest_drift,
     discover_resources,
     analyze_account_drift,
-    analyze_stack_drift
+    analyze_stack_drift,
+    get_drift_history
 )
-from datetime import datetime, timezone
-from utils import format_elapsed_time
+
+from utils import format_elapsed_time, format_scan_time
 st.set_page_config(
     page_title="Infrastructure Platform Assistant",
     layout="wide"
@@ -26,7 +27,7 @@ page = st.sidebar.radio(
         "Account Drift Detection",
         "Stack Drift",
         "Resource Discovery",
-        "History"
+        "Drift History"
     ]
 )
 
@@ -301,5 +302,98 @@ elif page == "Stack Drift":
     else:
         st.info("No cloudformation stacks found.")
 
+elif page == "Drift History":
+    st.header("Drift History")
+
+    st.info(
+        "Shows previous account-level drift scans "
+        "stored in the system."
+    )
+
+    with st.spinner("Loading drift history..."):
+        history = get_drift_history()
+
+    if not history:
+        st.success("No drift history available.")
+    else:
+        for entry in history:
+            scan_time = entry.get("scan_time")
+
+            if scan_time:
+                display_time = format_scan_time(scan_time)
+
+            else:
+                display_time = "Unknown time"
+
+            st.subheader(f"Scan: {display_time}")
+
+            added = entry.get("added", [])
+            removed = entry.get("removed", [])
+            changed = entry.get("changed", [])
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric("Added", len(added))
+
+            with col2:
+                st.metric("Removed", len(removed))
+
+            with col3:
+                st.metric("Changed", len(changed))
+
+            with st.expander("View details"):
+                if added:
+                    st.markdown("### Added")
+
+                    for resource in added:
+                        logical_id = resource.get("logical_id", "Unknown")
+                        resource_type = resource.get("resource_type", "Unknown")
+
+                        st.success(
+                            f"**+ {logical_id}**  \n"
+                            f"Resource type: `{resource_type}`"
+                        )
+
+                    with st.expander("View complete added details"):
+                        st.json(added)
+                else:
+                    st.write("No resources added.")
+
+                if removed:
+                    st.markdown("### Removed")
+
+                    for resource in removed:
+                        logical_id = resource.get("logical_id", "Unknown")
+                        resource_type = resource.get("resource_type", "Unknown")
+
+                        st.success(
+                            f"**− {logical_id}**  \n"
+                            f"Resource type: `{resource_type}`"
+                        )
+
+                    with st.expander("View complete removed details"):
+                        st.json(removed)
+                else:
+                    st.write("No resources removed.")
+
+                if changed:
+                    st.markdown("### Changed")
+
+                    for resource in changed:
+                        logical_id = resource.get("logical_id", "Unknown")
+                        resource_type = resource.get("resource_type", "Unknown")
+
+                        st.success(
+                            f"**↻ {logical_id}**  \n"
+                            f"Resource type: `{resource_type}`  \n"
+                        )
+
+                    with st.expander("View complete changed details"):
+                        st.json(changed)
+                else:
+                    st.write("No resources changed.")
+
+            st.divider()
 
 

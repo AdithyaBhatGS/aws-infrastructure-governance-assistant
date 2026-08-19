@@ -29,14 +29,6 @@ class HistoricalResponse(BaseModel):
 
     property_differences: List[PropertyDifference]
 
-class DriftChanges(BaseModel):
-
-    added: List[HistoricalResponse] = Field(default_factory=list)
-
-    removed: List[HistoricalResponse] = Field(default_factory=list)
-
-    changed: List[ChangedResource] = Field(default_factory=list)
-
 class DriftHistoryEntry(BaseModel):
 
     scan_time: datetime
