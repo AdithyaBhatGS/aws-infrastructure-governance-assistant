@@ -61,12 +61,15 @@ jobs:
           echo "Event: ${{ github.event_name }}"
           echo "Base branch: ${{ github.base_ref }}"
           echo "Head branch: ${{ github.head_ref }}"
+          echo "AWS region: ${{ env.AWS_REGION }}"
+          echo "Validation role configured: ${{ secrets.VALIDATION_ROLE_ARN != '' }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-${{ github.run_id }}
 
       - name: Install dependencies
         run: pip install -r requirements.txt
