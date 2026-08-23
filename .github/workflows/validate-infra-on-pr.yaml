@@ -64,12 +64,20 @@ jobs:
           echo "AWS region: ${{ env.AWS_REGION }}"
           echo "Validation role configured: ${{ secrets.VALIDATION_ROLE_ARN != '' }}"
 
+      - name: Test AWS OIDC configuration
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const token = await core.getIDToken('sts.amazonaws.com');
+            core.info(`OIDC token acquired: ${token ? 'yes' : 'no'}`);
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions-${{ github.run_id }}
+          retry-max-attempts: 1
 
       - name: Install dependencies
         run: pip install -r requirements.txt
