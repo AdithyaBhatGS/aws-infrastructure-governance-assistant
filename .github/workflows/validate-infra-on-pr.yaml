@@ -64,12 +64,20 @@ jobs:
           echo "AWS region: ${{ env.AWS_REGION }}"
           echo "Validation role configured: ${{ secrets.VALIDATION_ROLE_ARN != '' }}"
 
-      - name: Test AWS OIDC configuration
+      - name: Inspect OIDC claims
         uses: actions/github-script@v8
         with:
           script: |
             const token = await core.getIDToken('sts.amazonaws.com');
-            core.info(`OIDC token acquired: ${token ? 'yes' : 'no'}`);
+        
+            const payload = token.split('.')[1];
+            const claims = JSON.parse(
+              Buffer.from(payload, 'base64url').toString('utf8')
+            );
+        
+            core.info(`iss: ${claims.iss}`);
+            core.info(`aud: ${claims.aud}`);
+            core.info(`sub: ${claims.sub}`);
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
