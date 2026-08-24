@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy storage resource. Includes an S3 bucket which is used a repository for application artifacts
+Description: Stack to deploy the bucket for storing the artifacts, storing the logs
 Parameters:
   Environment:
     Type: String
