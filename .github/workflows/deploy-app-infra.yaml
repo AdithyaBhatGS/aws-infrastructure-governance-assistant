@@ -196,7 +196,7 @@ jobs:
       - name: Fetch latest Launch Template version
         id: lt_version
         run: |
-          LT_NAME="${ENVIRONMENT}-static-web-lauch-template"
+          LT_NAME="${ENVIRONMENT}-aws-infrastructure-governance-assistant-lauch-template"
 
           VERSION=$(aws ec2 describe-launch-template-versions \
             --launch-template-name "${LT_NAME}" \
