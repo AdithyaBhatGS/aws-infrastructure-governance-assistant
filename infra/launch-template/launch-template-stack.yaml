@@ -97,7 +97,7 @@ Resources:
                     echo "========== Application Deployment =========="
 
                     echo "Fetching current application version...."
-
+                    echo ">>>>> >>>>> Fetching ...."
                     mkdir -p /tmp/app
 
                     # -------------------------------------------------------
