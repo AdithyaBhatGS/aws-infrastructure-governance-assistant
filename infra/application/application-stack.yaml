@@ -21,15 +21,12 @@ Parameters:
   AutoScalingGroupName:
     Type: String
     Description: Represents the name of the Auto Scaling Group
-    AllowedPattern: ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,45}[A-Za-z0-9])?$
   LoadBalancerName:
     Type: String
-    AllowedPattern: ^(?!internal-)[A-Za-z0-9](?:[A-Za-z0-9-]{0,45}[A-Za-z0-9])?$
     Description: Represents the name of the Application Load Balancer
   ALBTargetGrpName:
     Type: String
     Description: Represents the name of the Target Group
-    AllowedPattern: ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,45}[A-Za-z0-9])?$
   ALBRequestCountTargetValue:
     Type: Number
     Description: Represents the Average ALB Request Count per Instance
