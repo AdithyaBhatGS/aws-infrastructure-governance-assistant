@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies, Listener, Target Grp
+Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies, Listener, Target Grp etc
 
 Parameters:
   Environment:
