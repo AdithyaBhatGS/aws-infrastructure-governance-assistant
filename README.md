@@ -71,15 +71,15 @@ Application releases are packaged as versioned artifacts and stored in Amazon S3
 
 The infrastructure is organized into modular CloudFormation stacks, with each stack responsible for a specific layer of the platform.
 
-| Stack               | Responsibility                                                                                            |
-| ------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Bootstrap**       | GitHub OIDC, permissions boundary, validation roles, deployment roles, and CloudFormation execution roles |
-| **Storage**         | Application artifact storage and centralized logging bucket                                               |
-| **Security**        | IAM roles, instance profiles, CloudWatch log groups, and related security resources                       |
-| **Network**         | VPC, subnets, internet gateway, NAT gateways, route tables, and security groups                           |
-| **Launch Template** | EC2 launch configuration, instance bootstrap, CloudWatch Agent, and application deployment configuration  |
-| **Application**     | Application Load Balancer, target group, listeners, Auto Scaling Group, and scaling policies              |
-| **Platform**        | AWS resources required specifically by the governance platform, including DynamoDB                        |
+| Stack                                                                    | Responsibility                                                                                            |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| [**Bootstrap**](/infra/bootstrap/bootstrap-stack.yaml)                   | GitHub OIDC, permissions boundary, validation roles, deployment roles, and CloudFormation execution roles |
+| [**Storage**](/infra/storage/storage-stack.yaml)                         | Application artifact storage and centralized logging bucket                                               |
+| [**Security**](/infra/security/security-stack.yaml)                      | IAM roles, instance profiles, CloudWatch log groups, and related security resources                       |
+| [**Network**](/infra/network/network-stack.yaml)                         | VPC, subnets, internet gateway, NAT gateways, route tables, and security groups                           |
+| [**Launch Template**](/infra/launch-template/launch-template-stack.yaml) | EC2 launch configuration, instance bootstrap, CloudWatch Agent, and application deployment configuration  |
+| [**Application**](/infra/application/application-stack.yaml)             | Application Load Balancer, target group, listeners, Auto Scaling Group, and scaling policies              |
+| [**Platform**](/infra/platform/platform-stack.yaml)                      | AWS resources required specifically by the governance platform, including DynamoDB                        |
 
 The **Bootstrap Stack** is provisioned separately, while the remaining stacks are deployed through GitHub Actions in their respective deployment workflows.
 
@@ -87,24 +87,12 @@ The **Bootstrap Stack** is provisioned separately, while the remaining stacks ar
 
 The project uses GitHub Actions to automate infrastructure validation, infrastructure deployment, application infrastructure deployment, and application deployment.
 
-### Current Pipeline Structure
-
-1. **Infrastructure Validation**
-   - Validates CloudFormation templates using `yamllint`, `cfn-lint`, CloudFormation validation, and Checkov.
-   - Runs as part of the pull request workflow.
-
-2. **Infrastructure Deployment**
-   - Deploys the foundational `storage`, `security`, and `network` stacks.
-   - Uses AWS CloudFormation with environment-specific parameters.
-
-3. **Application Infrastructure Deployment**
-   - Deploys the Launch Template and application infrastructure, including the ALB and Auto Scaling Group.
-   - Updates the application infrastructure when its corresponding CloudFormation components change.
-
-4. **Application Deployment**
-   - Builds and packages the application.
-   - Stores versioned application artifacts in Amazon S3.
-   - Updates the active application version and triggers an EC2 Auto Scaling instance refresh.
+| Workflow                                                                              | Responsibility                                | Current mechanism                                          |
+| ------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------- |
+| [**Infrastructure Validation**](/.github/workflows/validate-infra-on-pr.yaml)         | Validate CloudFormation/IaC                   | `cfn-lint`, `yamllint`, CloudFormation validation, Checkov |
+| [**Infrastructure Deployment**](/.github/workflows/deploy-infra.yaml)                 | Deploy foundational infrastructure            | CloudFormation                                             |
+| [**Application Infrastructure Deployment**](/.github/workflows/deploy-app-infra.yaml) | Deploy compute and application infrastructure | Launch Template, ALB, ASG                                  |
+| [**Application Deployment**](/.github/workflows/deploy-app.yaml)                      | Deploy application releases                   | S3 artifacts + EC2 Instance Refresh                        |
 
 ### Deployment Flow
 
