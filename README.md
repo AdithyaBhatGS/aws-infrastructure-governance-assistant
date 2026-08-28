@@ -99,3 +99,19 @@ The project uses GitHub Actions to automate infrastructure validation, infrastru
 **Pull Request → Validation → Infrastructure → Application Infrastructure → Application**
 
 The current pipelines use environment-specific GitHub Actions concurrency controls to prevent overlapping deployments within the same environment.
+
+## Technology Stack
+
+| Category                       | Technologies                                                 |
+| ------------------------------ | ------------------------------------------------------------ |
+| **Cloud**                      | AWS                                                          |
+| **Infrastructure as Code**     | AWS CloudFormation                                           |
+| **CI/CD**                      | GitHub Actions                                               |
+| **Application**                | Python, FastAPI, Streamlit                                   |
+| **Compute**                    | Amazon EC2, Auto Scaling                                     |
+| **Networking**                 | VPC, Application Load Balancer, Security Groups, NAT Gateway |
+| **Storage & Data**             | Amazon S3, DynamoDB                                          |
+| **Identity & Access**          | IAM, GitHub OIDC, Permissions Boundaries                     |
+| **Configuration & Operations** | AWS Systems Manager, CloudWatch                              |
+| **Security & Validation**      | Checkov, cfn-lint, yamllint                                  |
+| **Version Control**            | Git, GitHub                                                  |
