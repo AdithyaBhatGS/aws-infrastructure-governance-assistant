@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - 'app/**'
-      - './github/workflows/deploy-app.yaml'
     branches:
       - dev
       - prod
@@ -12,8 +11,9 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: platform-deploy
+  group: platform-deploy-${{ github.ref_name }}
   cancel-in-progress: false
+  queue: max
 
 env:
   AWS_REGION: ${{ github.ref == 'refs/heads/prod' && 'us-east-1' || 'us-east-2' }}
