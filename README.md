@@ -17,27 +17,27 @@ The project is constructed to solve these problems through:
 > Providing the centralized dashboard depecting account level drift status, stack creation status and stack drift status.
 
 <p align="center">
-    <img src="./docs/images/dashboard.png" width="80%" alt="Dashboard view">
+    <img src="./docs/images/dashboard.png" width="92%" alt="Dashboard view">
 </p>
 
 > Fresh drift scans at the account level to provide live information about your infrastructure, providing granular details including what exactly have changed in which stack in which particular resource.
 
 <p align="center">
-    <img src="./docs/images/account_drift_1.png" width="80%" alt="Dashboard view">
+    <img src="./docs/images/account_drift_1.png" width="92%" alt="Dashboard view">
 </p>
 
 <p align="center">
-    <img src="./docs/images/account_drift_2.png" width="80%" alt="Dashboard view">
+    <img src="./docs/images/account_drift_2.png" width="92%" alt="Dashboard view">
 </p>
 
 > Providing a simple drift history panel which gives information about how many drifts are being added, removed and changed at the account level per scan, what are they.
 
 <p align="center">
-    <img src="./docs/images/drift_history_1.png" width="80%" alt="Dashboard view">
+    <img src="./docs/images/drift_history_1.png" width="92%" alt="Dashboard view">
 </p>
 
 <p align="center">
-    <img src="./docs/images/drift_history_2.png" width="80%" alt="Dashboard view">
+    <img src="./docs/images/drift_history_2.png" width="92%" alt="Dashboard view">
 </p>
 
 > Providing resource discovery recommendations across 2 categories for cost optimization:
@@ -46,7 +46,7 @@ The project is constructed to solve these problems through:
 2. Cost optimization - ELB, NAT gateways.
 
 <p align="center">
-    <img src="./docs/images/resource_discovery.png" width="80%" alt="Dashboard view">
+    <img src="./docs/images/resource_discovery.png" width="92%" alt="Dashboard view">
 </p>
 
 ## Key Features
