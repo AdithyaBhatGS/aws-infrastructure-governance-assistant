@@ -1,7 +1,5 @@
 # AWS Infrastructure Governance Assistant
 
----
-
 An AWS-based infrastructure governance and deployment platform designed to automate infrastructure provisioning, detect configuration drift, track infrastructure changes, and provide a centralized interface for managing cloud environments, identify idle resources(EIPs, EBS volumes, S3 buckets), issue a simple warning regarding existing resources(NAT gateways, ELBs) for cost optimization.
 
 The platform combines **AWS CloudFormation, Python, GitHub Actions, FastAPI, Streamlit, and AWS-native services** to provide visibility into infrastructure state, drift history, resource discovery across 5 categories(EIPs, EBS volumes, S3 buckets, NAT gateways, ELBs) for cost optimization.
@@ -10,16 +8,15 @@ The platform combines **AWS CloudFormation, Python, GitHub Actions, FastAPI, Str
 
 ## Problem Statement
 
----
-
 Managing cloud infrastructure as the number of resources and deployments increases can become difficult. Manual infrastructure changes can introduce configuration drift, inconsistent infrastructure state, and limited visibility into what changed.
 
 On top of that organizations might have 1000s of resources which are being managed manually or using IAC. There is a possibility of resources being idle. Users might not realize this and might be accidentally kept them running or idle.
 
 The project is constructed to solve these problems through:
 
-- Providing the centralized dashboard depecting account level drift status, stack creation status and stack drift status.
-  <img src="./docs/images/dashboard.png" width="40%" alt="Dashboard view">
+1. Providing the centralized dashboard depecting account level drift status, stack creation status and stack drift status.
+2. <img src="./docs/images/dashboard.png" width="40%" alt="Dashboard view">
+
 - Fresh drift scans at the account level to provide live information about your infrastructure, providing granular details including what exactly have changed in which stack in which particular resource.
 - Providing a simple drift history panel which gives information about how many drifts are being added, removed and changed at the account level per scan, what are they.
 - Providing resource discovery recommendations across 2 categories for cost optimization:
@@ -27,8 +24,6 @@ The project is constructed to solve these problems through:
   2. Cost optimization - ELB, NAT gateways.
 
 ## Key Features
-
----
 
 - **Infrastructure as Code** — AWS infrastructure provisioned and managed using CloudFormation.
 - **Automated Infrastructure Validation** — CloudFormation templates validated using `cfn-lint`, `yamllint`, CloudFormation validation, and Checkov.
@@ -43,13 +38,9 @@ The project is constructed to solve these problems through:
 
 ## Architecture
 
----
-
 The platform is divided into two primary components:
 
 ### Infrastructure
-
----
 
 AWS infrastructure is provisioned using modular CloudFormation stacks, including:
 
@@ -66,8 +57,6 @@ The Bootstrap Stack is intentionally deployed outside the automated deployment p
 
 ### Application
 
----
-
 The application is hosted on EC2 instances and consists of:
 
 - **FastAPI** — backend API service
@@ -78,8 +67,6 @@ The application infrastructure is deployed into private subnets behind an intern
 
 ### Current Deployment Model
 
----
-
 The current deployment model uses:
 
 **GitHub → GitHub Actions → AWS CloudFormation → AWS infrastructure → EC2 → Application**
@@ -87,8 +74,6 @@ The current deployment model uses:
 Application releases are packaged as versioned artifacts and stored in Amazon S3. EC2 instances retrieve the current application version during deployment rather than receiving in-place code updates.
 
 ## Infrastructure Stack Structure
-
----
 
 The infrastructure is organized into modular CloudFormation stacks, with each stack responsible for a specific layer of the platform.
 
@@ -106,8 +91,6 @@ The **Bootstrap Stack** is provisioned separately, while the remaining stacks ar
 
 ## CI/CD Pipeline
 
----
-
 The project uses GitHub Actions to automate infrastructure validation, infrastructure deployment, application infrastructure deployment, and application deployment.
 
 | Workflow                                                                              | Responsibility                                | Current mechanism                                          |
@@ -119,15 +102,11 @@ The project uses GitHub Actions to automate infrastructure validation, infrastru
 
 ### Deployment Flow
 
----
-
 **Pull Request → Validation → Infrastructure → Application Infrastructure → Application**
 
 The current pipelines use environment-specific GitHub Actions concurrency controls to prevent overlapping deployments within the same environment.
 
 ## Technology Stack
-
----
 
 | Category                       | Technologies                                                 |
 | ------------------------------ | ------------------------------------------------------------ |
@@ -144,8 +123,6 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 | **Version Control**            | Git, GitHub                                                  |
 
 ## Project Structure
-
----
 
 ```text
 .
