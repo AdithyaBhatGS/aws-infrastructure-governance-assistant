@@ -16,7 +16,9 @@ The project is constructed to solve these problems through:
 
 > Providing the centralized dashboard depecting account level drift status, stack creation status and stack drift status.
 
-<img src="./docs/images/dashboard.png" width="80%" alt="Dashboard view">
+<p align="center">
+    <img src="./docs/images/dashboard.png" width="80%" alt="Dashboard view">
+</p>
 
 - Fresh drift scans at the account level to provide live information about your infrastructure, providing granular details including what exactly have changed in which stack in which particular resource.
 - Providing a simple drift history panel which gives information about how many drifts are being added, removed and changed at the account level per scan, what are they.
