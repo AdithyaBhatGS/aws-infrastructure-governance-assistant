@@ -17,15 +17,15 @@
   },
   {
     "ParameterKey": "LoadBalancerName",
-    "ParameterValue": "prod-aws-infrastructure-governance-assistant-alb"
+    "ParameterValue": "prod-infra-governance-ass-alb"
   },
   {
     "ParameterKey": "ALBTargetGrpName",
-    "ParameterValue": "prod-aws-infrastructure-governance-assistant-target-grp"
+    "ParameterValue": "prod-infra-governance-ass-tgp"
   },
   {
     "ParameterKey": "AutoScalingGroupName",
-    "ParameterValue": "prod-aws-infrastructure-governance-assistant-asg"
+    "ParameterValue": "prod-infra-governance-ass-asg"
   },
   {
     "ParameterKey": "ALBRequestCountTargetValue",

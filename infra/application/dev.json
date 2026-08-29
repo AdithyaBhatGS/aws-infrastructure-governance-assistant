@@ -17,15 +17,15 @@
   },
   {
     "ParameterKey": "LoadBalancerName",
-    "ParameterValue": "dev-aws-infrastructure-governance-assistant-alb"
+    "ParameterValue": "dev-infra-governance-ass-alb"
   },
   {
     "ParameterKey": "ALBTargetGrpName",
-    "ParameterValue": "dev-aws-infrastructure-governance-assistant-target-grp"
+    "ParameterValue": "dev-infra-governance-ass-tgp"
   },
   {
     "ParameterKey": "AutoScalingGroupName",
-    "ParameterValue": "dev-aws-infrastructure-governance-assistant-asg"
+    "ParameterValue": "dev-infra-governance-ass-asg"
   },
   {
     "ParameterKey": "ALBRequestCountTargetValue",

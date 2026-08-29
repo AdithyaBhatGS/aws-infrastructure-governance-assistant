@@ -410,16 +410,16 @@ Resources:
     Properties:
       IpProtocol: tcp
       GroupId: !GetAtt NetworkALBSecurityGrp.Id
-      FromPort: 80
-      ToPort: 80
+      FromPort: 8501
+      ToPort: 8501
       Description: Outbound on port 80 to EC2 SG
       DestinationSecurityGroupId: !GetAtt NetworkAppSecurityGrp.Id
   NetworkAPPSecurityGrpIngressALB:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       IpProtocol: tcp
-      FromPort: 80
-      ToPort: 80
+      FromPort: 8501
+      ToPort: 8501
       SourceSecurityGroupId: !GetAtt NetworkALBSecurityGrp.Id
       Description: Inbound access from the ALB SG to the APP SG
       GroupId: !GetAtt NetworkAppSecurityGrp.Id

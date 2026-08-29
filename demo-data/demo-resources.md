@@ -25,7 +25,7 @@
 3. Create & destroy EIP:
 
    ```bash
-    aws ec2 allocate-address
+   aws ec2 allocate-address
    ```
 
    ```bash
@@ -49,5 +49,12 @@
 5. Create a load balancer:
 
    ```bash
+   aws elbv2 create-load-balancer \
+   --name my-load-balancer \
+   --subnets subnet-id2 subnet-id1
+   ```
 
+   ```
+   aws elbv2 delete-load-balancer \
+   --load-balancer-arn <lb-arn>
    ```
