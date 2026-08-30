@@ -40,10 +40,13 @@ Resources:
           packages:
             yum:
               amazon-cloudwatch-agent: []
-              httpd: []
               unzip: []
+              python3.13: []
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
+              mode: "000644"
+              owner: root
+              group: root
               content:
                 Fn::Sub: |
                   {
@@ -75,9 +78,46 @@ Resources:
                       }
                     }
                   }
+
+            /etc/systemd/system/governance-api.service:
               mode: "000644"
               owner: root
               group: root
+              content: |
+                [Unit]
+                Description=AWS Infrastructure Governance API
+                After=network.target
+
+                [Service]
+                Type=simple
+                User=ec2-user
+                WorkingDirectory=/opt/app
+                ExecStart=/opt/app/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+                Restart=on-failure
+                RestartSec=5
+
+                [Install]
+                WantedBy=multi-user.target
+
+            /etc/systemd/system/governance-ui.service:
+              mode: "000644"
+              owner: root
+              group: root
+              content: |
+                [Unit]
+                Description=AWS Infrastructure Governance UI
+                After=network.target governance-api.service
+
+                [Service]
+                Type=simple
+                User=ec2-user
+                WorkingDirectory=/opt/app
+                ExecStart=/opt/app/.venv/bin/streamlit run app/ui/app.py --server.address 0.0.0.0 --server.port 8501
+                Restart=on-failure
+                RestartSec=5
+
+                [Install]
+                WantedBy=multi-user.target
 
             /opt/app/deploy.sh:
               mode: "000755"
@@ -94,75 +134,134 @@ Resources:
 
                     ARTIFACT_BUCKET="${ARTIFACT_BUCKET}"
 
+                    APP_DIR="/opt/app"
+                    VENV_DIR="${APP_DIR}/.venv"
+                    VERSION_DIR="/tmp/app"
+                    VERSION_FILE="${VERSION_DIR}/current.txt"
+                    ARTIFACT_FILE="${VERSION_DIR}/app.zip"
+
                     echo "========== Application Deployment =========="
 
-                    echo "Fetching current application version...."
+                    mkdir -p "${VERSION_DIR}"
+                    mkdir -p "${APP_DIR}"
 
-                    mkdir -p /tmp/app
+                    echo "Fetching current application version..."
 
                     # -------------------------------------------------------
                     # BOOTSTRAP SAFE CHECK
                     # -------------------------------------------------------
 
                     if ! aws s3 cp \
-                      s3://${ARTIFACT_BUCKET}/app/versions/current.txt \
-                      /tmp/app/current.txt >/dev/null 2>&1; then
+                      "s3://${ARTIFACT_BUCKET}/app/versions/current.txt" \
+                      "${VERSION_FILE}" >/dev/null 2>&1; then
 
                       echo "Bootstrap deployment detected."
                       echo "No current.txt found."
+                      echo "Skipping application deployment."
 
-                      printf "<html><body style='font-family:system-ui;text-align:center;padding-top:10vh;background:#ff0066'><h2>Environment Ready</h2><p>Core infrastructure deployed successfully. Awaiting application code artifact deployment.</p></body></html>\n" > /var/www/html/index.html
-
-                      chown -R apache:apache /var/www/html
-
-                      systemctl restart httpd
-
-                      echo "Bootstrap page served successfully."
                       exit 0
                     fi
 
                     # -------------------------------------------------------
-                    # NORMAL DEPLOYMENT FLOW
+                    # VERSION VALIDATION
                     # -------------------------------------------------------
 
-                    VERSION=$(cat /tmp/app/current.txt)
+                    VERSION=$(tr -d '[:space:]' < "${VERSION_FILE}")
 
-                    if [ -z "$VERSION" ]; then
+                    if [ -z "${VERSION}" ]; then
                       echo "ERROR: current.txt is empty."
                       exit 1
                     fi
 
-                    echo "Current Version: $VERSION"
+                    echo "Current Version: ${VERSION}"
 
-                    echo "Downloading artifact..."
+                    # -------------------------------------------------------
+                    # DOWNLOAD ARTIFACT
+                    # -------------------------------------------------------
+
+                    echo "Downloading application artifact..."
 
                     aws s3 cp \
-                      s3://${ARTIFACT_BUCKET}/app/releases/$VERSION.zip \
-                      /tmp/app/app.zip
+                      "s3://${ARTIFACT_BUCKET}/app/releases/${VERSION}.zip" \
+                      "${ARTIFACT_FILE}"
 
-                    echo "Cleaning existing deployment..."
+                    # -------------------------------------------------------
+                    # DEPLOY APPLICATION
+                    # -------------------------------------------------------
 
-                    rm -rf /var/www/html/*
+                    echo "Cleaning previous application files..."
 
-                    echo "Extracting artifact..."
+                    rm -rf "${APP_DIR}/app"
 
-                    unzip -oq /tmp/app/app.zip -d /var/www/html
+                    mkdir -p "${APP_DIR}"
 
-                    chown -R apache:apache /var/www/html
+                    echo "Extracting application artifact..."
 
-                    if [ ! -f /var/www/html/index.html ]; then
-                      echo "ERROR: index.html not found after deployment."
+                    unzip -oq "${ARTIFACT_FILE}" -d "${APP_DIR}"
+
+                    # -------------------------------------------------------
+                    # APPLICATION VALIDATION
+                    # -------------------------------------------------------
+
+                    if [ ! -f "${APP_DIR}/app/main.py" ]; then
+                      echo "ERROR: app/main.py not found."
                       exit 1
                     fi
 
-                    echo "Restarting Apache..."
+                    if [ ! -f "${APP_DIR}/requirements.txt" ]; then
+                      echo "ERROR: requirements.txt not found."
+                      exit 1
+                    fi
 
-                    systemctl restart httpd
+                    # -------------------------------------------------------
+                    # PYTHON VIRTUAL ENVIRONMENT
+                    # -------------------------------------------------------
 
+                    echo "Creating Python virtual environment..."
+
+                    if [ ! -d "${VENV_DIR}" ]; then
+                      python3.13 -m venv "${VENV_DIR}"
+                    fi
+
+                    echo "Installing application dependencies..."
+
+                    "${VENV_DIR}/bin/pip" install \
+                      --upgrade pip
+
+                    "${VENV_DIR}/bin/pip" install \
+                      -r "${APP_DIR}/requirements.txt"
+
+                    # -------------------------------------------------------
+                    # OWNERSHIP
+                    # -------------------------------------------------------
+                    
+                    echo "Setting application ownership..."
+                    
+                    chown -R ec2-user:ec2-user "${APP_DIR}"
+                    
+                    # -------------------------------------------------------
+                    # SYSTEMD
+                    # -------------------------------------------------------
+                    
+                    echo "Reloading systemd..."
+                    
+                    systemctl daemon-reload
+                    
+                    echo "Enabling application services..."
+                    
+                    systemctl enable governance-api.service
+                    systemctl enable governance-ui.service
+                    
+                    echo "Starting application services..."
+                    
+                    systemctl restart governance-api.service
+                    systemctl restart governance-ui.service
+                    
                     echo "Application deployment completed successfully."
 
                   - ARTIFACT_BUCKET:
                       Fn::ImportValue: !Sub "${Environment}-app-artifact-bucket"
+
           commands:
             01_cloudwatch_agent_setup:
               command: |
