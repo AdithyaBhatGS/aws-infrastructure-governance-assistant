@@ -41,15 +41,8 @@ jobs:
 
       - name: Build App Artifact
         run: |
-          cp -r app/src/html/* build/
-
-          mkdir -p build/js build/css
-          if [[ -d app/src/css ]]; then
-            cp -r app/src/css/* build/css || true
-          fi
-          if [[ -d app/src/js ]]; then
-            cp -r app/src/js/* build/js || true
-          fi
+          cp -r aws-infra-governance-assistant/app build/
+          cp aws-infra-governance-assistant/requirements.txt build/
 
       - name: Create Zip
         run: |
