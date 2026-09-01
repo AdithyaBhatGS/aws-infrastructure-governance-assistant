@@ -4,6 +4,18 @@
     "ParameterValue": "dev"
   },
   {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "AWS Infrastructure Governance Assistant"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "devOps"
+  },
+  {
+    "ParameterKey": "ManagedBy",
+    "ParameterValue": "CloudFormation"
+  },
+  {
     "ParameterKey": "AMIID",
     "ParameterValue": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
   },
