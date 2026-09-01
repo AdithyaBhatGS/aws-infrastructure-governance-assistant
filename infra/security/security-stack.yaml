@@ -168,6 +168,7 @@ Resources:
         - !GetAtt EC2MetadataPolicy.PolicyArn
         - !GetAtt CloudFormationPolicy.PolicyArn
         - !GetAtt DynamoDBPolicy.PolicyArn
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
       RoleName: !Sub '${APPEC2Role}-${AWS::StackName}'
       Tags:
         - Key: Environment
