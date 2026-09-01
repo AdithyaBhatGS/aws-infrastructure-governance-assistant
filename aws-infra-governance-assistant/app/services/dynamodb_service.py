@@ -7,7 +7,15 @@ import json
 class DynamoDBService:
 
     def __init__(self):
-        self.table_name = os.environ["DRIFT_TABLE_NAME"]
+        self.environment = os.environ["ENVIRONMENT"]
+
+        self.ssm = boto3.client["ssm"]
+
+        response = self.ssm.get_parameter(
+            Name = f'/portfolio/{self.environment}/drift-table'
+        )
+
+        self.table_name = response["Parameter"]["Value"]
 
         self.dynamodb = boto3.resource("dynamodb")
 
