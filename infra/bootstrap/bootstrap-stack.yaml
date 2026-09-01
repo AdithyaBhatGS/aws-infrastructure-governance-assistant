@@ -303,6 +303,10 @@ Resources:
               - dynamodb:PutItem
               - dynamodb:GetItem
               - dynamodb:Scan
+              - dynamodb:CreateTable
+              - dynamodb:DescribeTable
+              - dynamodb:ListTables
+              - dynamodb:TagResource
             Resource: '*'
 
           - Effect: Allow
