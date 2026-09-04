@@ -417,7 +417,7 @@ jobs:
             failed=true
           fi
 
-          if [[ "${{ needs.changes.outputs.infrastructure }}" == "true" && "${{ needs.checkov-scan }}" != "success" ]]; then
+          if [[ "${{ needs.changes.outputs.infrastructure }}" == "true" && "${{ needs.checkov-scan.result }}" != "success" ]]; then
             echo "❌ Checkov validation failed."
             failed=true
           fi
