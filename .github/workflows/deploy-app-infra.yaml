@@ -27,7 +27,7 @@ jobs:
     outputs:
       lt_changed: ${{ steps.filter.outputs.lt }}
       app_changed: ${{ steps.filter.outputs.app }}
-
+      platform_changed: ${{ steps.filter.outputs.platform }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -41,6 +41,8 @@ jobs:
               - 'infra/launch-template/**'
             app:
               - 'infra/application/**'
+            platform:
+              - 'infra/platform/**'
 
   plan_deployment:
     runs-on: ubuntu-latest
@@ -193,13 +195,29 @@ jobs:
           echo "BASE_FILE=infra/application/${ENVIRONMENT}.json" >> $GITHUB_ENV
           echo "RUNTIME_FILE=infra/application/runtime-${ENVIRONMENT}.json" >> $GITHUB_ENV
 
+      - name: Fetch Launch Template name from SSM
+        run: |
+          LAUNCH_TEMPLATE=$(aws ssm get-parameter \
+            --name "/portfolio/${{ env.ENVIRONMENT }}/lt-name" \
+            --query "Parameter.Value" \
+            --region ${{ env.AWS_REGION }} \
+            --output text)
+
+          if [ -z "$LAUNCH_TEMPLATE" ]; then
+            echo "⚠️ Launch template does not exist!"
+            exit 0
+          else
+            echo "Fetched template: ${LAUNCH_TEMPLATE}"
+          fi
+
+          echo "LAUNCH_TEMPLATE=${LAUNCH_TEMPLATE}" >> "${GITHUB_ENV}"
+
       - name: Fetch latest Launch Template version
         id: lt_version
         run: |
-          LT_NAME="${ENVIRONMENT}-aws-infrastructure-governance-assistant-lauch-template"
 
           VERSION=$(aws ec2 describe-launch-template-versions \
-            --launch-template-name "${LT_NAME}" \
+            --launch-template-name "${LAUNCH_TEMPLATE}" \
             --query 'sort_by(LaunchTemplateVersions, &VersionNumber)[-1].VersionNumber' \
             --output text)
 
@@ -271,3 +289,73 @@ jobs:
         if: always()
         run: |
           rm -f ${RUNTIME_FILE}
+
+  deploy-platform:
+    runs-on: ubuntu-latest
+    needs: detect_changes
+
+    if: ${{ needs.detect_changes.outputs.platform_changed == 'true' }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_APP_INFRA_EXECUTION_ROLE_ARN }}
+      PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_APP_INFRA_EXECUTION_ROLE_ARN }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Configure AWS credentials for dev
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_INFRA_DEPLOY_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        run: |
+          echo "STACK=platform" >> "${GITHUB_ENV}"
+
+      - name: Validate and deploy stack
+        run: |
+          set -e
+
+          echo "=================================================================="
+          echo "============= Processing stack: ${ENV}-${STACK}-stack =============="
+          echo "=================================================================="
+
+          TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
+          PARAMS_FILE="infra/${STACK}/${ENV}.json"
+
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Validating CloudFormation template..."
+          aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
+          
+          STACK_NAME="${ENV}-${STACK}-stack"
+
+          if [[ "$ENV" == "dev" ]]; then
+            ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
+          else
+            ROLE_ARN="${PROD_EXECUTION_ROLE_ARN}"
+          fi
+
+          echo "ROLE_ARN=${ROLE_ARN##*/}"
+
+          aws cloudformation deploy \
+            --stack-name "${STACK_NAME}" \
+            --template-file "${TEMPLATE_FILE}" \
+            --parameter-overrides file://"${PARAMS_FILE}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --role-arn "${ROLE_ARN}" \
+            --region "${AWS_REGION}" \
+            --debug

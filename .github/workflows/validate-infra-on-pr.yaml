@@ -7,9 +7,11 @@ on:
       - prod
 
 jobs:
+
   changes:
     runs-on: ubuntu-latest
     outputs:
+      platform: ${{ steps.filter.outputs.platform }}
       application: ${{ steps.filter.outputs.application }}
       lt: ${{ steps.filter.outputs.lt }}
       network: ${{ steps.filter.outputs.network }}
@@ -22,6 +24,8 @@ jobs:
         id: filter
         with:
           filters: |
+            platform:
+              - 'infra/platform/**'
             application:
               - 'infra/application/**'
             lt:
@@ -33,11 +37,59 @@ jobs:
             storage:
               - 'infra/storage/**'
             infrastructure:
+              - 'infra/platform/**'
               - 'infra/application/**'
               - 'infra/launch-template/**'
               - 'infra/network/**'
               - 'infra/security/**'
               - 'infra/storage/**'
+
+  validate-platform-infra:
+    needs: changes
+    if: ${{ needs.changes.outputs.platform == 'true'}}
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: ${{ github.base_ref == 'dev' && 'us-east-2' || github.base_ref == 'prod' && 'us-east-1' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.VALIDATION_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set stack
+        id: stacks
+        run: echo "STACK=platform" >> $GITHUB_ENV
+
+      - name: Validate and deploy ${STACK}-stack
+        run: |
+          set -e
+
+          echo "==== Processing stack: $STACK-stack ===="
+
+          TEMPLATE_FILE="infra/$STACK/$STACK-stack.yaml"
+
+          echo "-> Running yamllint..."
+          yamllint $TEMPLATE_FILE
+
+          echo "-> Running cfn-lint..."
+          cfn-lint $TEMPLATE_FILE
+
+          echo "-> Running cloudformation validate..."
+          aws cloudformation validate-template \
+              --template-body file://$TEMPLATE_FILE
 
   validate-application-infra:
     needs: changes
@@ -289,10 +341,14 @@ jobs:
       - name: Run Checkov Scan
         run: |
           checkov \
-            -d ./infra \
+            -d ./infra/application \
+            -d ./infra/launch-template \
+            -d ./infra/network \
+            -d ./infra/platform \
+            -d ./infra/security \
+            -d ./infra/storage \
             --framework cloudformation \
             --external-checks-dir ./security/checkov/organization_policies \
-            --skip-path ./infra/bootstrap \
             -o cli \
             -o json \
             --output-file-path checkov-report.json
