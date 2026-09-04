@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from app.api.routes import router
 
 app = FastAPI(
-    title="AWS Infrastructure Assistant",
+    title="AWS Infrastructure Governance Assistant",
     version="1.0.0"
 )
 
