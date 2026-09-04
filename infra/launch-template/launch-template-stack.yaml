@@ -103,6 +103,7 @@ Resources:
                   User=ec2-user
                   WorkingDirectory=/opt/app
                   Environment="ENVIRONMENT=${Environment}"
+                  Environment="AWS_DEFAULT_REGION=${AWS::Region}"
                   ExecStart=/opt/app/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
                   Restart=on-failure
                   RestartSec=5
