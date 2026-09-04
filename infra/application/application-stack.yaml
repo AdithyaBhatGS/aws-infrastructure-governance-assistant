@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies, Listener, Target Grp
 
 Parameters:
-  Environment:
+    Environment:
     Type: String
     AllowedValues:
       - dev

@@ -9,6 +9,15 @@ Parameters:
       - dev
       - prod
     ConstraintDescription: Choose either dev or prod
+  ProjectName:
+    Type: String
+    Description: Represents the project name
+  Owner:
+    Type: String
+    Description: Represents the owner of the project
+  ManagedBy:
+    Type: String
+    Description: Represents the IAC used
   AMIID:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Description: Represents the AMI ID
@@ -83,41 +92,45 @@ Resources:
               mode: "000644"
               owner: root
               group: root
-              content: |
-                [Unit]
-                Description=AWS Infrastructure Governance API
-                After=network.target
-
-                [Service]
-                Type=simple
-                User=ec2-user
-                WorkingDirectory=/opt/app
-                ExecStart=/opt/app/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
-                Restart=on-failure
-                RestartSec=5
-
-                [Install]
-                WantedBy=multi-user.target
+              content: 
+                Fn::Sub: |
+                  [Unit]
+                  Description=AWS Infrastructure Governance API
+                  After=network.target
+  
+                  [Service]
+                  Type=simple
+                  User=ec2-user
+                  WorkingDirectory=/opt/app
+                  Environment="ENVIRONMENT=${Environment}"
+                  ExecStart=/opt/app/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+                  Restart=on-failure
+                  RestartSec=5
+  
+                  [Install]
+                  WantedBy=multi-user.target
 
             /etc/systemd/system/governance-ui.service:
               mode: "000644"
               owner: root
               group: root
-              content: |
-                [Unit]
-                Description=AWS Infrastructure Governance UI
-                After=network.target governance-api.service
+              content:
+                Fn::Sub: |
+                  [Unit]
+                  Description=AWS Infrastructure Governance UI
+                  After=network.target governance-api.service
 
-                [Service]
-                Type=simple
-                User=ec2-user
-                WorkingDirectory=/opt/app
-                ExecStart=/opt/app/.venv/bin/streamlit run app/ui/app.py --server.address 0.0.0.0 --server.port 8501
-                Restart=on-failure
-                RestartSec=5
+                  [Service]
+                  Type=simple
+                  User=ec2-user
+                  WorkingDirectory=/opt/app
+                  Environment="ENVIRONMENT=${Environment}"
+                  ExecStart=/opt/app/.venv/bin/streamlit run app/ui/app.py --server.address 0.0.0.0 --server.port 8501
+                  Restart=on-failure
+                  RestartSec=5
 
-                [Install]
-                WantedBy=multi-user.target
+                  [Install]
+                  WantedBy=multi-user.target
 
             /opt/app/deploy.sh:
               mode: "000755"
@@ -135,15 +148,15 @@ Resources:
                     ARTIFACT_BUCKET="${ARTIFACT_BUCKET}"
 
                     APP_DIR="/opt/app"
-                    VENV_DIR="${APP_DIR}/.venv"
+                    VENV_DIR="$APP_DIR/.venv"
                     VERSION_DIR="/tmp/app"
-                    VERSION_FILE="${VERSION_DIR}/current.txt"
-                    ARTIFACT_FILE="${VERSION_DIR}/app.zip"
+                    VERSION_FILE="$VERSION_DIR/current.txt"
+                    ARTIFACT_FILE="$VERSION_DIR/app.zip"
 
                     echo "========== Application Deployment =========="
 
-                    mkdir -p "${VERSION_DIR}"
-                    mkdir -p "${APP_DIR}"
+                    mkdir -p "$VERSION_DIR"
+                    mkdir -p "$APP_DIR"
 
                     echo "Fetching current application version..."
 
@@ -153,7 +166,7 @@ Resources:
 
                     if ! aws s3 cp \
                       "s3://${ARTIFACT_BUCKET}/app/versions/current.txt" \
-                      "${VERSION_FILE}" >/dev/null 2>&1; then
+                      "$VERSION_FILE" >/dev/null 2>&1; then
 
                       echo "Bootstrap deployment detected."
                       echo "No current.txt found."
@@ -166,14 +179,14 @@ Resources:
                     # VERSION VALIDATION
                     # -------------------------------------------------------
 
-                    VERSION=$(tr -d '[:space:]' < "${VERSION_FILE}")
+                    VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
 
-                    if [ -z "${VERSION}" ]; then
+                    if [ -z "$VERSION" ]; then
                       echo "ERROR: current.txt is empty."
                       exit 1
                     fi
 
-                    echo "Current Version: ${VERSION}"
+                    echo "Current Version: $VERSION"
 
                     # -------------------------------------------------------
                     # DOWNLOAD ARTIFACT
@@ -182,8 +195,8 @@ Resources:
                     echo "Downloading application artifact..."
 
                     aws s3 cp \
-                      "s3://${ARTIFACT_BUCKET}/app/releases/${VERSION}.zip" \
-                      "${ARTIFACT_FILE}"
+                      "s3://${ARTIFACT_BUCKET}/app/releases/$VERSION.zip" \
+                      "$ARTIFACT_FILE"
 
                     # -------------------------------------------------------
                     # DEPLOY APPLICATION
@@ -191,24 +204,24 @@ Resources:
 
                     echo "Cleaning previous application files..."
 
-                    rm -rf "${APP_DIR}/app"
+                    rm -rf "$APP_DIR/app"
 
-                    mkdir -p "${APP_DIR}"
+                    mkdir -p "$APP_DIR"
 
                     echo "Extracting application artifact..."
 
-                    unzip -oq "${ARTIFACT_FILE}" -d "${APP_DIR}"
+                    unzip -oq "$ARTIFACT_FILE" -d "$APP_DIR"
 
                     # -------------------------------------------------------
                     # APPLICATION VALIDATION
                     # -------------------------------------------------------
 
-                    if [ ! -f "${APP_DIR}/app/main.py" ]; then
+                    if [ ! -f "$APP_DIR/app/main.py" ]; then
                       echo "ERROR: app/main.py not found."
                       exit 1
                     fi
 
-                    if [ ! -f "${APP_DIR}/requirements.txt" ]; then
+                    if [ ! -f "$APP_DIR/requirements.txt" ]; then
                       echo "ERROR: requirements.txt not found."
                       exit 1
                     fi
@@ -219,17 +232,17 @@ Resources:
 
                     echo "Creating Python virtual environment..."
 
-                    if [ ! -d "${VENV_DIR}" ]; then
-                      python3.13 -m venv "${VENV_DIR}"
+                    if [ ! -d "$VENV_DIR" ]; then
+                      python3.13 -m venv "$VENV_DIR"
                     fi
 
                     echo "Installing application dependencies..."
 
-                    "${VENV_DIR}/bin/pip" install \
+                    "$VENV_DIR/bin/pip" install \
                       --upgrade pip
 
-                    "${VENV_DIR}/bin/pip" install \
-                      -r "${APP_DIR}/requirements.txt"
+                    "$VENV_DIR/bin/pip" install \
+                      -r "$APP_DIR/requirements.txt"
 
                     # -------------------------------------------------------
                     # OWNERSHIP
@@ -237,23 +250,23 @@ Resources:
                     
                     echo "Setting application ownership..."
                     
-                    chown -R ec2-user:ec2-user "${APP_DIR}"
+                    chown -R ec2-user:ec2-user "$APP_DIR"
                     
                     # -------------------------------------------------------
                     # SYSTEMD
                     # -------------------------------------------------------
-                    
+
                     echo "Reloading systemd..."
-                    
+
                     systemctl daemon-reload
-                    
+
                     echo "Enabling application services..."
-                    
+
                     systemctl enable governance-api.service
                     systemctl enable governance-ui.service
-                    
+
                     echo "Starting application services..."
-                    
+
                     systemctl restart governance-api.service
                     systemctl restart governance-ui.service
                     
@@ -277,9 +290,6 @@ Resources:
               command: "/bin/bash /opt/app/deploy.sh"
           services:
             systemd:
-              httpd:
-                ensureRunning: "true"
-                enabled: "true"
               amazon-cloudwatch-agent:
                 ensureRunning: "true"
                 enabled: "true"
@@ -312,9 +322,9 @@ Resources:
             Fn::Sub:
               - |
                 #!/bin/bash -xe
-  
+
                 sleep 30
-  
+
                 echo "Bootstrap Version: ${BootstrapVersion}" > /etc/bootstrap-version
 
                 /opt/aws/bin/cfn-init \
@@ -322,7 +332,7 @@ Resources:
                   --stack ${LTStackName} \
                   --resource AppLaunchTemplate \
                   --role ${ROLE_NAME} \
-                  --region ${AWS::Region} 
+                  --region ${AWS::Region}
   
                 /opt/aws/bin/cfn-signal -e $? \
                   --stack ${ASGStackName} \
@@ -332,6 +342,18 @@ Resources:
               - ROLE_NAME:
                   Fn::ImportValue: !Sub "${Environment}-security-ec2-role"
       LaunchTemplateName: !Ref LaunchTemplateName
+  AppLaunchTemplateParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/portfolio/${Environment}/lt-name"
+      Type: String
+      Value: !Ref AppLaunchTemplate
+      Description: Launch template containing launch configurations for deploying the platform
+      Tags:
+        Environment: !Ref Environment
+        Project: !Ref ProjectName
+        ManagedBy: !Ref ManagedBy
+        Owner: !Ref Owner
 Outputs:
   AMI:
     Value: !Ref AMIID
@@ -341,3 +363,6 @@ Outputs:
     Description: Represents the ID of the launch template
     Export:
       Name: !Sub "${Environment}-launch-temp-id"
+  LTSSM:
+    Value: !Ref AppLaunchTemplateParameter
+    Description: Represents the name of the SSM parameter for Launch Template
