@@ -217,7 +217,7 @@ jobs:
         run: |
 
           VERSION=$(aws ec2 describe-launch-template-versions \
-            --launch-template-name "${LAUNCH_TEMPLATE}" \
+            --launch-template-id "${LAUNCH_TEMPLATE}" \
             --query 'sort_by(LaunchTemplateVersions, &VersionNumber)[-1].VersionNumber' \
             --output text)
 
