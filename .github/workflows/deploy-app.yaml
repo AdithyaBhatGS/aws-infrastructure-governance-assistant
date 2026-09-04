@@ -3,7 +3,7 @@ name: Application Deployment Pipeline
 on:
   push:
     paths:
-      - 'app/**'
+      - 'aws-infra-governance-assistant/**'
     branches:
       - dev
       - prod
