@@ -77,4 +77,4 @@ Outputs:
       Name: DriftResultsTableARN
   DriftTableParameter:
     Value: !Ref DriftTableParameter
-    Description: Represents the name of the SSM Parameter for dynamodb table
+    Description: Represents the name of the SSM Parameter for dynamodb table containing drift results
