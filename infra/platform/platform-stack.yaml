@@ -75,3 +75,6 @@ Outputs:
     Value: !GetAtt DriftResultsTable.Arn
     Export:
       Name: DriftResultsTableARN
+  DriftTableParameter:
+    Value: !Ref DriftTableParameter
+    Description: Represents the name of the SSM Parameter for dynamodb table
