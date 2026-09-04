@@ -1,5 +1,5 @@
-fastapi
-requests
-streamlit
-boto3
-pydantic
+fastapi==0.141.1
+requests==2.34.2
+streamlit==1.62.0
+boto3==1.43.83
+pydantic==2.13.5
