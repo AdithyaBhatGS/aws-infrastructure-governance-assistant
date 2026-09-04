@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Platform Assistant Infrastructure
+Description: Stack to deploy the platform infrastructure. Specifically the dynamodb table
 
 Parameters:
   Environment:
@@ -75,3 +75,6 @@ Outputs:
     Value: !GetAtt DriftResultsTable.Arn
     Export:
       Name: DriftResultsTableARN
+  DriftTableParameter:
+    Value: !Ref DriftTableParameter
+    Description: Represents the name of the SSM Parameter for dynamodb table
