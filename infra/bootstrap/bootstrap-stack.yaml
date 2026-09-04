@@ -426,6 +426,13 @@ Resources:
 
           - Effect: Allow
             Action:
+              - ssm:GetParameters
+              - ssm:GetParameter
+            Resource:
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
+
+          - Effect: Allow
+            Action:
               - iam:PassRole
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/${Environment}-app-infra-execution-role"
