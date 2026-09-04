@@ -307,6 +307,7 @@ Resources:
               - dynamodb:DescribeTable
               - dynamodb:ListTables
               - dynamodb:TagResource
+              - dynamodb:UpdateTable
             Resource: '*'
 
           - Effect: Allow
