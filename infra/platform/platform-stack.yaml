@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Platform Assistant Infrastructure
+Description: Stack to deploy the platform infrastructure. Specifically the dynamodb table
 
 Parameters:
   Environment:
