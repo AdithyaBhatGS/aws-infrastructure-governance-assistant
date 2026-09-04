@@ -302,6 +302,8 @@ jobs:
       contents: read
 
     env:
+      DEV_REGION: us-east-2
+      PROD_REGION: us-east-1
       DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_APP_INFRA_EXECUTION_ROLE_ARN }}
       PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_APP_INFRA_EXECUTION_ROLE_ARN }}
 
@@ -309,7 +311,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v7
 
-      - name: Configure AWS credentials for dev
+      - name: Set Environment
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
+            echo "ENV=dev" >> "${GITHUB_ENV}"
+            echo "AWS_REGION=${DEV_REGION}" >> "${GITHUB_ENV}"
+          elif [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "AWS_REGION=${PROD_REGION}" >> "${GITHUB_ENV}"
+          else
+            echo "${GITHUB_REF} is invalid..."
+          fi
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
           role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_INFRA_DEPLOY_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOY_ROLE_ARN }}
