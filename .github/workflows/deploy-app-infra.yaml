@@ -5,6 +5,7 @@ on:
     paths:
       - 'infra/launch-template/**'
       - 'infra/application/**'
+      - 'infra/platform/**'
     branches:
       - dev
       - prod
