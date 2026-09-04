@@ -365,3 +365,67 @@ jobs:
         with:
           name: checkov-report
           path: ./checkov-report.json
+
+  validation-status:
+    needs:
+      - changes
+      - validate-platform-infra
+      - validate-application-infra
+      - validate-lt
+      - validate-network-infra
+      - validate-security-infra
+      - validate-storage-infra
+      - checkov-scan
+
+    if: ${{ always() }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate infrastructure checks
+        shell: bash
+        run: |
+          failed=false
+
+          if [[ "${{ needs.changes.outputs.platform }}" == "true" && "${{ needs.validate-platform-infra.result }}" != "success" ]]; then
+            echo "❌ Platform validation failed."
+            failed=true
+          fi
+
+          if [[ "${{ needs.changes.outputs.application }}" == "true" && "${{ needs.validate-application-infra.result }}" != "success" ]]; then
+            echo "❌ Application validation failed."
+            failed=true
+          fi
+
+          if [[ "${{ needs.changes.outputs.lt }}" == "true" && "${{ needs.validate-lt.result }}" != "success" ]]; then
+            echo "❌ Launch Template validation failed."
+            failed=true
+          fi
+
+          if [[ "${{ needs.changes.outputs.network }}" == "true" && "${{ needs.validate-network-infra.result }}" != "success" ]]; then
+            echo "❌ Network validation failed."
+            failed=true
+          fi
+
+          if [[ "${{ needs.changes.outputs.security }}" == "true" && "${{ needs.validate-security-infra.result }}" != "success" ]]; then
+            echo "❌ Security validation failed."
+            failed=true
+          fi
+
+          if [[ "${{ needs.changes.outputs.storage }}" == "true" && "${{ needs.validate-storage-infra.result }}" != "success" ]]; then
+            echo "❌ Storage validation failed."
+            failed=true
+          fi
+
+          if [[ "${{ needs.changes.outputs.infrastructure }}" == "true" && "${{ needs.checkov-scan.result }}" != "success" ]]; then
+            echo "❌ Checkov validation failed."
+            failed=true
+          fi
+
+          if [[ "$failed" == "true" ]]; then
+            echo "❌ Infrastructure validation failed."
+            exit 1
+          fi
+
+          echo "✅ All applicable infrastructure validation checks passed."
+          exit 0
