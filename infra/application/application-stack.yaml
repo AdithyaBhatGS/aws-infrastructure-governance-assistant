@@ -77,7 +77,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
-      HealthCheckPath: /
+      HealthCheckPath: /_stcore/health
       HealthCheckIntervalSeconds: 30
       TargetType: instance
       IpAddressType: ipv4
