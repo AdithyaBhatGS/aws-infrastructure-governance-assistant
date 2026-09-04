@@ -9,7 +9,7 @@ class DynamoDBService:
     def __init__(self):
         self.environment = os.environ["ENVIRONMENT"]
 
-        self.ssm = boto3.client["ssm"]
+        self.ssm = boto3.client("ssm")
 
         response = self.ssm.get_parameter(
             Name = f'/portfolio/{self.environment}/drift-table'
