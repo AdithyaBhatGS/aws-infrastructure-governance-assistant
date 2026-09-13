@@ -17,3 +17,6 @@ class SnapshotResponse(BaseModel):
     drifted_stacks: int = Field(alias="DriftedStacks")
 
     results: List[StackDriftResult] = Field(alias="Results")
+
+class NoSnapshotResponse(BaseModel):
+    message: str
