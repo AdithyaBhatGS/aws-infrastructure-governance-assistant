@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy Launch Template which contains launch configurations, init files. Added to that stack contains ssm parameter representing the template name.
+Description: Stack to deploy Launch Template which contains launch configurations, init files, ssm parameter representing the template name.
 
 Parameters:
   Environment:
