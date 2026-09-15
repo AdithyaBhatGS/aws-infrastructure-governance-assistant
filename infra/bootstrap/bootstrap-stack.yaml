@@ -317,6 +317,8 @@ Resources:
               - ssm:ListTagsForResource
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
+              - !Sub "arn:aws:ssm:${AWS::Region}::parameter/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/governance/*"
   AppInfraExecutionPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -358,7 +360,6 @@ Resources:
               - ssm:ListTagsForResource
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
-              - !Sub "arn:aws:ssm:${AWS::Region}::parameter/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 
           - Effect: Allow
             Action: 'dynamodb:*'
@@ -703,7 +704,7 @@ Resources:
             Action:
               - 'ssm:PutParameter'
               - 'ssm:GetParameter'
-            Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/governance/${Environment}/*"
+            Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/governance/*"
   ImageBuildRole:
     Type: AWS::IAM::Role
     Properties:
