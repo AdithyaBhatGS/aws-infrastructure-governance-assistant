@@ -134,6 +134,8 @@ jobs:
               )
             ' "${BASE_FILE}" > "${RUNTIME_FILE}"
 
+          cat "${RUNTIME_FILE}"
+
       - name: Deploy stack
         run: |
           set -e
