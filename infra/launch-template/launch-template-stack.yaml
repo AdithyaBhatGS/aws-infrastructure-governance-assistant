@@ -8,7 +8,7 @@ Parameters:
     AllowedValues:
       - dev
       - prod
-    ConstraintDescription: Choose either dev or prod
+    ConstraintDescription: Choose environment
   ProjectName:
     Type: String
     Description: Represents the project name
