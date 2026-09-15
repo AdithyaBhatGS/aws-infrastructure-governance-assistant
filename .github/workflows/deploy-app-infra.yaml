@@ -110,7 +110,7 @@ jobs:
 
       - name: Fetch AMI ID
         run: |
-          AMIID = $(aws ssm get-parameter \
+          AMIID=$(aws ssm get-parameter \
             --name "/governance/${{ env.ENVIRONMENT }}/golden-ami" \
             --query "Parameter.Value" \
             --region ${{ env.AWS_REGION }} \

@@ -134,7 +134,7 @@ Resources:
               - ssm:GetParametersByPath
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/${Environment}/*"
-
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/governance/${Environment}/*"
           - Effect: Allow
             Action:
               - 'iam:PassRole'
@@ -486,6 +486,7 @@ Resources:
               - ssm:GetParameter
             Resource:
               - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/portfolio/*"
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/governance/*"
 
           - Effect: Allow
             Action:
