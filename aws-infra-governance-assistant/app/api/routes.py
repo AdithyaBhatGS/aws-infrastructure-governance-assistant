@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from typing import Union
 import json
 import os
 import boto3
@@ -11,7 +12,7 @@ from app.services.history_service import HistoryService
 
 from app.models.recommendation import ResourceDiscoveryResponse
 from app.models.drift import DriftResponse, StackDriftResult
-from app.models.snapshot import SnapshotResponse
+from app.models.snapshot import SnapshotResponse, NoSnapshotResponse
 from app.models.stack import StackListResponse
 from app.models.history import DriftHistoryEntry
 
@@ -46,7 +47,7 @@ def list_stacks():
 def analyze_drift(stack_name: str):
     return service.analyze_drift(stack_name)
 
-@router.post("/drift/analyze/account", response_model=DriftResponse)
+@router.post("/drift/analyze/account", response_model=Union[DriftResponse, NoSnapshotResponse])
 def analyze_account_drift():
     response = service.analyze_account_drift()
 
@@ -60,7 +61,7 @@ def analyze_account_drift():
 
     return response
 
-@router.get("/drift/latest", response_model=SnapshotResponse)
+@router.get("/drift/latest", response_model=Union[SnapshotResponse, NoSnapshotResponse])
 def get_latest_drift():
 
     account_id = awsIdentityService.get_account_id()

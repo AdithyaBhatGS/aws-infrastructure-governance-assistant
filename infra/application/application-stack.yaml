@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy application infra resources. Includes ALB, ASG , Scaling policies, Listener, Target Group.
+Description: Stack to deploy application infra resources. Includes ELB, ASG , Scaling policies, Listener, Target Group.
 
 Parameters:
   Environment:
@@ -123,15 +123,14 @@ Resources:
       ResourceSignal:
         Count: 2
         Timeout: PT10M
-    UpdatePolicy:
-      AutoScalingRollingUpdate:
-        MinInstancesInService: 1
-        MaxBatchSize: 1
-        WaitOnResourceSignals: true
-        PauseTime: PT10M
-        SuspendProcesses:
-          - HealthCheck
-          - ReplaceUnhealthy
+    UpdatePolicy: 
+      AutoScalingInstanceRefresh:
+        Strategy: Rolling
+        Preferences:
+          MinHealthyPercentage: 50
+          MaxHealthyPercentage: 150
+          InstanceWarmup: 600
+          SkipMatching: false
     Properties:
       MinSize: 2
       MaxSize: 4
