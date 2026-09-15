@@ -24,6 +24,10 @@
     "ParameterValue": "dev-validation-boundary"
   },
   {
+    "ParameterKey": "ImageBuildBoundary",
+    "ParameterValue": "dev-image-build-boundary"
+  },
+  {
     "ParameterKey": "InfraExecutionPolicyName",
     "ParameterValue": "dev-infra-execution-policy"
   },
@@ -78,6 +82,14 @@
   {
     "ParameterKey": "ValidationRoleName",
     "ParameterValue": "template-validation-role"
+  },
+  {
+    "ParameterKey": "ImageBuildPolicyName",
+    "ParameterValue": "dev-image-build-policy"
+  },
+  {
+    "ParameterKey": "ImageBuildRoleName",
+    "ParameterValue": "dev-image-build-role"
   },
   {
     "ParameterKey": "ArtifactBucketName",
