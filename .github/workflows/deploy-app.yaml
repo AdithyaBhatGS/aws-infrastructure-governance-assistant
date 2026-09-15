@@ -141,8 +141,8 @@ jobs:
             --auto-scaling-group-name "${ASG_NAME}" \
             --preferences '{
               "MinHealthyPercentage": 50,
-              "MaxHealthyPercentage": 100,
-              "InstanceWarmup": 120,
+              "MaxHealthyPercentage": 150,
+              "InstanceWarmup": 600,
               "SkipMatching": false
             }' \
             --query 'InstanceRefreshId' \
