@@ -123,15 +123,23 @@ Resources:
       ResourceSignal:
         Count: 2
         Timeout: PT10M
-    UpdatePolicy:
-      AutoScalingRollingUpdate:
-        MinInstancesInService: 1
-        MaxBatchSize: 1
-        WaitOnResourceSignals: true
-        PauseTime: PT10M
-        SuspendProcesses:
-          - HealthCheck
-          - ReplaceUnhealthy
+    # UpdatePolicy:
+    #   AutoScalingRollingUpdate:
+    #     MinInstancesInService: 1
+    #     MaxBatchSize: 1
+    #     WaitOnResourceSignals: true
+    #     PauseTime: PT10M
+    #     SuspendProcesses:
+    #       - HealthCheck
+    #       - ReplaceUnhealthy
+    UpdatePolicy: 
+      AutoScalingInstanceRefresh:
+        Strategy: Rolling
+        Preferences:
+          MinHealthyPercentage: 50
+          MaxHealthyPercentage: 100
+          InstanceWarmup: 600
+          SkipMatching: false
     Properties:
       MinSize: 2
       MaxSize: 4
