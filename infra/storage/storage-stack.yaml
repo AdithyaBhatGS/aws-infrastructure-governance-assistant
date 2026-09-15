@@ -28,6 +28,9 @@ Parameters:
     Type: String
     Description: Name of the Bucket which holds the ALB access logs
     AllowedPattern: ^(?![0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$)(?!.*\.\.)(?!.*\.-)(?!.*-\.)(?!.*--)[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$
+  AMIID:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Description: Represents the AMI ID
 Resources:
   CentralLogTargetBucket:
     Type: AWS::S3::Bucket
@@ -147,6 +150,18 @@ Resources:
         Project: !Ref ProjectName
         ManagedBy: !Ref ManagedBy
         Owner: !Ref Owner
+  GoldenAMIParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/governance/${Environment}/golden-ami"
+      Type: String
+      Value: !Ref AMIID
+      Description: Base image ID
+      Tags:
+        Environment: !Ref Environment
+        Project: !Ref ProjectName
+        ManagedBy: !Ref ManagedBy
+        Owner: !Ref Owner
 Outputs:
   ArtifactBktOutput:
     Description: Represents the artifact bucket name
@@ -171,3 +186,6 @@ Outputs:
   ArtifactBktSSMOutput:
     Description: Represents the name of the SSM Parameter for artifact bucket
     Value: !Ref ArtifactBktParameter
+  AMI:
+    Value: !Ref AMIID
+    Description: Represents the Base AMI ID of the app instance

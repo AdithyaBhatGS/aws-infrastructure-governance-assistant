@@ -108,18 +108,31 @@ jobs:
           echo "BASE_FILE=infra/launch-template/${ENVIRONMENT}.json" >> $GITHUB_ENV
           echo "RUNTIME_FILE=infra/launch-template/runtime-${ENVIRONMENT}.json" >> $GITHUB_ENV
 
+      - name: Fetch AMI ID
+        run: |
+          AMIID = $(aws ssm get-parameter
+            --name "/governance/${{ env.ENVIRONMENT }}/golden-ami" \
+            --query "Parameter.Value" \
+            --region ${{ env.AWS_REGION }} \
+            --output text)
+
       - name: Generate runtime parameter file
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
 
-          jq --arg sha "$SHORT_SHA" '
-            map(
-              if .ParameterKey == "BootstrapVersion"
-              then .ParameterValue = $sha
-              else .
-              end
-            )
-          ' "${BASE_FILE}" > "${RUNTIME_FILE}"
+          jq \
+            --arg sha "$SHORT_SHA" \
+            --arg ami_id "$AMIID" \
+            '
+              map(
+                if .ParameterKey == "BootstrapVersion"
+                then .ParameterValue = $sha
+                elif .ParameterKey == "AMIID"
+                then .ParameterValue = $ami_id
+                else .
+                end
+              )
+            ' "${BASE_FILE}" > "${RUNTIME_FILE}"
 
       - name: Deploy stack
         run: |

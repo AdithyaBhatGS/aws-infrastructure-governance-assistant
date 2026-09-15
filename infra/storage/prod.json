@@ -1,14 +1,18 @@
 [
-    {
-        "ParameterKey":"Environment",
-        "ParameterValue":"prod"
-    },
-    {
-        "ParameterKey":"ArtifactBktName",
-        "ParameterValue":"app-artifact-bkt"
-    },
-    {
-        "ParameterKey":"LoggingBucketName",
-        "ParameterValue":"central-logging-bkt"
-    }
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "prod"
+  },
+  {
+    "ParameterKey": "ArtifactBktName",
+    "ParameterValue": "app-artifact-bkt"
+  },
+  {
+    "ParameterKey": "LoggingBucketName",
+    "ParameterValue": "central-logging-bkt"
+  },
+  {
+    "ParameterKey": "AMIID",
+    "ParameterValue": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  }
 ]
