@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Stack to deploy storage resources. Includes two S3 buckets. One for storing the application artifacts and the other for hosting the access logs.
+Description: Stack to deploy storage resources. Includes two S3 buckets. One for storing the application artifacts and the other for hosting the access logs. Includes two ssm parameters. One representing artifact bucket name, another AMIID.
 Parameters:
   Environment:
     Type: String

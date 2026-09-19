@@ -19,7 +19,7 @@ Parameters:
     Type: String
     Description: Represents the IAC used
   AMIID:
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Type: AWS::EC2::Image::Id
     Description: Represents the AMI ID
   BootstrapVersion:
     Type: String
