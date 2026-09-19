@@ -7,8 +7,15 @@ from app.services.aws_identity_service import AWSIdentityService
 awsIdentityService = AWSIdentityService()
 logger = logging.getLogger(__name__)
 
+
 class ResourceDiscoveryService:
+    """Service for discovering underutilized AWS resources and generating recommendations."""
+
     def __init__(self):
+        """Initialize AWS clients used for resource discovery.
+
+        Creates clients for STS, EC2, S3, and Elastic Load Balancing.
+        """
         self.sts_client = boto3.client(
             "sts"
         )
@@ -26,6 +33,12 @@ class ResourceDiscoveryService:
         )
 
     def discover_resources(self) -> dict:
+        """Discover AWS resources that may need review and summarize findings.
+
+        Returns:
+            dict: A response containing account details, summary counts,
+                warnings, and recommendations.
+        """
         recommendations = []
         warnings = []
 
@@ -122,10 +135,14 @@ class ResourceDiscoveryService:
         }
 
     def find_unused_ebs_volumes(self) -> dict:
+        """Identify unattached EBS volumes and generate recommendations.
 
+        Returns:
+            dict: Recommendations for unused EBS volumes and any warnings.
+        """
         try:
             response = self.ec2_client.describe_volumes(
-                Filters = [
+                Filters=[
                     {
                         "Name": "status",
                         "Values": [
@@ -134,11 +151,10 @@ class ResourceDiscoveryService:
                     }
                 ]
             )
-            
+
             unused_volumes = []
 
             for volume in response.get("Volumes", []):
-    
                 unused_volumes.append(
                     {
                         "resource_type": "EBS_VOLUME",
@@ -175,7 +191,6 @@ class ResourceDiscoveryService:
             }
 
         except Exception:
-
             logger.exception(
                 "Unexpected error while discovering unused EBS volumes"
             )
@@ -191,10 +206,14 @@ class ResourceDiscoveryService:
             }
 
     def find_unused_elastic_ips(self) -> dict:
+        """Identify Elastic IP addresses that are not associated with a resource.
 
+        Returns:
+            dict: Recommendations for unused Elastic IPs and any warnings.
+        """
         try:
             response = self.ec2_client.describe_addresses()
-            
+
             unused_eips = []
 
             for address in response.get("Addresses", []):
@@ -211,7 +230,7 @@ class ResourceDiscoveryService:
                             }
                         }
                     )
-    
+
             return {
                 "recommendations": unused_eips,
                 "warnings": []
@@ -248,11 +267,15 @@ class ResourceDiscoveryService:
             }
 
     def find_empty_s3_buckets(self) -> dict:
+        """Identify S3 buckets that are empty and may need review.
 
+        Returns:
+            dict: Recommendations for empty buckets and warnings for scan issues.
+        """
         try:
             response = self.s3_client.list_buckets()
 
-        except ClientError as e:
+        except ClientError:
             logger.exception(
                 "Failed to list S3 buckets"
             )
@@ -271,13 +294,12 @@ class ResourceDiscoveryService:
         warnings = []
 
         for bucket in response.get("Buckets", []):
-
             bucket_name = bucket["Name"]
 
             try:
                 objects = self.s3_client.list_objects_v2(
-                    Bucket = bucket_name,
-                    MaxKeys = 1
+                    Bucket=bucket_name,
+                    MaxKeys=1
                 )
 
                 if objects.get("KeyCount", 0) == 0:
@@ -291,7 +313,7 @@ class ResourceDiscoveryService:
                             "details": {}
                         }
                     )
-            except ClientError as e:
+            except ClientError:
                 logger.exception(
                     f"Failed to scan S3 bucket: {bucket_name}"
                 )
@@ -300,12 +322,10 @@ class ResourceDiscoveryService:
                     {
                         "service": "S3",
                         "resource_id": bucket_name,
-                        "message":
-                            "Unable to inspect bucket."
+                        "message": "Unable to inspect bucket."
                     }
                 )
             except Exception:
-
                 logger.exception(
                     f"Unexpected error while scanning bucket: {bucket_name}"
                 )
@@ -314,8 +334,7 @@ class ResourceDiscoveryService:
                     {
                         "service": "S3",
                         "resource_id": bucket_name,
-                        "message":
-                            "Unexpected error while inspecting bucket."
+                        "message": "Unexpected error while inspecting bucket."
                     }
                 )
 
@@ -325,16 +344,18 @@ class ResourceDiscoveryService:
         }
 
     def find_nat_gateways(self) -> dict:
+        """Identify active NAT gateways for cost review.
 
+        Returns:
+            dict: Recommendations for active NAT gateways and any warnings.
+        """
         try:
             response = self.ec2_client.describe_nat_gateways()
-            
+
             nat_gateways = []
 
             for nat in response.get("NatGateways", []):
-
                 if nat["State"] == "available":
-
                     nat_gateways.append(
                         {
                             "resource_type": "NAT_GATEWAY",
@@ -353,8 +374,7 @@ class ResourceDiscoveryService:
                 "warnings": []
             }
 
-        except ClientError as e:
-
+        except ClientError:
             logging.exception(
                 "Failed to discover NAT_GATEWAYs"
             )
@@ -373,7 +393,7 @@ class ResourceDiscoveryService:
             logger.exception(
                 "Unexpected error while discovering NAT gateways"
             )
-            
+
             return {
                 "recommendations": [],
                 "warnings": [
@@ -385,15 +405,18 @@ class ResourceDiscoveryService:
             }
 
     def find_load_balancers(self) -> dict:
+        """Identify active load balancers for cost review.
+
+        Returns:
+            dict: Recommendations for active load balancers and any warnings.
+        """
         try:
             response = self.elbv2_client.describe_load_balancers()
-            
+
             load_balancers = []
 
             for lb in response.get("LoadBalancers", []):
-    
                 if lb["State"]["Code"] == "active":
-    
                     load_balancers.append(
                         {
                             "resource_type": "LOAD_BALANCER",
@@ -412,11 +435,11 @@ class ResourceDiscoveryService:
                 "warnings": []
             }
 
-        except ClientError as e:
+        except ClientError:
             logging.exception(
                 "Failed to discover LOAD_BALANCERs"
             )
-            
+
             return {
                 "recommendations": [],
                 "warnings": [
@@ -431,7 +454,7 @@ class ResourceDiscoveryService:
             logger.exception(
                 "Unexpected error while discovering LOAD_BALANCER"
             )
-                    
+
             return {
                 "recommendations": [],
                 "warnings": [

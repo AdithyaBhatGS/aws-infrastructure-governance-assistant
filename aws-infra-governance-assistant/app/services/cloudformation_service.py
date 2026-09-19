@@ -3,14 +3,25 @@ import time
 
 
 class CloudFormationService:
+    """Service for interacting with AWS CloudFormation stacks and drift data."""
 
     def __init__(self):
+        """Initialize the CloudFormation client.
+
+        Creates a boto3 CloudFormation client used to inspect active stacks
+        and evaluate drift data.
+        """
         self.client = boto3.client(
             "cloudformation"
         )
 
     def list_active_stacks(self) -> dict:
+        """List active CloudFormation stacks.
 
+        Returns:
+            dict: A dictionary containing the total number of active stacks
+                and a list of stack summaries.
+        """
         response = self.client.list_stacks(
             StackStatusFilter=[
                 "CREATE_COMPLETE",
@@ -34,29 +45,32 @@ class CloudFormationService:
         }
 
     def analyze_drift(self, stack_name: str) -> dict:
+        """Analyze drift for a specific CloudFormation stack.
 
-        # Start a fresh drift detection
+        Args:
+            stack_name (str): The name of the CloudFormation stack to inspect.
+
+        Returns:
+            dict: A dictionary containing the drift status, detection ID,
+                and any resource-level drift results for the stack.
+        """
         response = self.client.detect_stack_drift(
             StackName=stack_name
         )
 
         detection_id = response["StackDriftDetectionId"]
 
-
         while True:
-
             status_response = self.client.describe_stack_drift_detection_status(
                 StackDriftDetectionId=detection_id
             )
 
             detection_status = status_response["DetectionStatus"]
 
-
             if detection_status == "DETECTION_COMPLETE":
                 break
 
             if detection_status == "DETECTION_FAILED":
-
                 return {
                     "stack_name": stack_name,
                     "status": "FAILED",
@@ -65,76 +79,61 @@ class CloudFormationService:
                     )
                 }
 
-
             time.sleep(5)
 
-        # Fetch drift resources after THIS detection completes
         resource_response = self.client.describe_stack_resource_drifts(
             StackName=stack_name
         )
-        
-        resources = []
 
+        resources = []
 
         for resource in resource_response.get(
             "StackResourceDrifts",
             []
         ):
-
             if resource["StackResourceDriftStatus"] != "IN_SYNC":
-
                 resources.append({
-
                     "logical_id": resource[
                         "LogicalResourceId"
                     ],
-
                     "resource_type": resource[
                         "ResourceType"
                     ],
-
                     "status": resource[
                         "StackResourceDriftStatus"
                     ],
-
                     "property_differences": resource.get(
                         "PropertyDifferences",
                         []
                     )
                 })
 
-
         return {
-
             "stack_name": stack_name,
-
-            # Result from the same detection cycle
             "status": status_response.get(
                 "StackDriftStatus"
             ),
-
             "detection_id": detection_id,
-
             "resources": resources
         }
 
     def analyze_account_drift(self) -> dict:
+        """Analyze drift for all active CloudFormation stacks in the account.
 
+        Returns:
+            dict: A summary of account drift, including the total number
+                of stacks checked and the number that are drifted.
+        """
         stacks_drifted_data = []
-
 
         active_stacks = self.list_active_stacks()
 
-
         if active_stacks.get("count") == 0:
-
             return {
                 "message": "No active CloudFormation stacks found"
             }
 
-
         for stack in active_stacks.get("stacks", []):
-
             stack_name = stack.get(
                 "stack_name"
             )
@@ -147,11 +146,9 @@ class CloudFormationService:
                 response
             )
 
-
         total_stacks = len(
             stacks_drifted_data
         )
-
 
         drifted_stacks = len(
             [
@@ -160,18 +157,13 @@ class CloudFormationService:
             ]
         )
 
-
         return {
-
             "account_status": (
                 "DRIFTED"
                 if drifted_stacks > 0
                 else "IN_SYNC"
             ),
-
             "total_stacks": total_stacks,
-
             "drifted_stacks": drifted_stacks,
-
             "results": stacks_drifted_data
         }

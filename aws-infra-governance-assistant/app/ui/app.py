@@ -330,8 +330,9 @@ elif page == "Drift History":
             added = entry.get("added", [])
             removed = entry.get("removed", [])
             changed = entry.get("changed", [])
+            total_drifts = entry.get("total_drifts", 0)
 
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
 
             with col1:
                 st.metric("Added", len(added))
@@ -341,6 +342,9 @@ elif page == "Drift History":
 
             with col3:
                 st.metric("Changed", len(changed))
+
+            with col4:
+                st.metric("Total Drifts", total_drifts)
 
             with st.expander("View details"):
                 if added:
