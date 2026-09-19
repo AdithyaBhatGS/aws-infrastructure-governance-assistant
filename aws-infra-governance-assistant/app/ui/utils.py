@@ -1,7 +1,16 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
+
 def format_scan_time(scan_time: str) -> str:
+    """Convert an ISO timestamp to a human-readable local time.
+
+    Args:
+        scan_time (str): An ISO-formatted timestamp in UTC.
+
+    Returns:
+        str: A formatted local time string in the Asia/Kolkata timezone.
+    """
     dt = datetime.fromisoformat(
         scan_time.replace("Z", "+00:00")
     )
@@ -10,7 +19,16 @@ def format_scan_time(scan_time: str) -> str:
 
     return dt.strftime("%d %b %Y · %I:%M %p")
 
+
 def format_elapsed_time(scan_time: str) -> str:
+    """Calculate the elapsed time since a timestamp and return a short label.
+
+    Args:
+        scan_time (str): An ISO-formatted timestamp in UTC.
+
+    Returns:
+        str: A human-readable elapsed-time string such as "2 hours ago".
+    """
     scan_datetime = datetime.fromisoformat(
         scan_time.replace("Z", "+00:00")
     )
