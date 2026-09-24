@@ -9,6 +9,7 @@ from api import (
 )
 
 from utils import format_elapsed_time, format_scan_time
+
 st.set_page_config(
     page_title="AWS Infrastructure Platform Assistant",
     layout="wide"
@@ -30,8 +31,6 @@ page = st.sidebar.radio(
         "Drift History"
     ]
 )
-
-# st.write(f"Current page: {page}")
 
 if page == "Dashboard":
     st.header("Infrastructure Dashboard")
