@@ -19,7 +19,7 @@ source "amazon-ebs" "amazon_linux" {
 
   source_ami_filter {
     filters = {
-      name                = "al2023-ami-*-x86_64"
+      name                = "al2023-ami-2023.*-kernel-*-x86_64"
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
@@ -36,7 +36,6 @@ build {
 
   provisioner "shell" {
     inline = [
-      "sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm",
       "sudo dnf install -y python3.13 amazon-cloudwatch-agent unzip"
     ]
   }
