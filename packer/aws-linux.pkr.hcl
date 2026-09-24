@@ -19,7 +19,7 @@ source "amazon-ebs" "amazon_linux" {
 
   source_ami_filter {
     filters = {
-      name                = "al2023-ami-2023.*-kernel-*-x86_64"
+      name                = "al2023-ami-minimal-2023.*-kernel-*-x86_64"
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
@@ -36,7 +36,7 @@ build {
 
   provisioner "shell" {
     inline = [
-      "sudo dnf install -y python3.13 amazon-cloudwatch-agent unzip"
+      "sudo dnf install -y aws-cfn-bootstrap amazon-ssm-agent amazon-cloudwatch-agent python3.13 unzip",
     ]
   }
 
