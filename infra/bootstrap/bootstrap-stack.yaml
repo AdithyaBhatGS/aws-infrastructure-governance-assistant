@@ -226,6 +226,7 @@ Resources:
               - 'ec2:AuthorizeSecurityGroupIngress'
               - 'ec2:StopInstances'
               - 'ec2:DeleteSecurityGroup'
+              - 'ec2:DeleteKeyPair'
             Resource: "*"
 
           - Effect: Allow
@@ -711,6 +712,7 @@ Resources:
               - 'ec2:AuthorizeSecurityGroupIngress'
               - 'ec2:StopInstances'
               - 'ec2:DeleteSecurityGroup'
+              - 'ec2:DeleteKeyPair'
             Resource: "*"
 
           - Effect: Allow
