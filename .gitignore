@@ -6,5 +6,5 @@ node_modules/
 __pycache__/
 .env
 bin/
-packer/manifest.json
-packer/manifest.json.lock
+**/manifest.json
+**/manifest.json.lock
