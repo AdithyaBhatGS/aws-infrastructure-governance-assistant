@@ -3,7 +3,7 @@ name: Release Orchestrator
 on:
   push:
     branches:
-      - feature/release-orchestrator-test
+      - feature/platform-features
       # Final:
       # - dev
       # - prod
