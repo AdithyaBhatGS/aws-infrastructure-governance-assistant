@@ -1,23 +1,33 @@
 name: Infrastructure Deployment Pipeline
 
 on:
-  push:
-    paths:
-      - 'infra/storage/**'
-      - 'infra/security/**'
-      - 'infra/network/**'
-    branches:
-      - dev
-      - prod
+  # push:
+  #   paths:
+  #     - 'infra/storage/**'
+  #     - 'infra/security/**'
+  #     - 'infra/network/**'
+  #   branches:
+  #     - dev
+  #     - prod
+  workflow_call: 
+    inputs:
+      env_tier:
+        type: string
+        required: true
 
   workflow_dispatch:
 
 concurrency:
-  group: platform-deploy-${{ github.ref_name }}
+  group: platform-deploy-${{ inputs.env_tier || github.ref_name }}
   cancel-in-progress: false
   queue: max
 
+env:
+  AWS_REGION: us-east-1
+  ENVIRONMENT: ${{ inputs.env_tier || github.ref_name }}
+
 jobs:
+
   deploy-infra:
     runs-on: ubuntu-latest
 
@@ -26,7 +36,6 @@ jobs:
       contents: read
 
     env:
-      AWS_REGION: 'us-east-1'
       DEV_EXECUTION_ROLE_ARN: ${{ secrets.DEV_INFRA_EXECUTION_ROLE_ARN }}
       PROD_EXECUTION_ROLE_ARN: ${{ secrets.PROD_INFRA_EXECUTION_ROLE_ARN }}
 
@@ -34,20 +43,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v7
 
-      - name: Set Environment
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
-            echo "ENV=dev" >> "${GITHUB_ENV}"
-          elif [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
-            echo "ENV=prod" >> $GITHUB_ENV
-          else
-            echo "${GITHUB_REF} is invalid..."
-          fi
+      # - name: Set Environment
+      #   run: |
+      #     if [[ "${GITHUB_REF}" == "refs/heads/dev" ]]; then
+      #       echo "ENV=dev" >> "${GITHUB_ENV}"
+      #     elif [[ "${GITHUB_REF}" == "refs/heads/prod" ]]; then
+      #       echo "ENV=prod" >> $GITHUB_ENV
+      #     else
+      #       echo "${GITHUB_REF} is invalid..."
+      #     fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
-          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_INFRA_DEPLOYMENT_ROLE_ARN }}
+          role-to-assume: ${{ env.ENVIRONMENT == 'dev' && secrets.DEV_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_INFRA_DEPLOYMENT_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install Dependencies
@@ -63,11 +72,11 @@ jobs:
 
           for STACK in $STACKS; do
             echo "=================================================================="
-            echo "============= Processing stack: ${ENV}-${STACK}-stack =============="
+            echo "============= Processing stack: ${STACK}-stack =============="
             echo "=================================================================="
 
             TEMPLATE_FILE="infra/${STACK}/${STACK}-stack.yaml"
-            PARAMS_FILE="infra/${STACK}/${ENV}.json"
+            PARAMS_FILE="infra/${STACK}/${{ env.ENVIRONMENT }}.json"
             
             echo "-> Running yamllint..."
             yamllint $TEMPLATE_FILE
@@ -78,9 +87,9 @@ jobs:
             echo "-> Validating CloudFormation template..."
             aws cloudformation validate-template --template-body file://$TEMPLATE_FILE
 
-            STACK_NAME="${ENV}-${STACK}-stack"
+            STACK_NAME="${{ env.ENVIRONMENT }}-${STACK}-stack"
 
-            if [[ "$ENV" == "dev" ]]; then
+            if [[ "$ENVIRONMENT" == "dev" ]]; then
               ROLE_ARN="${DEV_EXECUTION_ROLE_ARN}"
             else
               ROLE_ARN="${PROD_EXECUTION_ROLE_ARN}"

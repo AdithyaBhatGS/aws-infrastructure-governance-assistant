@@ -1,43 +1,36 @@
 name: Golden Image Pipeline
 
 on:
-  push:
-    branches:
-      - dev
-      - prod
-    paths:
-      - "packer/**"
-
+  # push:
+  #   branches:
+  #     - dev
+  #     - prod
+  #   paths:
+  #     - "packer/**"
+  workflow_call: 
+    inputs:
+      env_tier:
+        type: string
+        required: true
   workflow_dispatch: 
 
 permissions:
   id-token: write
   contents: read
-  actions: write
+  # actions: write
 
 concurrency:
-  group: platform-deploy-${{ github.ref_name }}
+  group: platform-deploy-${{ inputs.env_tier || github.ref_name }}
   cancel-in-progress: false
   queue: max
 
 env:
-  AWS_REGION: 'us-east-1'
+  AWS_REGION: us-east-1
+  ENVIRONMENT: ${{ inputs.env_tier || github.ref_name }}
 
 jobs:
 
-  setup:
-    runs-on: ubuntu-latest
-
-    outputs:
-      env_tier: ${{ steps.env.outputs.env_tier }}
-
-    steps:
-      - name: Set environment tier
-        id: env
-        run: echo "env_tier=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-
   build-image:
-    needs: setup
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +40,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
-          role-to-assume: ${{ secrets[format('{0}_IMAGE_BUILD_ROLE_ARN', needs.setup.outputs.env_tier)] }}
+          role-to-assume: ${{ secrets[format('{0}_IMAGE_BUILD_ROLE_ARN', env.ENVIRONMENT)] }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Packer
@@ -78,16 +71,16 @@ jobs:
       - name: Publish Golden AMI
         run: |
           aws ssm put-parameter \
-            --name "/governance/${{ needs.setup.outputs.env_tier }}/golden-ami" \
+            --name "/governance/${{ env.ENVIRONMENT }}/golden-ami" \
             --value "$AMI_ID" \
             --type "String" \
             --overwrite \
             --region ${{ env.AWS_REGION }}
 
-      - name: Trigger App-Infra deployment
-        # Token for GitHub CLI access
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh workflow run deploy-app-infra.yaml \
-            --ref "${{ needs.setup.outputs.env_tier }}"
+      # - name: Trigger App-Infra deployment
+      #   # Token for GitHub CLI access
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     gh workflow run deploy-app-infra.yaml \
+      #       --ref "${{ needs.setup.outputs.env_tier }}"
