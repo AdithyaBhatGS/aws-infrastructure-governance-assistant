@@ -1,0 +1,143 @@
+name: Release Orchestrator
+
+on:
+  push:
+    branches:
+      - feature/platform-features
+      # Final:
+      # - dev
+      # - prod
+    paths:
+      - "infra/**"
+      - "packer/**"
+      - "aws-infra-governance-assistant/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+
+    outputs:
+      infra_changed: ${{ steps.filter.outputs.infra }}
+      image_changed: ${{ steps.filter.outputs.image }}
+      app_infra_changed: ${{ steps.filter.outputs.app_infra }}
+      app_changed: ${{ steps.filter.outputs.app }}
+
+      run_infra: ${{ steps.plan.outputs.run_infra }}
+      run_image: ${{ steps.plan.outputs.run_image }}
+      run_app_infra: ${{ steps.plan.outputs.run_app_infra }}
+      run_app: ${{ steps.plan.outputs.run_app }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Detect changed components
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            infra:
+              - "infra/network/**"
+              - "infra/security/**"
+              - "infra/storage/**"
+
+            image:
+              - "packer/**"
+
+            app_infra:
+              - "infra/launch-template/**"
+              - "infra/application/**"
+              - "infra/platform/**"
+
+            app:
+              - "aws-infra-governance-assistant/**"
+
+      - name: Build execution plan
+        id: plan
+        env:
+          INFRA_CHANGED: ${{ steps.filter.outputs.infra }}
+          IMAGE_CHANGED: ${{ steps.filter.outputs.image }}
+          APP_INFRA_CHANGED: ${{ steps.filter.outputs.app_infra }}
+          APP_CHANGED: ${{ steps.filter.outputs.app }}
+        run: |
+          RUN_INFRA="$INFRA_CHANGED"
+          RUN_IMAGE="$IMAGE_CHANGED"
+
+          if [[ "$IMAGE_CHANGED" == "true" || "$APP_INFRA_CHANGED" == "true" ]]; then
+            RUN_APP_INFRA="true"
+          else
+            RUN_APP_INFRA="false"
+          fi
+
+          RUN_APP="$APP_CHANGED"
+
+          echo "run_infra=$RUN_INFRA" >> "$GITHUB_OUTPUT"
+          echo "run_image=$RUN_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "run_app_infra=$RUN_APP_INFRA" >> "$GITHUB_OUTPUT"
+          echo "run_app=$RUN_APP" >> "$GITHUB_OUTPUT"
+
+      - name: Show release plan
+        env:
+          INFRA_CHANGED: ${{ steps.filter.outputs.infra }}
+          IMAGE_CHANGED: ${{ steps.filter.outputs.image }}
+          APP_INFRA_CHANGED: ${{ steps.filter.outputs.app_infra }}
+          APP_CHANGED: ${{ steps.filter.outputs.app }}
+
+          RUN_INFRA: ${{ steps.plan.outputs.run_infra }}
+          RUN_IMAGE: ${{ steps.plan.outputs.run_image }}
+          RUN_APP_INFRA: ${{ steps.plan.outputs.run_app_infra }}
+          RUN_APP: ${{ steps.plan.outputs.run_app }}
+        run: |
+          echo "Environment: $GITHUB_REF_NAME"
+          echo ""
+          echo "Changed components:"
+          echo "  Infra:     $INFRA_CHANGED"
+          echo "  Image:     $IMAGE_CHANGED"
+          echo "  App-Infra: $APP_INFRA_CHANGED"
+          echo "  App:       $APP_CHANGED"
+          echo ""
+          echo "Execution decisions:"
+          echo "  Run Infra:     $RUN_INFRA"
+          echo "  Run Image:     $RUN_IMAGE"
+          echo "  Run App-Infra: $RUN_APP_INFRA"
+          echo "  Run App:       $RUN_APP"
+
+          echo ""
+          echo "Release plan:"
+
+          step=1
+
+          if [[ "$RUN_INFRA" == "true" ]]; then
+            echo "$step. Infra"
+            step=$((step + 1))
+          fi
+
+          if [[ "$RUN_IMAGE" == "true" ]]; then
+            echo "$step. Image"
+            step=$((step + 1))
+          fi
+
+          if [[ "$RUN_APP_INFRA" == "true" ]]; then
+            echo "$step. App-Infra"
+            step=$((step + 1))
+          fi
+
+          if [[ "$RUN_APP" == "true" ]]; then
+            echo "$step. App Release"
+            step=$((step + 1))
+          fi
+
+          if [[ "$RUN_INFRA" != "true" &&
+                "$RUN_IMAGE" != "true" &&
+                "$RUN_APP_INFRA" != "true" &&
+                "$RUN_APP" != "true" ]]; then
+            echo "No deployment required."
+          fi

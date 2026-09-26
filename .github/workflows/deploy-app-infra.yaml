@@ -1,25 +1,30 @@
 name: Application Infrastructure Pipeline
 
 on:
-  push:
-    paths:
-      - 'infra/launch-template/**'
-      - 'infra/application/**'
-      - 'infra/platform/**'
-    branches:
-      - dev
-      - prod
+  # push:
+  #   paths:
+  #     - 'infra/launch-template/**'
+  #     - 'infra/application/**'
+  #     - 'infra/platform/**'
+  #   branches:
+  #     - dev
+  #     - prod
+  workflow_call:
+    inputs:
+      env_tier:
+        type: string
+        required: true
 
   workflow_dispatch:
 
 concurrency:
-  group: platform-deploy-${{ github.ref_name }}
+  group: platform-deploy-${{ inputs.env_tier || github.ref_name }}
   cancel-in-progress: false
   queue: max
 
 env:
   AWS_REGION: us-east-1
-  ENVIRONMENT: ${{ github.ref == 'refs/heads/prod' && 'prod' || 'dev'}}
+  ENVIRONMENT: ${{ inputs.env_tier || github.ref_name }}
 
 jobs:
   detect_changes:
@@ -93,7 +98,7 @@ jobs:
       - name: Configure AWS credentials for dev
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
-          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOYMENT_ROLE_ARN }}
+          role-to-assume: ${{ env.ENVIRONMENT == 'dev' && secrets.DEV_APP_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOYMENT_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install Dependencies
@@ -200,7 +205,7 @@ jobs:
       - name: Configure AWS credentials for dev
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
-          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOYMENT_ROLE_ARN }}
+          role-to-assume: ${{ env.ENVIRONMENT == 'dev' && secrets.DEV_APP_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOYMENT_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install Dependencies
@@ -327,7 +332,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
-          role-to-assume: ${{ github.ref == 'refs/heads/dev' && secrets.DEV_APP_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOYMENT_ROLE_ARN }}
+          role-to-assume: ${{ env.ENVIRONMENT == 'dev' && secrets.DEV_APP_INFRA_DEPLOYMENT_ROLE_ARN || secrets.PROD_APP_INFRA_DEPLOYMENT_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install Dependencies
