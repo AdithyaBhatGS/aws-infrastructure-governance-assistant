@@ -8,6 +8,10 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: infra-validation-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
 
   changes:

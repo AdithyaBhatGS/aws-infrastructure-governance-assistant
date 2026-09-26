@@ -3,10 +3,8 @@ name: Release Orchestrator
 on:
   push:
     branches:
-      - feature/platform-features
-      # Final:
-      # - dev
-      # - prod
+      - dev
+      - prod
     paths:
       - "infra/**"
       - "packer/**"
@@ -16,8 +14,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: platform-deploy-${{ github.ref_name }}
+  group: release-orchestrator-${{ github.ref_name }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   plan:
