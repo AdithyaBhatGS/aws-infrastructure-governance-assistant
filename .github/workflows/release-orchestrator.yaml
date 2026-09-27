@@ -154,6 +154,7 @@ jobs:
   deploy-image:
     needs: [plan, deploy-infra]
     if: |
+      always() &&
       needs.plan.outputs.run_image == 'true' &&
       (needs.deploy-infra.result == 'success' || needs.plan.outputs.run_infra == 'false')
     uses: ./.github/workflows/deploy-image.yaml
@@ -164,6 +165,7 @@ jobs:
   deploy-app-infra:
     needs: [plan, deploy-infra, deploy-image]
     if: |
+      always() &&
       needs.plan.outputs.run_app_infra == 'true' &&
       (needs.deploy-infra.result == 'success' || needs.plan.outputs.run_infra == 'false') &&
       (needs.deploy-image.result == 'success' || needs.plan.outputs.run_image == 'false')
@@ -175,6 +177,7 @@ jobs:
   deploy-app:
     needs: [plan, deploy-infra, deploy-image, deploy-app-infra]
     if: |
+      always() &&
       needs.plan.outputs.run_app == 'true' &&
       (needs.deploy-infra.result == 'success' || needs.plan.outputs.run_infra == 'false') &&
       (needs.deploy-image.result == 'success' || needs.plan.outputs.run_image == 'false') &&

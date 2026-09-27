@@ -12,7 +12,6 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-# Use a minimal base image(amazon-linux)
 source "amazon-ebs" "amazon_linux" {
   ami_name      = "aws-infra-governance-base-{{timestamp}}"
   instance_type = "t3.micro"
