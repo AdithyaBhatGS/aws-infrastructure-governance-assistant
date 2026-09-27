@@ -61,6 +61,7 @@ The project is constructed to solve these problems through:
 - **CI/CD Automation** — GitHub Actions manages validation and deployment workflows.
 - **Secure CI/CD Bootstrap** — Separates GitHub OIDC, permissions boundaries, validation roles, deployment roles, and CloudFormation execution roles from the automated deployment workflows.
 - **Platform Interface** — FastAPI provides the backend services while Streamlit provides the user interface.
+- **Golden Image Deployments** - Application/Platform is deployed on servers which use tested Golden Images.
 
 ## Architecture
 
@@ -127,12 +128,13 @@ The project uses GitHub Actions to automate infrastructure validation, infrastru
 | ------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------- |
 | [**Infrastructure Validation**](/.github/workflows/validate-infra-on-pr.yaml)         | Validate CloudFormation/IaC                   | `cfn-lint`, `yamllint`, CloudFormation validation, Checkov |
 | [**Infrastructure Deployment**](/.github/workflows/deploy-infra.yaml)                 | Deploy foundational infrastructure            | CloudFormation                                             |
+| [**Golden Image Deployment**](/.github/workflows/deploy-image.yaml)                   | Deploy the golden image                       | Packer based golden image                                  |
 | [**Application Infrastructure Deployment**](/.github/workflows/deploy-app-infra.yaml) | Deploy compute and application infrastructure | Launch Template, ALB, ASG                                  |
 | [**Application Deployment**](/.github/workflows/deploy-app.yaml)                      | Deploy application releases                   | S3 artifacts + EC2 Instance Refresh                        |
 
 ### Deployment Flow
 
-**Pull Request → Validation → Infrastructure → Application Infrastructure → Application**
+**Pull Request → Validation → Infrastructure → Golden Image -> Application Infrastructure → Application**
 
 The current pipelines use environment-specific GitHub Actions concurrency controls to prevent overlapping deployments within the same environment.
 
@@ -148,6 +150,7 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 | **Networking**                 | VPC, Application Load Balancer, Security Groups, NAT Gateway |
 | **Storage & Data**             | Amazon S3, DynamoDB                                          |
 | **Identity & Access**          | IAM, GitHub OIDC, Permissions Boundaries                     |
+| **Golden Image**               | Hashicorp Packer                                             |
 | **Configuration & Operations** | AWS Systems Manager, CloudWatch                              |
 | **Security & Validation**      | Checkov, cfn-lint, yamllint                                  |
 | **Version Control**            | Git, GitHub                                                  |
@@ -159,7 +162,9 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 ├── .github/
 │   └── workflows/
 │       ├── validate-infra-on-pr.yaml
+│       ├── release-orchestrator.yaml
 │       ├── deploy-infra.yaml
+│       ├── deploy-image.yaml
 │       ├── deploy-app-infra.yaml
 │       └── deploy-app.yaml
 ├── aws-infra-governance-assistant/
@@ -178,10 +183,11 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 │   ├── platform/
 │   ├── security/
 │   └── storage/
+├── packer/
+│   └── aws-linux.pkr.hcl
 ├── security/
 │   └── checkov/
 │       └── organization_policies/
-├── .gitattributes
 ├── .gitignore
 ├── .yamllint.yaml
 ├── README.md
@@ -192,25 +198,5 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 - **`aws-infra-governance-assistant/`** — Application source for the governance platform.
 - **`.github/workflows/`** — CI/CD workflows for validation and deployment.
 - **`requirements.txt`** — Python dependencies used by the platform.
+- **`packer/`** - Hashicorp Packer for golden AMI based deployments.
 - **`security/checkov/organization_policies`** - Custom `checkov` policies for scanning the infrastructure.
-
-## Roadmap & Planned Improvements
-
-1. **App : Auto Remediation**
-
-- Will add auto remediation functionality.
-- Helps users not only to detect drift, observe the recent changes but also to fix them through the application UI.
-
-2. **App/Infra: Golden Image**
-
-- Will implement the concept of golden image to maintain consistent runtimes.
-- Will reduces the application startup by around 70-80%.
-- Will reduces drifts caused due to manual configuration changes at the instance level.
-
-3. **App**
-
-- Will try to implement a graphical view on historical changes from the simple text implementation(current).
-
-4. **App**
-
-- Will publish information about total drift at the account level to enhance user understanding on the current infrastructure.
