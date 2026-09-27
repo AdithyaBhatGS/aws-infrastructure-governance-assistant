@@ -140,3 +140,45 @@ jobs:
                 "$RUN_APP" != "true" ]]; then
             echo "No deployment required."
           fi
+
+  deploy-infra:
+    needs: plan
+    if: needs.plan.outputs.run_infra == 'true'
+
+    uses: ./.github/workflows/deploy-infra.yaml
+    with:
+      env_tier: ${{ github.ref_name }}
+    secrets: inherit
+
+  deploy-image:
+    needs: [plan, deploy-infra]
+    if: |
+      needs.plan.outputs.run_image == 'true' &&
+      (needs.deploy-infra.result == 'success' || needs.plan.outputs.run_infra == 'false')
+    uses: ./.github/workflows/deploy-image.yaml
+    with:
+      env_tier: ${{ github.ref_name }}
+    secrets: inherit
+
+  deploy-app-infra:
+    needs: [plan, deploy-infra, deploy-image]
+    if: |
+      needs.plan.outputs.run_app_infra == 'true' &&
+      (needs.deploy-infra.result == 'success' || needs.plan.outputs.run_infra == 'false') &&
+      (needs.deploy-image.result == 'success' || needs.plan.outputs.run_image == 'false')
+    uses: ./.github/workflows/deploy-app-infra.yaml
+    with:
+      env_tier: ${{ github.ref_name }}
+    secrets: inherit
+
+  deploy-app:
+    needs: [plan, deploy-infra, deploy-image, deploy-app-infra]
+    if: |
+      needs.plan.outputs.run_app == 'true' &&
+      (needs.deploy-infra.result == 'success' || needs.plan.outputs.run_infra == 'false') &&
+      (needs.deploy-image.result == 'success' || needs.plan.outputs.run_image == 'false') &&
+      (needs.deploy-app-infra.result == 'success' || needs.plan.outputs.run_app_infra == 'false')
+    uses: ./.github/workflows/deploy-app.yaml
+    with:
+      env_tier: ${{ github.ref_name }}
+    secrets: inherit
