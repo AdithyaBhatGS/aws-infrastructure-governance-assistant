@@ -12,6 +12,9 @@ concurrency:
   group: infra-validation-${{ github.head_ref }}
   cancel-in-progress: true
 
+env:
+  AWS_REGION: us-east-1
+
 jobs:
 
   changes:
@@ -76,9 +79,6 @@ jobs:
       id-token: write
       contents: read
 
-    env:
-      AWS_REGION: 'us-east-1'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -122,9 +122,6 @@ jobs:
     permissions: 
       id-token: write
       contents: read
-
-    env:
-      AWS_REGION: us-east-1
 
     steps:
       - name: Checkout code
@@ -170,9 +167,6 @@ jobs:
       id-token: write
       contents: read
 
-    env:
-      AWS_REGION: 'us-east-1'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -216,9 +210,6 @@ jobs:
     permissions: 
       id-token: write
       contents: read
-
-    env:
-      AWS_REGION: 'us-east-1'
 
     steps:
       - name: Checkout code
@@ -264,9 +255,6 @@ jobs:
       id-token: write
       contents: read
 
-    env:
-      AWS_REGION: 'us-east-1'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -310,9 +298,6 @@ jobs:
     permissions: 
       id-token: write
       contents: read
-
-    env:
-      AWS_REGION: 'us-east-1'
 
     steps:
       - name: Checkout code
