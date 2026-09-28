@@ -16,7 +16,7 @@ source "amazon-ebs" "amazon_linux" {
   ami_name      = "aws-infra-governance-base-{{timestamp}}"
   instance_type = "t3.micro"
   region        = var.aws_region
-
+  # Choose a minimal base image
   source_ami_filter {
     filters = {
       name                = "al2023-ami-minimal-2023.*-kernel-*-x86_64"
