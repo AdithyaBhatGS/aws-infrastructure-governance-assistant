@@ -172,6 +172,7 @@ jobs:
     uses: ./.github/workflows/deploy-app-infra.yaml
     with:
       env_tier: ${{ github.ref_name }}
+      image_changed: ${{ needs.plan.outputs.run_image == 'true' }}
     secrets: inherit
 
   deploy-app:
