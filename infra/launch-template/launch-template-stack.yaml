@@ -46,11 +46,11 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         config:
-          packages:
-            yum:
-              amazon-cloudwatch-agent: []
-              unzip: []
-              python3.13: []
+          # packages:
+            # yum:
+              # amazon-cloudwatch-agent: []
+              # unzip: []
+              # python3.13: []
           files:
             /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json:
               mode: "000644"
