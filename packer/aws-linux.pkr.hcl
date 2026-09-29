@@ -34,6 +34,7 @@ source "amazon-ebs" "amazon_linux" {
 build {
   sources = ["source.amazon-ebs.amazon_linux"]
 
+  # Installing runtime requirements
   provisioner "shell" {
     inline = [
       "sudo dnf install -y aws-cfn-bootstrap amazon-ssm-agent amazon-cloudwatch-agent python3.13 unzip",
