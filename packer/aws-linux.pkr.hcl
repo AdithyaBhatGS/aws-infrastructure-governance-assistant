@@ -12,6 +12,7 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
+# Defining base config
 source "amazon-ebs" "amazon_linux" {
   ami_name      = "aws-infra-governance-base-{{timestamp}}"
   instance_type = "t3.micro"
