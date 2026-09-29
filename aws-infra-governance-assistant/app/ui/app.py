@@ -31,7 +31,7 @@ page = st.sidebar.radio(
         "Drift History"
     ]
 )
-
+# Pages
 if page == "Dashboard":
     st.header("Infrastructure Dashboard")
 

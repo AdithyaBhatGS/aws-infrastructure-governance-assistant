@@ -218,11 +218,13 @@ Resources:
                     # -------------------------------------------------------
 
                     if [ ! -f "$APP_DIR/app/main.py" ]; then
+                      echo ""
                       echo "ERROR: app/main.py not found."
                       exit 1
                     fi
 
                     if [ ! -f "$APP_DIR/requirements.txt" ]; then
+                      echo ""
                       echo "ERROR: requirements.txt not found."
                       exit 1
                     fi
