@@ -77,7 +77,7 @@ flowchart TD
     %% Main Orchestration
     subgraph Workflows ["CI/CD Pipeline Orchestration"]
         direction TB
-        Trigger --> SecWorkflow["<b>Security & Linting Workflow</b><br/><i>(Checkov, cfn-lint, cloudformation-validate)</i>"]
+        Trigger --> SecWorkflow["<b>Security & Linting Workflow</b><br/><i>(Checkov, cfn-lint,<br/> cloudformation-validate)</i>"]
         SecWorkflow --> DeployWorkflow["<b>Deployment Workflow</b><br/><i>(OIDC Assume Role)</i>"]
     end
 
@@ -86,12 +86,12 @@ flowchart TD
     %% Target Environment Subgraphs
     subgraph DevEnv ["Dev Environment"]
         direction TB
-        DevAccount["AWS Dev Account<br/><i>Account-Scoped Deployment</i>"]
+        DevAccount["AWS Dev Account<br/><i>Account-Scoped<br/> Deployment</i>"]
     end
 
     subgraph ProdEnv ["Prod Environment"]
         direction TB
-        ProdAccount["AWS Prod Account<br/><i>Account-Scoped Deployment</i>"]
+        ProdAccount["AWS Prod Account<br/><i>Account-Scoped<br/> Deployment</i>"]
     end
 
     Target -->|Dev Branch| DevAccount
