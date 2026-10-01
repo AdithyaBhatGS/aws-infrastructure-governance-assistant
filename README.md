@@ -67,7 +67,59 @@ The project is constructed to solve these problems through:
 
 ### Architecture Diagrams
 
-> Will be added shortly!!
+> IAM Roles and responsiblities:
+
+```mermaid
+flowchart TB
+    subgraph IAM ["IAM Roles & Permissions"]
+        direction TB
+
+        subgraph Infra ["Infrastructure Tier"]
+            direction TB
+            subgraph InfraSub1 ["1. Infra deployment and execution tier"]
+                direction LR
+                InfraDeployRole["Infra Deployment Role (GitHub Actions)<br/><br/>*(Perform infra related AWS CloudFormation API calls)*"]
+                InfraExecutionRole["Infra Execution Role (AWS CloudFormation)<br/><br/>*(S3 buckets, IAM policies, VPC resources)*"]
+                InfraDeployRole -.->|iam:PassRole| InfraExecutionRole
+            end
+        end
+
+        subgraph GoldenImage ["Golden Image Tier"]
+            direction TB
+            subgraph GoldenImage1 ["2. Golden Image Tier"]
+                direction TB
+                ImageDeployRole["Image Deploy Role (GitHub Actions)<br/><br/>*(Construct a golden base AMI)*"]
+            end
+        end
+
+        subgraph AppInfra ["App-Infrastructure Tier"]
+            direction TB
+            subgraph InfraSub2 ["3. App-Infra deployment and execution tier"]
+                direction LR
+                AppInfraDeployRole["App Infra Deployment Role (GitHub Actions)<br/><br/>*(Perform app infra related AWS CloudFormation API calls)*"]
+                AppInfraExecutionRole["App Infra Execution Role (AWS CloudFormation)<br/><br/>*(Launch template, ASGs, ALBs)*"]
+                AppInfraDeployRole -.->|iam:PassRole| AppInfraExecutionRole
+            end
+        end
+
+        subgraph App ["App Tier"]
+            direction TB
+            subgraph InfraSub2 ["4. App deployment tier"]
+                direction TB
+                AppDeployRole["App Deployment Role (GitHub Actions)<br/><br/>*(Perform application deployment)*"]
+            end
+        end
+        Infra -.-> GoldenImage -.-> AppInfra -.-> App
+    end
+
+    style IAM fill:none,stroke:#333,stroke-width:2px
+    classDef innerBox fill:#1f6feb15,stroke:#1f6feb,stroke-width:1px;
+    class Infra,GoldenImage,AppInfra innerBox;
+    classDef innerSub1Box fill:#1f6feb,stroke:#fff,stroke-width:1px,color:#fff
+    class InfraDeployRole,AppInfraDeployRole,ImageDeployRole,AppDeployRole innerSub1Box
+    classDef innerSub2Box fill:#238636,stroke:#fff,stroke-width:1px,color:#fff
+    class InfraExecutionRole,AppInfraExecutionRole innerSub2Box
+```
 
 The platform is divided into two primary components:
 
