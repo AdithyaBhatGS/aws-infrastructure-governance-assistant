@@ -67,7 +67,44 @@ The project is constructed to solve these problems through:
 
 ### Architecture Diagrams
 
-> IAM Roles and responsiblities:
+#### CI/CD Pipeline Flow:
+
+```mermadid
+flowchart TD
+    %% Trigger Phase
+    Event([Code Push / PR]) --> Trigger[GitHub Actions Triggers]
+
+    %% Main Orchestration
+    subgraph Workflows ["CI/CD Pipeline Orchestration"]
+        direction TB
+        Trigger --> SecWorkflow["<b>Security & Linting Workflow</b><br/><i>(Checkov, cfn-lint, cloudformation-validate)</i>"]
+        SecWorkflow --> DeployWorkflow["<b>Deployment Workflow</b><br/><i>(OIDC Assume Role)</i>"]
+    end
+
+    DeployWorkflow --> Target{Environment Target?}
+
+    %% Target Environment Subgraphs
+    subgraph DevEnv ["Dev Environment"]
+        direction TB
+        DevAccount["AWS Dev Account<br/><i>Account-Scoped Deployment</i>"]
+    end
+
+    subgraph ProdEnv ["Prod Environment"]
+        direction TB
+        ProdAccount["AWS Prod Account<br/><i>Account-Scoped Deployment</i>"]
+    end
+
+    Target -->|Dev Branch| DevAccount
+    Target -->|Prod Branch| ProdAccount
+
+    %% Styling
+    style Event fill:#238636,stroke:#fff,stroke-width:1px,color:#fff
+    style Target fill:#1f6feb,stroke:#fff,stroke-width:1px,color:#fff
+    style DevEnv fill:#1f6feb15,stroke:#1f6feb,stroke-width:1px
+    style ProdEnv fill:#23863615,stroke:#238636,stroke-width:1px
+```
+
+#### IAM Roles and responsiblities:
 
 ```mermaid
 flowchart TB
