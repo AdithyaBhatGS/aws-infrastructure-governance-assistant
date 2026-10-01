@@ -69,7 +69,7 @@ The project is constructed to solve these problems through:
 
 #### CI/CD Pipeline Flow:
 
-```mermadid
+```mermaid
 flowchart TD
     %% Trigger Phase
     Event([Code Push / PR]) --> Trigger[GitHub Actions Triggers]
