@@ -94,7 +94,7 @@ flowchart TB
 
         subgraph AppInfra ["App-Infrastructure Tier"]
             direction TB
-            subgraph InfraSub2 ["3. App-Infra deployment and execution tier"]
+            subgraph AppInfraSub2 ["3. App-Infra deployment and execution tier"]
                 direction LR
                 AppInfraDeployRole["App Infra Deployment Role (GitHub Actions)<br/><br/>*(Perform app infra related AWS CloudFormation API calls)*"]
                 AppInfraExecutionRole["App Infra Execution Role (AWS CloudFormation)<br/><br/>*(Launch template, ASGs, ALBs)*"]
@@ -104,7 +104,7 @@ flowchart TB
 
         subgraph App ["App Tier"]
             direction TB
-            subgraph InfraSub2 ["4. App deployment tier"]
+            subgraph AppSub1 ["4. App deployment tier"]
                 direction TB
                 AppDeployRole["App Deployment Role (GitHub Actions)<br/><br/>*(Perform application deployment)*"]
             end
