@@ -77,9 +77,9 @@ flowchart TB
         subgraph Infra ["Infrastructure Tier"]
             direction TB
             subgraph InfraSub1 ["1. Infra deployment and execution tier"]
-                direction LR
-                InfraDeployRole["Infra Deployment Role (GitHub Actions)<br/><br/>*(Perform infra related AWS CloudFormation API calls)*"]
-                InfraExecutionRole["Infra Execution Role (AWS CloudFormation)<br/><br/>*(S3 buckets, IAM policies, VPC resources)*"]
+                direction TB
+                InfraDeployRole["<b>Infra Deployment Role</b><br/> (GitHub Actions OIDC)<br/><i>Perform infra related AWS CloudFormation API calls</i>"]
+                InfraExecutionRole["<b>Infra Execution Role</b><br/> (AWS CloudFormation)<br/><i>S3 buckets, IAM policies, VPC resources</i>"]
                 InfraDeployRole -.->|iam:PassRole| InfraExecutionRole
             end
         end
@@ -88,16 +88,16 @@ flowchart TB
             direction TB
             subgraph GoldenImage1 ["2. Golden Image Tier"]
                 direction TB
-                ImageDeployRole["Image Deploy Role (GitHub Actions)<br/><br/>*(Construct a golden base AMI)*"]
+                ImageDeployRole["<b>Image Deploy Role</b><br/> (GitHub Actions OIDC)<br/><i>Construct a Golden Base AMI</i>"]
             end
         end
 
         subgraph AppInfra ["App-Infrastructure Tier"]
             direction TB
             subgraph AppInfraSub2 ["3. App-Infra deployment and execution tier"]
-                direction LR
-                AppInfraDeployRole["App Infra Deployment Role (GitHub Actions)<br/><br/>*(Perform app infra related AWS CloudFormation API calls)*"]
-                AppInfraExecutionRole["App Infra Execution Role (AWS CloudFormation)<br/><br/>*(Launch template, ASGs, ALBs)*"]
+                direction TB
+                AppInfraDeployRole["<b>App Infra Deployment Role</b><br/> (GitHub Actions OIDC)<br/><i>Perform app infra related AWS CloudFormation API calls</i>"]
+                AppInfraExecutionRole["<b>App Infra Execution Role</b><br/> (AWS CloudFormation)<br/><i>Launch template, ASGs, ALBs</i>"]
                 AppInfraDeployRole -.->|iam:PassRole| AppInfraExecutionRole
             end
         end
@@ -106,7 +106,7 @@ flowchart TB
             direction TB
             subgraph AppSub1 ["4. App deployment tier"]
                 direction TB
-                AppDeployRole["App Deployment Role (GitHub Actions)<br/><br/>*(Perform application deployment)*"]
+                AppDeployRole["<b>App Deployment Role</b><br/> (GitHub Actions)<br/><i>Perform application deployment</i>"]
             end
         end
         Infra -.-> GoldenImage -.-> AppInfra -.-> App
