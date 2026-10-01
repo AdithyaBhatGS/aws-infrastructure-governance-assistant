@@ -71,7 +71,6 @@ The project is constructed to solve these problems through:
 
 ```mermaid
 flowchart TB
-    flowchart TB
     subgraph IAM ["IAM Roles & Permissions"]
         direction TB
 
