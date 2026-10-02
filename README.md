@@ -67,6 +67,10 @@ The project is constructed to solve these problems through:
 
 ### Architecture Diagrams
 
+#### Core Architecture:
+
+![Enterprise AWS Architecture](./docs/architecture_diagrams/aws-infra-gov-arch.drawio.svg)
+
 #### CI/CD Pipeline Flow:
 
 ```mermaid
