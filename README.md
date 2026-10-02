@@ -69,7 +69,7 @@ The project is constructed to solve these problems through:
 
 #### Core Architecture:
 
-![Enterprise AWS Architecture](./docs/architecture_diagrams/aws-infra-gov-arch1.drawio.svg)
+![Enterprise AWS Architecture](./docs/architecture_diagrams/aws-infra-gov-arch2.drawio.svg)
 
 #### CI/CD Pipeline Flow:
 
