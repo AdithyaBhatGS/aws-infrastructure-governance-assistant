@@ -67,7 +67,100 @@ The project is constructed to solve these problems through:
 
 ### Architecture Diagrams
 
-> Will be added shortly!!
+#### Core Architecture:
+
+![Enterprise AWS Architecture](./docs/architecture_diagrams/aws-infra-gov-arch2.drawio.svg)
+
+#### CI/CD Pipeline Flow:
+
+```mermaid
+flowchart TD
+    %% Trigger Phase
+    Event([Code Push / PR]) --> Trigger[GitHub Actions Triggers]
+
+    %% Main Orchestration
+    subgraph Workflows ["CI/CD Pipeline Orchestration"]
+        direction TB
+        Trigger --> SecWorkflow["<b>Security & Linting Workflow</b><br/><i>(Checkov, cfn-lint,<br/> cloudformation-validate)</i>"]
+        SecWorkflow --> DeployWorkflow["<b>Deployment Workflow</b><br/><i>(OIDC Assume Role)</i>"]
+    end
+
+    DeployWorkflow --> Target{Environment Target?}
+
+    %% Target Environment Subgraphs
+    subgraph DevEnv ["Dev Environment"]
+        direction TB
+        DevAccount["AWS Dev Account<br/><i>Account-Scoped<br/> Deployment</i>"]
+    end
+
+    subgraph ProdEnv ["Prod Environment"]
+        direction TB
+        ProdAccount["AWS Prod Account<br/><i>Account-Scoped<br/> Deployment</i>"]
+    end
+
+    Target -->|Dev Branch| DevAccount
+    Target -->|Prod Branch| ProdAccount
+
+    %% Styling
+    style Event fill:#238636,stroke:#fff,stroke-width:1px,color:#fff
+    style Target fill:#1f6feb,stroke:#fff,stroke-width:1px,color:#fff
+    style DevEnv fill:#1f6feb15,stroke:#1f6feb,stroke-width:1px
+    style ProdEnv fill:#23863615,stroke:#238636,stroke-width:1px
+```
+
+#### IAM Roles and responsiblities:
+
+```mermaid
+flowchart TB
+    subgraph IAM ["IAM Roles & Permissions"]
+        direction TB
+
+        subgraph Infra ["Infrastructure Tier"]
+            direction TB
+            subgraph InfraSub1 ["1. Infra deployment and execution tier"]
+                direction TB
+                InfraDeployRole["<b>Infra Deployment Role</b><br/> (GitHub Actions OIDC)<br/><i>Perform infra related<br/> AWS CloudFormation <br/>API calls</i>"]
+                InfraExecutionRole["<b>Infra Execution Role</b><br/> (AWS CloudFormation)<br/><i>S3 buckets, IAM policies,<br/> VPC resources</i>"]
+                InfraDeployRole -.->|iam:PassRole| InfraExecutionRole
+            end
+        end
+
+        subgraph GoldenImage ["Golden Image Tier"]
+            direction TB
+            subgraph GoldenImage1 ["2. Golden Image Tier"]
+                direction TB
+                ImageDeployRole["<b>Image Deploy Role</b><br/> (GitHub Actions OIDC)<br/><i>Construct a Golden<br/> Base AMI</i>"]
+            end
+        end
+
+        subgraph AppInfra ["App-Infrastructure Tier"]
+            direction TB
+            subgraph AppInfraSub2 ["3. App-Infra deployment and execution tier"]
+                direction TB
+                AppInfraDeployRole["<b>App Infra Deployment Role</b><br/> (GitHub Actions OIDC)<br/><i>Perform app infra<br/> related AWS CloudFormation<br/> API calls</i>"]
+                AppInfraExecutionRole["<b>App Infra Execution Role</b><br/> (AWS CloudFormation)<br/><i>Launch template, ASGs<br/>, ALBs</i>"]
+                AppInfraDeployRole -.->|iam:PassRole| AppInfraExecutionRole
+            end
+        end
+
+        subgraph App ["App Tier"]
+            direction TB
+            subgraph AppSub1 ["4. App deployment tier"]
+                direction TB
+                AppDeployRole["<b>App Deployment Role</b><br/> (GitHub Actions)<br/><i>Perform application<br/> deployment</i>"]
+            end
+        end
+        Infra -.-> GoldenImage -.-> AppInfra -.-> App
+    end
+
+    style IAM fill:none,stroke:#333,stroke-width:2px
+    classDef innerBox fill:#1f6feb15,stroke:#1f6feb,stroke-width:1px;
+    class Infra,GoldenImage,AppInfra innerBox;
+    classDef innerSub1Box fill:#1f6feb,stroke:#fff,stroke-width:1px,color:#fff
+    class InfraDeployRole,AppInfraDeployRole,ImageDeployRole,AppDeployRole innerSub1Box
+    classDef innerSub2Box fill:#238636,stroke:#fff,stroke-width:1px,color:#fff
+    class InfraExecutionRole,AppInfraExecutionRole innerSub2Box
+```
 
 The platform is divided into two primary components:
 
