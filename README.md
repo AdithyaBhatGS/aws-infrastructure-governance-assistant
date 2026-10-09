@@ -1,4 +1,6 @@
-# AWS Infrastructure Governance Assistant
+## AWS Infrastructure Governance Assistant
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An AWS-based infrastructure governance and deployment platform designed to automate infrastructure provisioning, detect configuration drift, track infrastructure changes, and provide a centralized interface for managing cloud environments, identify idle resources(EIPs, EBS volumes, S3 buckets), issue a simple warning regarding existing resources(NAT gateways, ELBs) for cost optimization.
 
@@ -293,3 +295,7 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 - **`requirements.txt`** — Python dependencies used by the platform.
 - **`packer/`** - Hashicorp Packer for golden AMI based deployments.
 - **`security/checkov/organization_policies`** - Custom `checkov` policies for scanning the infrastructure.
+
+## License
+
+AWS Infrastructure Governance Assistant is [MIT licensed](./LICENSE).
