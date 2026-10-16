@@ -1,3 +1,22 @@
+## Table of contents
+
+| Sl No | Topic                                                            |
+| ----- | ---------------------------------------------------------------- |
+| 1.    | [Introduction](#aws-infrastructure-governance-assistant)         |
+| 2.    | [Problem Statement](#problem-statement)                          |
+| 3.    | [Key Features](#key-features)                                    |
+| 4.    | [Architecture Digram](#core-architecture)                        |
+| 5.    | [Pipeline Flow Diagram](#cicd-pipeline-flow)                     |
+| 6.    | [IAM Roles and Responsibilities](#iam-roles-and-responsiblities) |
+| 7.    | [Infrastructure](#infrastructure)                                |
+| 8.    | [Application](#application)                                      |
+| 9.    | [Current Deployment Model](#current-deployment-model)            |
+| 10.   | [CI/CD Pipeline](#cicd-pipeline)                                 |
+| 11.   | [Technology Stack](#technology-stack)                            |
+| 12.   | [Project Structure](#project-structure)                          |
+| 13.   | [Project Setup](#project-setup)                                  |
+| 13.   | [License](#license)                                              |
+
 ## AWS Infrastructure Governance Assistant
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -295,6 +314,80 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 - **`requirements.txt`** — Python dependencies used by the platform.
 - **`packer/`** - Hashicorp Packer for golden AMI based deployments.
 - **`security/checkov/organization_policies`** - Custom `checkov` policies for scanning the infrastructure.
+
+## Project Setup
+
+1. Should have **An AWS Account**.
+2. Fork the repo if needed.
+3. Clone the repo:
+
+```
+git clone https://github.com/AdithyaBhatGS/aws-infrastructure-governance-assistant.git
+```
+
+4. Navigate to the folder
+
+```
+cd aws-infrastructure-governance-assistant
+```
+
+5. Install the awscli and check the version
+
+```
+aws --version
+```
+
+6. If you want to perform cfn-lint, cloudformation-validate or yamllint locally then
+
+```bash
+python3 -m venv .infra-venv
+```
+
+```bash
+source .infra-venv/Scripts/activate
+```
+
+```bash
+python3 -m pip install requirements.txt
+```
+
+- [requirements.txt](requirements.txt)
+
+7. Conduct linting & validation checks using
+
+```
+yammlint <template-file>
+```
+
+```
+aws cloudformation validate-template --template-body file://<template-file>
+```
+
+```
+cfn-lint <template-file>
+```
+
+8. Export proper profile with **AdministratorAccess** for setting up the **bootstrap stack**
+
+```
+export AWS_PROFILE=profile-name
+```
+
+9. Deploy the bootstrap stack manually
+
+```
+aws cloudformation deploy \
+--stack-name <NAME_OF_YOUR_CHOICE> \
+--template-file infra/bootstrap/bootstrap-stack.yaml \
+--parameter-overrides file://infra/bootstrap/dev.json \
+--capabilities CAPABILITY_NAMED_IAM
+--region <REGION_OF_YOUR_CHOICE>
+```
+
+10. Make any changes to the infra if necessary
+11. Make any changes to the application if necessary
+12. Push the code to remote
+13. Test and deploy
 
 ## License
 
