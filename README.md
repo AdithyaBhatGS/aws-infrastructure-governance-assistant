@@ -319,7 +319,7 @@ The current pipelines use environment-specific GitHub Actions concurrency contro
 
 1. Should have **An AWS Account**.
 2. Fork the repo if needed.
-3. Clone the repo:
+3. Clone the repo
 
 ```
 git clone https://github.com/AdithyaBhatGS/aws-infrastructure-governance-assistant.git
@@ -356,7 +356,7 @@ python3 -m pip install requirements.txt
 7. Conduct linting & validation checks using
 
 ```
-yammlint <template-file>
+yamlint <template-file>
 ```
 
 ```
